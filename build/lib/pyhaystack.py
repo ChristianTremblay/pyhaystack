@@ -1,4 +1,5 @@
 #!python
+# -*- coding: utf-8 -*-
 """
 File : pyhaystack.py (2.x)
 This module allow a connection to a haystack server
@@ -10,13 +11,14 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '1.02'
-__license__ = 'MIT'
+__version__ = '1.07'
+__license__ = 'AFL'
 
 import requests
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+import csv
 
 class HaystackConnection():
     """
@@ -111,43 +113,55 @@ class NiagaraAXConnection(HaystackConnection):
         except requests.exceptions.RequestException as e:
             print 'Problem connecting to server : %s' % e
             
-        #Test for connection success
+        #Version 3.8 gives a cookie
         if self.COOKIE:
             self.COOKIEPOSTFIX = self.COOKIE['niagara_session']
-            self.headers = {'cookiePostfix' : self.COOKIEPOSTFIX, 
-                           'token':'',
-                           'scheme':'cookieDigest',
-                           'absPathBase':'/',
-                           'content-type':'application/x-niagara-login-support',
-                           'Referer':self.baseURL+'login/',
-                           'accept':'application/json; charset=utf-8'
+            self.headers = {'cookiePostfix' : self.COOKIEPOSTFIX
                            }
-            self.auth = self.postRequest(self.loginURL,self.headers)
-            self.isConnected = True
-            self.about = self.getJson(self.requestAbout)
-            self.serverName = self.about['rows'][0]['serverName']
-            self.haystackVersion = self.about['rows'][0]['haystackVersion']
-            self.axVersion = self.about['rows'][0]['productVersion']
-            print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)
+        self.headers =  {'token':'',
+                         'scheme':'cookieDigest',
+                         'absPathBase':'/',
+                         'content-type':'application/x-niagara-login-support',
+                         'Referer':self.baseURL+'login/',
+                         'accept':'application/json; charset=utf-8'
+                        }
+        self.auth = self.postRequest(self.loginURL,self.headers)
+        self.isConnected = True
+        self.about = self.getJson(self.requestAbout)
+        self.serverName = self.about['rows'][0]['serverName']
+        self.haystackVersion = self.about['rows'][0]['haystackVersion']
+        self.axVersion = self.about['rows'][0]['productVersion']
+        print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)
             
-        #Problem !
-        else:
-            print "Not connected, it's over now"
-            self.isConnected = False
+        #Maybe a version lower than 3.8 without cookie
+        #else:
+        #    
+        #    print "Not connected, it's over now"
+        #    self.isConnected = False
 
 class Histories():
     """
     This class gathers every histories on the Jace
     """
-    def __init__(self, session):
+    def __init__(self, session, format='zinc'):
         self.hisListName = []
         self.hisListId = []
         requestHistories = "read?filter=his"
-        histories = session.getJson(requestHistories)
-        #prettyprint(histories)
-        for each in histories['rows']:
-            self.hisListName.append(each['id'].split(' ')[1])
-            self.hisListId.append(each['id'].split(' ')[0])
+        if format == 'json':
+            histories = session.getJson(requestHistories)
+            #prettyprint(histories)
+            for each in histories['rows']:
+                self.hisListName.append(each['id'].split(' ')[1])
+                self.hisListId.append(each['id'].split(' ')[0])
+        elif format == 'zinc':
+            histories = session.getZinc(requestHistories)
+            his_to_csv = histories.replace(u'\xb0C','').split('\n')[2:]
+            reader = csv.reader(his_to_csv)
+            for lines in reader:
+                self.hisListName.append(lines[9].split(' ')[1])
+                print 'Found %s, adding to list' % lines[9].split(' ')[0]
+                self.hisListId.append(lines[9].split(' ')[0])
+            
     def getListofId(self):
         return self.hisListId
 

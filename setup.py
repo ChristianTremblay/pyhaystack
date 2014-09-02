@@ -3,6 +3,7 @@
 Setup file for pyhaystack
 """
 import pyhaystack
+import pyzinc
 import os
 
 os.environ['COPY_EXTENDED_ATTRIBUTES_DISABLE'] = 'true'
@@ -16,6 +17,6 @@ setup(name='pyhaystack',
       author_email='christian.tremblay@servisys.com',
       url='http://www.project-haystack.com/',
 	  long_description = "\n".join(pyhaystack.__doc__.split('\n')),
-	  py_modules=['pyhaystack'],
+	  py_modules=['pyhaystack','pyzinc'],
 	  install_requires = ['requests','setuptools']
       )
