@@ -35,7 +35,7 @@ class Histories():
             print lines
             his['id'] = lines[4].split(' ')[0]
             his['name'] = lines[4].split(' ')[1]
-            #print 'Found %s, adding to list' % his['name']
+            print 'Found %s, adding to list' % his['name']
             self.hisList.append(his)
             
     def getListofId(self):

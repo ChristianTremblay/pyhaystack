@@ -11,7 +11,7 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '1.07'
+__version__ = '1.2'
 __license__ = 'AFL'
 
 import requests
@@ -19,6 +19,8 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 import csv
+import re,datetime
+
 
 class HaystackConnection():
     """
@@ -81,7 +83,20 @@ class HaystackConnection():
             #print 'POST : %s | url : %s | headers : %s | auth : %s' % (req, url, headers,self.USERNAME) Gives a 404 response but a connection ????
         except requests.exceptions.RequestException as e:    # This is the correct syntax
             print 'Request POST error : %s' % e
-
+    
+    def setHistoriesList(self):
+        """
+        This function retrieves every histories in the server and returns a list of id
+        """
+        print 'Retrieving list of histories (trends) in server, please wait...'
+        self.hisList = Histories(self) 
+        print 'Done, use getHistoriesList to check for trends' 
+    
+    def getHistoriesList(self):
+        return self.hisList.getListofId() 
+    
+    def getHistory(self, hisId, dateTimeRange='today'):
+        return HisRecord(self,hisId,dateTimeRange)
 
 
 
@@ -132,7 +147,7 @@ class NiagaraAXConnection(HaystackConnection):
         self.haystackVersion = self.about['rows'][0]['haystackVersion']
         self.axVersion = self.about['rows'][0]['productVersion']
         print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)
-            
+        self.setHistoriesList()    
         #Maybe a version lower than 3.8 without cookie
         #else:
         #    
@@ -143,7 +158,7 @@ class Histories():
     """
     This class gathers every histories on the Jace
     """
-    def __init__(self, session, format='zinc'):
+    def __init__(self, session, format='json'):
         self.hisListName = []
         self.hisListId = []
         requestHistories = "read?filter=his"
@@ -168,13 +183,15 @@ class Histories():
 class UnknownHistoryType(Exception):
     """
     Utility Exception class needed when dealing with non-standard histories
-    Analyse_zone for example
+    Analyse_zone for example wich is a custom historical trend
     """
     pass
 
 class HisRecord():
     """
     This class is a single record
+    - hisId is the haystack Id of the trend
+    - data is created as DataFrame to be used directly in Pandas
     """
     def __init__(self,session,hisId,dateTimeRange):
         """
@@ -182,8 +199,14 @@ class HisRecord():
         """
         self.hisId = hisId
         self.jsonHis = session.getJson('hisRead?id='+self.hisId+'&range='+dateTimeRange)
+        # Convert DateTime / Actually TZ is not taken...
+        for eachRows in self.jsonHis['rows']:
+            eachRows['ts'] = datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-2]))
+            if isfloat(float(eachRows['val'])):
+                eachRows['val'] = float(eachRows['val'])
         try:
-            self.data = pd.DataFrame(self.jsonHis['rows'],columns=['ts', 'val'])
+            self.data = pd.DataFrame(self.jsonHis['rows'],columns=['ts','val'])   
+            self.data.set_index('ts',inplace=True)         
             #print '%s added to list' % self.hisId
         except Exception:
             print '%s is an Unknown history type' % self.hisId 
@@ -194,31 +217,12 @@ class HisRecord():
         """
         self.data.plot()
 
-
-def parseDateTime(ts):
-    """
-    Method to parse DateTime format
-    """
-    date = ts.split('T')[0]
-    time = ts.split('T')[1].split(' ')[0][:-6]
-    tz = ts.split('T')[1].split(' ')[1]
-    tzOffset = ts.split('T')[1].split(' ')[0][-6:]
-    
-    hour = time.split(':')[0]
-    minute = time.split(':')[1]
-    second = time.split(':')[2]
-
-    dateTime = {'toString':date+'/'+time,
-                'date':date,
-                'time':time,
-                'hour':hour,
-                'minute':minute,
-                'second':second,
-                'tz':tz,
-                'tzOffset':tzOffset
-                }
-    return dateTime
-    
+def isfloat(value):
+  try:
+    float(value)
+    return True
+  except ValueError:
+    return False    
 def prettyprint(jsonData):
     """
     Pretty print json object
