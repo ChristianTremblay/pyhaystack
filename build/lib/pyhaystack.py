@@ -11,7 +11,7 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '1.2'
+__version__ = '0.25'
 __license__ = 'AFL'
 
 import requests
@@ -31,6 +31,14 @@ class HaystackConnection():
         """
         Set local variables
         Open a session object that will be used for connection, with keep-alive feature
+            baseURL : http://XX.XX.XX.XX/ - Server URL
+            queryURL : ex. for nhaystack = baseURL+haystack = http://XX.XX.XX.XX/haystack
+            USERNAME : used for login
+            PASSWORD : used for login
+            COOKIE : for persistent login
+            isConnected : flag to be used for connection related task (don't try if not connected...)
+            s : requests.Session() object
+            filteredList : List of histories created by getFilteredHistories 
         """
         self.baseURL = url
         self.queryURL = ''
@@ -39,6 +47,7 @@ class HaystackConnection():
         self.COOKIE = ''
         self.isConnected = False
         self.s = requests.Session()
+        self._filteredList = []
     def authenticate(self):
         """
         This function must be overridden by specific server connection to fit particular needs (urls, other conditions)
@@ -89,14 +98,27 @@ class HaystackConnection():
         This function retrieves every histories in the server and returns a list of id
         """
         print 'Retrieving list of histories (trends) in server, please wait...'
-        self.hisList = Histories(self) 
+        self.allHistories = Histories(self)
         print 'Done, use getHistoriesList to check for trends' 
     
     def getHistoriesList(self):
-        return self.hisList.getListofId() 
+        return self.allHistories.getListofIdsAndNames()
     
-    def getHistory(self, hisId, dateTimeRange='today'):
-        return HisRecord(self,hisId,dateTimeRange)
+    def getFilteredHistoriesListWithData(self,regexfilter,dateTimeRange='today'):
+        """
+        This method returns a list of history record based on a filter on all histories of the server
+        """
+        self._filteredList = [] # Empty list
+        self._his = {'name':'',
+                    'id':'',
+                    'data':''}
+        for eachHistory in self.allHistories.getListofIdsAndNames():
+            if re.search(re.compile(regexfilter, re.IGNORECASE), eachHistory['name']):
+                print 'Adding %s to recordList' % eachHistory['name']
+                self._his['name'] = eachHistory['name']
+                self._his['data'] = HisRecord(self,eachHistory['id'],dateTimeRange)
+                self._filteredList.append(self._his.copy())
+        return self._filteredList
 
 
 
@@ -141,13 +163,15 @@ class NiagaraAXConnection(HaystackConnection):
                          'accept':'application/json; charset=utf-8'
                         }
         self.auth = self.postRequest(self.loginURL,self.headers)
+        #Need something here to prove connection....egtting response 500 ??? even is connected.
         self.isConnected = True
-        self.about = self.getJson(self.requestAbout)
-        self.serverName = self.about['rows'][0]['serverName']
-        self.haystackVersion = self.about['rows'][0]['haystackVersion']
-        self.axVersion = self.about['rows'][0]['productVersion']
-        print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)
-        self.setHistoriesList()    
+        if self.isConnected:
+            self.about = self.getJson(self.requestAbout)
+            self.serverName = self.about['rows'][0]['serverName']
+            self.haystackVersion = self.about['rows'][0]['haystackVersion']
+            self.axVersion = self.about['rows'][0]['productVersion']
+            print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)        
+            self.setHistoriesList()    
         #Maybe a version lower than 3.8 without cookie
         #else:
         #    
@@ -158,27 +182,26 @@ class Histories():
     """
     This class gathers every histories on the Jace
     """
-    def __init__(self, session, format='json'):
-        self.hisListName = []
-        self.hisListId = []
-        requestHistories = "read?filter=his"
-        if format == 'json':
-            histories = session.getJson(requestHistories)
-            #prettyprint(histories)
-            for each in histories['rows']:
-                self.hisListName.append(each['id'].split(' ')[1])
-                self.hisListId.append(each['id'].split(' ')[0])
-        elif format == 'zinc':
-            histories = session.getZinc(requestHistories)
-            his_to_csv = histories.replace(u'\xb0C','').split('\n')[2:]
-            reader = csv.reader(his_to_csv)
-            for lines in reader:
-                self.hisListName.append(lines[9].split(' ')[1])
-                print 'Found %s, adding to list' % lines[9].split(' ')[0]
-                self.hisListId.append(lines[9].split(' ')[0])
+    def __init__(self, session):
+        self._allHistories = []
+        self._filteredList = []
+        self._his = {'name':'',
+               'id':'',
+               'data':''}
+        
+        for each in session.getJson("read?filter=his")['rows']:
+            self._his['name'] = each['id'].split(' ')[1]
+            self._his['id'] = each['id'].split(' ')[0]
+            self._his['data'] = ''#No data right now
+            self._allHistories.append(self._his.copy())
             
-    def getListofId(self):
-        return self.hisListId
+    def getListofIdsAndNames(self):
+        return self._allHistories
+
+    def getDataFrameOf(self, hisId, dateTimeRange='today'):
+        return HisRecord(self,hisId,dateTimeRange)
+    
+
 
 class UnknownHistoryType(Exception):
     """
