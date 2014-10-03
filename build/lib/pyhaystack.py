@@ -11,12 +11,13 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '0.25'
+__version__ = '0.29'
 __license__ = 'AFL'
 
 import requests
 import json
 import pandas as pd
+from pandas import Series
 import matplotlib.pyplot as plt
 import csv
 import re,datetime
@@ -89,6 +90,7 @@ class HaystackConnection():
         """
         try:
             req = self.s.post(url, params=headers,auth=(self.USERNAME, self.PASSWORD))
+            #print 'Post request response : %s' % req.status_code
             #print 'POST : %s | url : %s | headers : %s | auth : %s' % (req, url, headers,self.USERNAME) Gives a 404 response but a connection ????
         except requests.exceptions.RequestException as e:    # This is the correct syntax
             print 'Request POST error : %s' % e
@@ -99,7 +101,7 @@ class HaystackConnection():
         """
         print 'Retrieving list of histories (trends) in server, please wait...'
         self.allHistories = Histories(self)
-        print 'Done, use getHistoriesList to check for trends' 
+        print 'Complete... Use getHistoriesList() to check for trends' 
     
     def getHistoriesList(self):
         return self.allHistories.getListofIdsAndNames()
@@ -116,6 +118,7 @@ class HaystackConnection():
             if re.search(re.compile(regexfilter, re.IGNORECASE), eachHistory['name']):
                 print 'Adding %s to recordList' % eachHistory['name']
                 self._his['name'] = eachHistory['name']
+                self._his['id'] = eachHistory['id']
                 self._his['data'] = HisRecord(self,eachHistory['id'],dateTimeRange)
                 self._filteredList.append(self._his.copy())
         return self._filteredList
@@ -145,26 +148,47 @@ class NiagaraAXConnection(HaystackConnection):
         When connected, ask the haystack for "about" information and print connection information
         """
         print 'pyhaystack %s | Authentication to %s' % (__version__,self.loginURL)
-        try:
-            self.COOKIE = self.s.get(self.loginURL).cookies
+        print 'Initiating connection'
+        try :
+            # Try to reach server before going further 
+            connection_status = self.s.get(self.loginURL).status_code
         except requests.exceptions.RequestException as e:
-            print 'Problem connecting to server : %s' % e
+            connection_status = 0
             
-        #Version 3.8 gives a cookie
-        if self.COOKIE:
-            self.COOKIEPOSTFIX = self.COOKIE['niagara_session']
-            self.headers = {'cookiePostfix' : self.COOKIEPOSTFIX
-                           }
-        self.headers =  {'token':'',
-                         'scheme':'cookieDigest',
-                         'absPathBase':'/',
-                         'content-type':'application/x-niagara-login-support',
-                         'Referer':self.baseURL+'login/',
-                         'accept':'application/json; charset=utf-8'
-                        }
-        self.auth = self.postRequest(self.loginURL,self.headers)
-        #Need something here to prove connection....egtting response 500 ??? even is connected.
-        self.isConnected = True
+        if connection_status == 200:
+            print 'Initiating authentification'
+            try:
+                self.COOKIE = self.s.get(self.loginURL).cookies
+            except requests.exceptions.RequestException as e:
+                print 'Problem connecting to server : %s' % e
+
+            if self.COOKIE:
+                self.COOKIEPOSTFIX = self.COOKIE['niagara_session']
+                self.headers = {'cookiePostfix' : self.COOKIEPOSTFIX
+                               }
+            self.headers =  {'token':'',
+                             'scheme':'cookieDigest',
+                             'absPathBase':'/',
+                             'content-type':'application/x-niagara-login-support',
+                             'Referer':self.baseURL+'login/',
+                             'accept':'application/json; charset=utf-8'
+                            }
+            # Authentification post request
+            try:
+                req = self.s.post(self.loginURL, params=self.headers,auth=(self.USERNAME, self.PASSWORD))
+                #If word 'login' is in the response page, consider login failed...
+                if re.search(re.compile('login', re.IGNORECASE), req.text):
+                    self.isConnected = False
+                    print 'Connection failure, check credentials'
+                else:
+                    self.isConnected = True
+                    print 'User logged in...'                
+            except requests.exceptions.RequestException as e:
+                print 'Request POST error : %s' % e
+        else:
+            print 'Connection failed, check your parameters or VPN connection...'
+        
+        #Continue with haystack login
         if self.isConnected:
             self.about = self.getJson(self.requestAbout)
             self.serverName = self.about['rows'][0]['serverName']
@@ -172,11 +196,7 @@ class NiagaraAXConnection(HaystackConnection):
             self.axVersion = self.about['rows'][0]['productVersion']
             print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)        
             self.setHistoriesList()    
-        #Maybe a version lower than 3.8 without cookie
-        #else:
-        #    
-        #    print "Not connected, it's over now"
-        #    self.isConnected = False
+
 
 class Histories():
     """
@@ -190,8 +210,8 @@ class Histories():
                'data':''}
         
         for each in session.getJson("read?filter=his")['rows']:
-            self._his['name'] = each['id'].split(' ')[1]
-            self._his['id'] = each['id'].split(' ')[0]
+            self._his['name'] = each['id'].split(' ',1)[1]
+            self._his['id'] = each['id'].split(' ',1)[0]
             self._his['data'] = ''#No data right now
             self._allHistories.append(self._his.copy())
             
@@ -222,14 +242,21 @@ class HisRecord():
         """
         self.hisId = hisId
         self.jsonHis = session.getJson('hisRead?id='+self.hisId+'&range='+dateTimeRange)
+        index = []
+        values = []
         # Convert DateTime / Actually TZ is not taken...
+        # Todo : Use Timestamp instead of datetime.datetime
+
         for eachRows in self.jsonHis['rows']:
-            eachRows['ts'] = datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-2]))
+            index.append(pd.Timestamp(pd.to_datetime(datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-3])))))
             if isfloat(float(eachRows['val'])):
-                eachRows['val'] = float(eachRows['val'])
+                values.append(float(eachRows['val']))
         try:
-            self.data = pd.DataFrame(self.jsonHis['rows'],columns=['ts','val'])   
-            self.data.set_index('ts',inplace=True)         
+            #Todo : Use Series instead of DataFrame here
+            self.data = Series(values,index=index).asfreq('t',method='pad')   
+            #self.data.set_index('ts',inplace=True)
+            #self.data.rename(columns={'val': self.hisId}, inplace=True) 
+            #self.ts = Series(self.jsonHis['rows'])        
             #print '%s added to list' % self.hisId
         except Exception:
             print '%s is an Unknown history type' % self.hisId 
