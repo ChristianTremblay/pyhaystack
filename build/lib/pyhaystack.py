@@ -11,7 +11,7 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '0.29'
+__version__ = '0.29.2'
 __license__ = 'AFL'
 
 import requests
@@ -253,7 +253,7 @@ class HisRecord():
                 values.append(float(eachRows['val']))
         try:
             #Todo : Use Series instead of DataFrame here
-            self.data = Series(values,index=index).asfreq('t',method='pad')   
+            self.data = Series(values,index=index).asfreq('t', method=('ffill'))   
             #self.data.set_index('ts',inplace=True)
             #self.data.rename(columns={'val': self.hisId}, inplace=True) 
             #self.ts = Series(self.jsonHis['rows'])        
