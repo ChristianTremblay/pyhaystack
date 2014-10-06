@@ -11,7 +11,7 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '0.29.2'
+__version__ = '0.29.8'
 __license__ = 'AFL'
 
 import requests
@@ -49,6 +49,7 @@ class HaystackConnection():
         self.isConnected = False
         self.s = requests.Session()
         self._filteredList = []
+        self.timezone = 'UTC'
     def authenticate(self):
         """
         This function must be overridden by specific server connection to fit particular needs (urls, other conditions)
@@ -102,6 +103,7 @@ class HaystackConnection():
         print 'Retrieving list of histories (trends) in server, please wait...'
         self.allHistories = Histories(self)
         print 'Complete... Use getHistoriesList() to check for trends' 
+        print 'Try getFilteredHistoriesListWithData(filter, dateTimeRange) to load a bunch of trend matching a criteria' 
     
     def getHistoriesList(self):
         return self.allHistories.getListofIdsAndNames()
@@ -119,7 +121,7 @@ class HaystackConnection():
                 print 'Adding %s to recordList' % eachHistory['name']
                 self._his['name'] = eachHistory['name']
                 self._his['id'] = eachHistory['id']
-                self._his['data'] = HisRecord(self,eachHistory['id'],dateTimeRange)
+                self._his['data'] = HisRecord(self,eachHistory['id'],eachHistory['name'],dateTimeRange)
                 self._filteredList.append(self._his.copy())
         return self._filteredList
 
@@ -156,7 +158,7 @@ class NiagaraAXConnection(HaystackConnection):
             connection_status = 0
             
         if connection_status == 200:
-            print 'Initiating authentification'
+            print 'Initiating authentication'
             try:
                 self.COOKIE = self.s.get(self.loginURL).cookies
             except requests.exceptions.RequestException as e:
@@ -173,7 +175,7 @@ class NiagaraAXConnection(HaystackConnection):
                              'Referer':self.baseURL+'login/',
                              'accept':'application/json; charset=utf-8'
                             }
-            # Authentification post request
+            # Authentication post request
             try:
                 req = self.s.post(self.loginURL, params=self.headers,auth=(self.USERNAME, self.PASSWORD))
                 #If word 'login' is in the response page, consider login failed...
@@ -195,8 +197,10 @@ class NiagaraAXConnection(HaystackConnection):
             self.haystackVersion = self.about['rows'][0]['haystackVersion']
             self.axVersion = self.about['rows'][0]['productVersion']
             print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)        
+            self.timezone = 'America/' + self.getJson('read?filter=site')['rows'][0]['tz']
+            print 'Time Zone used : %s' % self.timezone
             self.setHistoriesList()    
-
+            
 
 class Histories():
     """
@@ -208,6 +212,7 @@ class Histories():
         self._his = {'name':'',
                'id':'',
                'data':''}
+       
         
         for each in session.getJson("read?filter=his")['rows']:
             self._his['name'] = each['id'].split(' ',1)[1]
@@ -219,7 +224,7 @@ class Histories():
         return self._allHistories
 
     def getDataFrameOf(self, hisId, dateTimeRange='today'):
-        return HisRecord(self,hisId,dateTimeRange)
+            return HisRecord(self,hisId,dateTimeRange)
     
 
 
@@ -236,31 +241,32 @@ class HisRecord():
     - hisId is the haystack Id of the trend
     - data is created as DataFrame to be used directly in Pandas
     """
-    def __init__(self,session,hisId,dateTimeRange):
+    def __init__(self,session,hisId, hisName,dateTimeRange):
         """
         GET data from server and fill this object with historical info
         """
         self.hisId = hisId
+        self.hisName = hisName
         self.jsonHis = session.getJson('hisRead?id='+self.hisId+'&range='+dateTimeRange)
         index = []
         values = []
-        # Convert DateTime / Actually TZ is not taken...
-        # Todo : Use Timestamp instead of datetime.datetime
+        self._timezone = session.timezone
 
         for eachRows in self.jsonHis['rows']:
-            index.append(pd.Timestamp(pd.to_datetime(datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-3])))))
+            index.append(pd.Timestamp(pd.to_datetime(datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-2])))))
             if isfloat(float(eachRows['val'])):
                 values.append(float(eachRows['val']))
+        
         try:
-            #Todo : Use Series instead of DataFrame here
-            self.data = Series(values,index=index).asfreq('t', method=('ffill'))   
-            #self.data.set_index('ts',inplace=True)
-            #self.data.rename(columns={'val': self.hisId}, inplace=True) 
-            #self.ts = Series(self.jsonHis['rows'])        
-            #print '%s added to list' % self.hisId
+            #Declare Series and localize using Site Timezone
+            self.data = Series(values,index=index).tz_localize(self._timezone)
+            #Renaming index so the name will be part of the serie
+            self.data = self.data.reindex(self.data.index.rename([self.hisName]))
         except Exception:
             print '%s is an Unknown history type' % self.hisId 
     
+        
+        
     def plot(self):
         """
         Draw a graph of the DataFrame
@@ -268,11 +274,15 @@ class HisRecord():
         self.data.plot()
 
 def isfloat(value):
-  try:
-    float(value)
-    return True
-  except ValueError:
-    return False    
+    """
+    Helper function to detect if a value is a float 
+    """
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False    
+
 def prettyprint(jsonData):
     """
     Pretty print json object
