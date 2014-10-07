@@ -11,7 +11,7 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '0.29.8'
+__version__ = '0.29.13'
 __license__ = 'AFL'
 
 import requests
@@ -121,10 +121,12 @@ class HaystackConnection():
                 print 'Adding %s to recordList' % eachHistory['name']
                 self._his['name'] = eachHistory['name']
                 self._his['id'] = eachHistory['id']
-                self._his['data'] = HisRecord(self,eachHistory['id'],eachHistory['name'],dateTimeRange)
+                self._his['data'] = HisRecord(self,eachHistory['id'],dateTimeRange)
                 self._filteredList.append(self._his.copy())
         return self._filteredList
-
+    
+    def getHistory(self, id, dateTimeRange):
+        return (HisRecord(self,id,dateTimeRange))
 
 
 class NiagaraAXConnection(HaystackConnection):
@@ -223,9 +225,10 @@ class Histories():
     def getListofIdsAndNames(self):
         return self._allHistories
 
-    def getDataFrameOf(self, hisId, dateTimeRange='today'):
-            return HisRecord(self,hisId,dateTimeRange)
-    
+#    def getDataFrameOf(self, hisId, dateTimeRange='today'):
+#            return HisRecord(self,hisId,dateTimeRange)
+        
+
 
 
 class UnknownHistoryType(Exception):
@@ -241,31 +244,37 @@ class HisRecord():
     - hisId is the haystack Id of the trend
     - data is created as DataFrame to be used directly in Pandas
     """
-    def __init__(self,session,hisId, hisName,dateTimeRange):
+    def __init__(self,session,hisId,dateTimeRange='today'):
         """
         GET data from server and fill this object with historical info
         """
         self.hisId = hisId
-        self.hisName = hisName
-        self.jsonHis = session.getJson('hisRead?id='+self.hisId+'&range='+dateTimeRange)
         index = []
         values = []
-        self._timezone = session.timezone
 
-        for eachRows in self.jsonHis['rows']:
+        for eachRows in session.getJson('hisRead?id='+self.hisId+'&range='+dateTimeRange)['rows']:
             index.append(pd.Timestamp(pd.to_datetime(datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-2])))))
             if isfloat(float(eachRows['val'])):
                 values.append(float(eachRows['val']))
+            
+            elif (eachRows['val'] == 'F'):
+                values.append(False)
+            elif (eachRows['val'] == 'T'):
+                values.append(True)
         
         try:
             #Declare Series and localize using Site Timezone
-            self.data = Series(values,index=index).tz_localize(self._timezone)
+            self.data = Series(values,index=index).tz_localize(session.timezone)
             #Renaming index so the name will be part of the serie
-            self.data = self.data.reindex(self.data.index.rename([self.hisName]))
+            self.data = self.data.reindex(self.data.index.rename([self.getHisNameFromId(session,self.hisId)]))
         except Exception:
             print '%s is an Unknown history type' % self.hisId 
     
-        
+    def getHisNameFromId(self,session,id):
+        for each in session.getJson("read?filter=his")['rows']:
+            if each['id'].split(' ',1)[0] == id:
+                return (each['id'].split(' ',1)[1])
+        return 'Id Not found'    
         
     def plot(self):
         """
