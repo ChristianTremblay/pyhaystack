@@ -11,7 +11,7 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '0.29.13'
+__version__ = '0.29.17'
 __license__ = 'AFL'
 
 import requests
@@ -96,36 +96,36 @@ class HaystackConnection():
         except requests.exceptions.RequestException as e:    # This is the correct syntax
             print 'Request POST error : %s' % e
     
-    def setHistoriesList(self):
+    def refreshHisList(self):
         """
         This function retrieves every histories in the server and returns a list of id
         """
         print 'Retrieving list of histories (trends) in server, please wait...'
         self.allHistories = Histories(self)
-        print 'Complete... Use getHistoriesList() to check for trends' 
-        print 'Try getFilteredHistoriesListWithData(filter, dateTimeRange) to load a bunch of trend matching a criteria' 
+        print 'Complete... Use getListofIdsAndNames() to check for trends or refreshHisList() to refresh the list' 
+        print 'Try hisReadList(filter, dateTimeRange) to load a bunch of trend matching a criteria' 
     
-    def getHistoriesList(self):
+    def hisList(self):
         return self.allHistories.getListofIdsAndNames()
     
-    def getFilteredHistoriesListWithData(self,regexfilter,dateTimeRange='today'):
+    def hisReadList(self,regexfilter,dateTimeRange='today'):
         """
         This method returns a list of history record based on a filter on all histories of the server
         """
         self._filteredList = [] # Empty list
-        self._his = {'name':'',
-                    'id':'',
-                    'data':''}
+        #self._his = {'name':'',
+        #            'id':'',
+        #            'data':''}
         for eachHistory in self.allHistories.getListofIdsAndNames():
             if re.search(re.compile(regexfilter, re.IGNORECASE), eachHistory['name']):
                 print 'Adding %s to recordList' % eachHistory['name']
-                self._his['name'] = eachHistory['name']
-                self._his['id'] = eachHistory['id']
-                self._his['data'] = HisRecord(self,eachHistory['id'],dateTimeRange)
-                self._filteredList.append(self._his.copy())
+                #self._his['name'] = eachHistory['name']
+                #self._his['id'] = eachHistory['id']
+                #self._his['data'] = hisRead(eachHistory['id'],dateTimeRange)
+                self._filteredList.append(self.hisRead(eachHistory['id'],dateTimeRange))
         return self._filteredList
     
-    def getHistory(self, id, dateTimeRange):
+    def hisRead(self, id, dateTimeRange):
         return (HisRecord(self,id,dateTimeRange))
 
 
@@ -201,7 +201,7 @@ class NiagaraAXConnection(HaystackConnection):
             print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)        
             self.timezone = 'America/' + self.getJson('read?filter=site')['rows'][0]['tz']
             print 'Time Zone used : %s' % self.timezone
-            self.setHistoriesList()    
+            self.refreshHisList()    
             
 
 class Histories():
@@ -212,14 +212,13 @@ class Histories():
         self._allHistories = []
         self._filteredList = []
         self._his = {'name':'',
-               'id':'',
-               'data':''}
+                     'id':''}
        
         
         for each in session.getJson("read?filter=his")['rows']:
             self._his['name'] = each['id'].split(' ',1)[1]
             self._his['id'] = each['id'].split(' ',1)[0]
-            self._his['data'] = ''#No data right now
+            #self._his['data'] = ''#No data right now
             self._allHistories.append(self._his.copy())
             
     def getListofIdsAndNames(self):
@@ -249,6 +248,7 @@ class HisRecord():
         GET data from server and fill this object with historical info
         """
         self.hisId = hisId
+        self.name = self.getHisNameFromId(session,self.hisId)
         index = []
         values = []
 
@@ -266,7 +266,7 @@ class HisRecord():
             #Declare Series and localize using Site Timezone
             self.data = Series(values,index=index).tz_localize(session.timezone)
             #Renaming index so the name will be part of the serie
-            self.data = self.data.reindex(self.data.index.rename([self.getHisNameFromId(session,self.hisId)]))
+            self.data = self.data.reindex(self.data.index.rename([self.name]))
         except Exception:
             print '%s is an Unknown history type' % self.hisId 
     
@@ -281,6 +281,11 @@ class HisRecord():
         Draw a graph of the DataFrame
         """
         self.data.plot()
+        
+    def __str__(self):
+        return 'History Record of %s' % self.getHisNameFromId(self.hisId)
+    
+    
 
 def isfloat(value):
     """
