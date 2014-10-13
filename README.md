@@ -11,19 +11,29 @@ import matplotlib.pyplot as plt
 import re
 
 # Open a session with Haystack server
+
+:::python
 session = ph.NiagaraAXConnection('http://serverIP/','user','password')
 
 Fetching data
 
 # Call list of histories
+
+:::python
 hisList = session.hisAll()
 
 #get a list of trends
+
+:::python
 trends = session.hisRead(AND_search=['S-3','OA'], start='2014-10-10',end='2014-10-12')
 
 # Compute mean by hour
+
+:::python
 trends[0].data.resample('h')
 
 # Plot a beautiful graph
+
+:::python
 trends[0].plot()
    
