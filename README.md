@@ -50,3 +50,5 @@ If not, module will be installed for System path python but won't work in the en
 
 	:::python
 		trends[0].breakdownPlot()
+
+![breakdownplot.jpg](https://bitbucket.org/repo/Anyjky/images/859471603-breakdownplot.jpg)
