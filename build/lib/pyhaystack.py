@@ -11,12 +11,13 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 __author__ = 'Christian Tremblay'
-__version__ = '0.29.17'
+__version__ = '0.29.29'
 __license__ = 'AFL'
 
 import requests
 import json
 import pandas as pd
+import numpy as np
 from pandas import Series
 import matplotlib.pyplot as plt
 import csv
@@ -39,7 +40,8 @@ class HaystackConnection():
             COOKIE : for persistent login
             isConnected : flag to be used for connection related task (don't try if not connected...)
             s : requests.Session() object
-            filteredList : List of histories created by getFilteredHistories 
+            _filteredList : List of histories created by getFilteredHistories 
+            timezone : timezone from site description
         """
         self.baseURL = url
         self.queryURL = ''
@@ -50,6 +52,7 @@ class HaystackConnection():
         self.s = requests.Session()
         self._filteredList = []
         self.timezone = 'UTC'
+        
     def authenticate(self):
         """
         This function must be overridden by specific server connection to fit particular needs (urls, other conditions)
@@ -58,6 +61,8 @@ class HaystackConnection():
     def getJson(self,urlToGet):
         """
         Helper for GET request. Retrieve information as json string objects
+        urlToGet must include only the request ex. "read?filter=site"
+        Queryurl (ex. http://serverIp/haystack) is already known
         """
         if self.isConnected:
             try:
@@ -73,7 +78,7 @@ class HaystackConnection():
         
     def getZinc(self,urlToGet):
         """
-        Helper for GET request. Retrieve information as json string objects
+        Helper for GET request. Retrieve information as default Zinc string objects
         """
         if self.isConnected:
             try:
@@ -102,32 +107,73 @@ class HaystackConnection():
         """
         print 'Retrieving list of histories (trends) in server, please wait...'
         self.allHistories = Histories(self)
-        print 'Complete... Use getListofIdsAndNames() to check for trends or refreshHisList() to refresh the list' 
-        print 'Try hisReadList(filter, dateTimeRange) to load a bunch of trend matching a criteria' 
+        print 'Complete... Use hisAll() to check for trends or refreshHisList() to refresh the list' 
+        print 'Try hisRead() to load a bunch of trend matching criterias' 
     
-    def hisList(self):
+    def hisAll(self):
+        """
+        Returns all history names and id
+        """
         return self.allHistories.getListofIdsAndNames()
-    
-    def hisReadList(self,regexfilter,dateTimeRange='today'):
+ 
+    def hisRead(self,ALL=False,**kwargs):
         """
-        This method returns a list of history record based on a filter on all histories of the server
+        This method returns a list of history records
+        arguments are : 
+        ids : a ID or a list of ID 
+        AND_search : a list of keywords to look for in trend names
+        OR_search : a list of keywords to look for in trend names
+        rng : haystack range (today,yesterday, last24hours...
+        start : string representation of start time ex. '2014-01-01T00:00' 
+        end : string representation of end time ex. '2014-01-01T00:00'
         """
-        self._filteredList = [] # Empty list
-        #self._his = {'name':'',
-        #            'id':'',
-        #            'data':''}
-        for eachHistory in self.allHistories.getListofIdsAndNames():
-            if re.search(re.compile(regexfilter, re.IGNORECASE), eachHistory['name']):
-                print 'Adding %s to recordList' % eachHistory['name']
-                #self._his['name'] = eachHistory['name']
-                #self._his['id'] = eachHistory['id']
-                #self._his['data'] = hisRead(eachHistory['id'],dateTimeRange)
-                self._filteredList.append(self.hisRead(eachHistory['id'],dateTimeRange))
-        return self._filteredList
-    
-    def hisRead(self, id, dateTimeRange):
-        return (HisRecord(self,id,dateTimeRange))
+        self._filteredList = [] # Empty list to be returned
+        # Keyword Arguments
+        ids = kwargs.pop('id','')
+        AND_search = kwargs.pop('AND_search','')
+        OR_search = kwargs.pop('OR_search','')
+        rng = kwargs.pop('rng','')
+        start = kwargs.pop('start','')
+        end = kwargs.pop('end','')
+        # Remaining kwargs...
+        if kwargs: raise TypeError('Unknown argument(s) : %s' % kwargs)
+        
+        # Build datetimeRange based on start and end
+        if start and end:
+            datetimeRange = start+','+end
+        else:
+            datetimeRange = rng
+        
+        
+        # Find histories matching ALL keywords in AND_search
+        for eachHistory in self.hisAll():
+            takeit = False
+            # Find histories matching ANY keywords in OR_search
+            if AND_search and all([keywords in eachHistory['name'] for keywords in AND_search]):
+                print 'AND_search : Adding %s to recordList' % eachHistory['name']                
+                takeit = True
+                
+            # Find histories matching ANY ID in id list       
+            elif OR_search and any([keywords in eachHistory['name'] for keywords in OR_search]):
+                print 'OR_search : Adding %s to recordList' % eachHistory['name']                
+                takeit = True
+                
+            elif ids and any([id in eachHistory['id'] for id in ids]):
+                print 'ID found : Adding %s to recordList' % eachHistory['name']
+                takeit = True
+            
+            elif ALL:
+                print 'Taking all histories : Adding %s to recordList' % eachHistory['name']
+                takeit = True
+                
+            if takeit:
+                self._filteredList.append(HisRecord(self,eachHistory['id'],datetimeRange))
+            
 
+        if self._filteredList == []:
+            print 'No trends found... sorry !'
+        
+        return self._filteredList
 
 class NiagaraAXConnection(HaystackConnection):
     """
@@ -210,11 +256,10 @@ class Histories():
     """
     def __init__(self, session):
         self._allHistories = []
-        self._filteredList = []
+        #self._filteredList = []
         self._his = {'name':'',
                      'id':''}
-       
-        
+               
         for each in session.getJson("read?filter=his")['rows']:
             self._his['name'] = each['id'].split(' ',1)[1]
             self._his['id'] = each['id'].split(' ',1)[0]
@@ -223,12 +268,6 @@ class Histories():
             
     def getListofIdsAndNames(self):
         return self._allHistories
-
-#    def getDataFrameOf(self, hisId, dateTimeRange='today'):
-#            return HisRecord(self,hisId,dateTimeRange)
-        
-
-
 
 class UnknownHistoryType(Exception):
     """
@@ -271,6 +310,9 @@ class HisRecord():
             print '%s is an Unknown history type' % self.hisId 
     
     def getHisNameFromId(self,session,id):
+        """
+        Retrieve name from id of an history
+        """
         for each in session.getJson("read?filter=his")['rows']:
             if each['id'].split(' ',1)[0] == id:
                 return (each['id'].split(' ',1)[1])
@@ -281,6 +323,26 @@ class HisRecord():
         Draw a graph of the DataFrame
         """
         self.data.plot()
+        
+    def breakdownPlot(self, startTime = '08:00', endTime = '17:00', bins=np.array([0,0.5,1,18.0,18.5,19.0,19.5,20.0,20.5,21.0,21.5,22.0,22.5,23.0, 23.5, 24.0, 24.5,25.0])):
+        """
+        By default, creates a breakdown plot of temperature distribution between 18 and 25
+        bins (distribution) can be past as argument
+        By default, takes values between 8:00 and 17:00
+        startTime = string representation of time (ex. '08:00')
+        endtime = string representation of time (ex. '17:00')
+        bin = np.array representing distribution
+        """
+        x = self.data.between_time(startTime,endTime)
+        barplot = pd.cut(x.dropna(),bins)
+        x.groupby(barplot).size().plot(kind='bar')
+        #self.data.groupby(barplot).size()
+    
+    def simpleStats(self):
+        """
+        Shortcut for describe() pandas version
+        """
+        return self.data.describe()
         
     def __str__(self):
         return 'History Record of %s' % self.getHisNameFromId(self.hisId)
