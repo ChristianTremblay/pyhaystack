@@ -4,24 +4,26 @@ If not, module will be installed for System path python but won't work in the en
 Opening a session
 
 import pyhaystack as ph
-session = ph.NiagaraAXConenction(url,username,password)
+import pandas as pd
+import numpy as np
+%matplotlib inline
+import matplotlib.pyplot as plt
+import re
+
+# Open a session with Haystack server
+session = ph.NiagaraAXConnection('http://serverIP/','user','password')
 
 Fetching data
 
-# Build list of histories
-hisList = Histories(session).getListofId()
-# Fetch a LOT of data
-#recordList = []
-#fetchTrendsForToday(session)
-# Play with Pandas
-#joined = (recordList[0].data).combine_first(recordList[1].data)
+# Call list of histories
+hisList = session.hisAll()
+
+#get a list of trends
+trends = session.hisRead(AND_search=['S-3','OA'], start='2014-10-10',end='2014-10-12')
+
+# Compute mean by hour
+trends[0].data.resample('h')
 
 # Plot a beautiful graph
-#joined.plot()
-#recordList[0].data.plot()
+trends[0].plot()
    
-# GET request examples
-# Json format
-#prettyprint(session.getJson('read?filter=sensor'))
-# Default Zinc format
-print session.getZinc('read?filter=sensor')
