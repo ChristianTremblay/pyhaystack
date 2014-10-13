@@ -36,7 +36,8 @@ If not, module will be installed for System path python but won't work in the en
 ![onerecord.jpg](https://bitbucket.org/repo/Anyjky/images/3727676776-onerecord.jpg)
 
 # Use pandas to analyse data
-##Compute mean by hour of this record... between 08:00 and 17:00
+##Compute mean by hour of this record
+Using the "between_time" function you can also get this range of data for every day !
 
 	:::python
 		hourlymean_day = trends[0].data.resample('h').between_time('08:00','17:00')
@@ -55,7 +56,8 @@ If not, module will be installed for System path python but won't work in the en
 		trends[0].simpleStats()
 
 ![simplestats.jpg](https://bitbucket.org/repo/Anyjky/images/1419979617-simplestats.jpg)
-##Draw a distribution plots (count number of record between 20-20.5, between 20,5-21, etc...
+##Draw a distribution plots
+Distribution plot draw a graph showing how many records are between 20-20.5degC, between 20,5-21degC, etc... 
 
 	:::python
 		trends[0].breakdownPlot()
