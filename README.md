@@ -18,6 +18,8 @@ If not, module will be installed for System path python but won't work in the en
 		import re
 		session = ph.NiagaraAXConnection('http://serverIP/','user','password')
 
+![connection.jpg](https://bitbucket.org/repo/Anyjky/images/2185556212-connection.jpg)
+
 #Fetching data
 
 ##Call list of histories
@@ -29,23 +31,30 @@ If not, module will be installed for System path python but won't work in the en
 
 	:::python
 		trends = session.hisRead(AND_search=['S-3','OA'], start='2014-10-10',end='2014-10-12')
+                trends[0].data
+
+![onerecord.jpg](https://bitbucket.org/repo/Anyjky/images/3727676776-onerecord.jpg)
 
 # Use pandas to analyse data
-##Compute mean by hour of one record
+##Compute mean by hour of this record... between 08:00 and 17:00
 
 	:::python
-		trends[0].data.resample('h')
+		hourlymean_day = trends[0].data.resample('h').between_time('08:00','17:00')
+                hourlymean_day
 
+![hourlymean.jpg](https://bitbucket.org/repo/Anyjky/images/775575559-hourlymean.jpg)
 ##Plot a beautiful graph
 
 	:::python
-		trends[0].plot()
-   
+		hourlymean_day.plot(kind='bar')
+
+![hourlymean_plotbar.jpg](https://bitbucket.org/repo/Anyjky/images/2795760219-hourlymean_plotbar.jpg)   
 ##Get some simple stats info on records
 	
 	:::python
 		trends[0].simpleStats()
 
+![simplestats.jpg](https://bitbucket.org/repo/Anyjky/images/1419979617-simplestats.jpg)
 ##Draw a distribution plots (count number of record between 20-20.5, between 20,5-21, etc...
 
 	:::python
