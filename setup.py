@@ -2,21 +2,31 @@
 """
 Setup file for pyhaystack
 """
-import pyhaystack
-import pyzinc
+from pyhaystack.client.HaystackConnection import HaystackConnection
+from pyhaystack.client.NiagaraAXConnection import NiagaraAXConnection
+from pyhaystack import pyhaystack as ph
+
+#from setuptools import setup
+from distutils.core import setup
+
+import re
 import os
+import requests
 
 os.environ['COPY_EXTENDED_ATTRIBUTES_DISABLE'] = 'true'
 os.environ['COPYFILE_DISABLE'] = 'true'
 
-from distutils.core import setup
+
 setup(name='pyhaystack',
-      version=pyhaystack.__version__,
-	  description='Python Haystack Utility',
+      version=ph.__version__,
+	description='Python Haystack Utility',
       author='Christian Tremblay',
       author_email='christian.tremblay@servisys.com',
       url='http://www.project-haystack.com/',
-	  long_description = "\n".join(pyhaystack.__doc__.split('\n')),
-	  py_modules=['pyhaystack','pyzinc'],
-	  install_requires = ['requests','setuptools']
+	long_description = "\n".join(ph.__doc__.split('\n')),
+	install_requires = ['requests','setuptools'],
+      packages=['pyhaystack'],
+      entry_points={
+          'console_scripts': ['pyhaystack=pyhaystack:main'],
+      },
       )
