@@ -27,7 +27,7 @@ import re
 import sys
 import getopt
 #import fnmatch
-#import time
+import time
 #import subprocess
 #from subprocess import PIPE, call, Popen
 #import smtplib
@@ -40,7 +40,7 @@ import getopt
 #import os
 #from time import strftime
 
-import pyhaystack.client.NiagaraAXConnection
+import pyhaystack.client.NiagaraAXConnection as ax
 
 
 def pyhaystack(address,user,password):
