@@ -2,9 +2,10 @@
 """
 Setup file for pyhaystack
 """
-from pyhaystack.client.HaystackConnection import HaystackConnection
-from pyhaystack.client.NiagaraAXConnection import NiagaraAXConnection
-from pyhaystack import pyhaystack as ph
+#from pyhaystack.client.HaystackConnection import HaystackConnection
+#from pyhaystack.client.NiagaraAXConnection import NiagaraAXConnection
+#from pyhaystack import pyhaystack as ph
+import pyhaystack.info as info
 
 #from setuptools import setup
 from distutils.core import setup
@@ -18,14 +19,14 @@ os.environ['COPYFILE_DISABLE'] = 'true'
 
 
 setup(name='pyhaystack',
-      version=ph.__version__,
+      version=info.__version__,
 	description='Python Haystack Utility',
       author='Christian Tremblay',
       author_email='christian.tremblay@servisys.com',
       url='http://www.project-haystack.com/',
-	long_description = "\n".join(ph.__doc__.split('\n')),
-	install_requires = ['requests','setuptools'],
-      packages=['pyhaystack'],
+	long_description = "\n".join(info.__doc__.split('\n')),
+	install_requires = ['requests','setuptools','pandas','numpy'],
+      packages=['pyhaystack', 'pyhaystack.client', 'pyhaystack.io','pyhaystack.history','pyhaystack.util','pyhaystack.server',],
       entry_points={
           'console_scripts': ['pyhaystack=pyhaystack:main'],
       },

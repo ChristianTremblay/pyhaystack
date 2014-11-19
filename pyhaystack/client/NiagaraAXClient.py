@@ -4,12 +4,12 @@ Created on Tue Nov 18 13:44:20 2014
 
 @author: CTremblay
 """
-from client.HaystackConnection import HaystackConnection
-from pyhaystack import pyhaystack as ph
+import HaystackClient as hc
+import pyhaystack.pyhaystack.info as info
 import requests
 import re
 
-class NiagaraAXConnection(HaystackConnection):
+class Connect(hc.Connect):
     """
     This class connects to NiagaraAX and fetch haystack servlet
     A session is open and authentication will persist
@@ -19,7 +19,7 @@ class NiagaraAXConnection(HaystackConnection):
         Define Niagara AX specific local variables : url
         Calls the authenticate function
         """
-        HaystackConnection.__init__(self,url,username,password)
+        hc.Connect.__init__(self,url,username,password)
         self.loginURL = self.baseURL + "login/"
         self.queryURL = self.baseURL + "haystack/"
         self.requestAbout = "about"
@@ -31,7 +31,7 @@ class NiagaraAXConnection(HaystackConnection):
         Get the cookie from the server, configure headers, make a POST request with credential informations.
         When connected, ask the haystack for "about" information and print connection information
         """
-        print 'pyhaystack %s | Authentication to %s' % (ph.__version__,self.loginURL)
+        print 'pyhaystack %s | Authentication to %s' % (info.__version__,self.loginURL)
         print 'Initiating connection'
         try :
             # Try to reach server before going further 
@@ -47,9 +47,11 @@ class NiagaraAXConnection(HaystackConnection):
                 print 'Problem connecting to server : %s' % e
 
             if self.COOKIE:
-                self.COOKIEPOSTFIX = self.COOKIE['niagara_session']
-                self.headers = {'cookiePostfix' : self.COOKIEPOSTFIX
-                               }
+                try:
+                    self.COOKIEPOSTFIX = self.COOKIE['niagara_session']
+                    self.headers = {'cookiePostfix' : self.COOKIEPOSTFIX}
+                except Exception as e:
+                    pass
             self.headers =  {'token':'',
                              'scheme':'cookieDigest',
                              'absPathBase':'/',

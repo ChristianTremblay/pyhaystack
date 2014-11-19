@@ -6,7 +6,8 @@ Created on Tue Nov 18 13:40:53 2014
 """
 import re,datetime
 import numpy as np
-import util.tools as tools
+import pyhaystack.util.tools as tools
+import pandas as pd
 from pandas import Series
 
 class HisRecord():

@@ -4,16 +4,13 @@
 File : HClient.py (2.x)
 
 """
-__author__ = 'Christian Tremblay'
-__version__ = '0.1'
-__license__ = 'AFL'
 
 import requests
 import json
-from history.HisRecord import HisRecord
-from history.Histories import Histories 
+from pyhaystack.history.HisRecord import HisRecord
+from pyhaystack.history.Histories import Histories 
 
-class HaystackConnection():
+class Connect():
     """
     Abstact class / Make a connection object to haystack server using requests module
     A class must be made for different type of server. See NiagaraAXConnection(HaystackConnection)
