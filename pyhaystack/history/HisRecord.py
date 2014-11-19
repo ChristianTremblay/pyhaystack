@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Nov 18 13:40:53 2014
+HisRecord must be seen as the representation of one historical trend to be analysed by pandas
 
 @author: CTremblay
 """
@@ -27,6 +28,7 @@ class HisRecord():
 
         for eachRows in session.getJson('hisRead?id='+self.hisId+'&range='+dateTimeRange)['rows']:
             index.append(pd.Timestamp(pd.to_datetime(datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-2])))))
+            #This will allow conversion of Enum value to float so Pandas will work            
             if tools.isfloat(float(eachRows['val'])):
                 values.append(float(eachRows['val']))
             
@@ -34,6 +36,8 @@ class HisRecord():
                 values.append(False)
             elif (eachRows['val'] == 'T'):
                 values.append(True)
+            else:
+                values.append(eachRows['val'])
         
         try:
             #Declare Series and localize using Site Timezone

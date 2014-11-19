@@ -102,7 +102,7 @@ class Connect():
         """
         return self.allHistories.getListofIdsAndNames()
  
-    def hisRead(self,ALL=False,**kwargs):
+    def hisRead(self,**kwargs):
         """
         This method returns a list of history records
         arguments are : 
@@ -148,8 +148,8 @@ class Connect():
                 print 'ID found : Adding %s to recordList' % eachHistory['name']
                 takeit = True
             
-            elif ALL:
-                print 'Taking all histories : Adding %s to recordList' % eachHistory['name']
+            else:
+                print 'Adding %s to recordList' % eachHistory['name']
                 takeit = True
                 
             if takeit:

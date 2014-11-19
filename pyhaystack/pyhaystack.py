@@ -41,7 +41,7 @@ import time
 #import pyhaystack.pyhaystack.client.NiagaraAXConnect
 import pyhaystack.client.NiagaraAXClient as ax
 
-def connect(address,user,password):
+def hconnect(address,user,password):
     session = ax.Connect(address,user,password)
     
     
@@ -124,7 +124,7 @@ def main():
             sys.exit(2)
 
     while True:
-        pyhaystack(
+        hconnect(
             verbose,
             address,
             user,

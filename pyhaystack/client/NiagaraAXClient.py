@@ -5,7 +5,7 @@ Created on Tue Nov 18 13:44:20 2014
 @author: CTremblay
 """
 import HaystackClient as hc
-import pyhaystack.pyhaystack.info as info
+import pyhaystack.info as info
 import requests
 import re
 
