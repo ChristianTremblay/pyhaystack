@@ -115,12 +115,14 @@ class Connect():
         """
         self._filteredList = [] # Empty list to be returned
         # Keyword Arguments
+        print kwargs
         ids = kwargs.pop('id','')
         AND_search = kwargs.pop('AND_search','')
         OR_search = kwargs.pop('OR_search','')
         rng = kwargs.pop('rng','')
         start = kwargs.pop('start','')
         end = kwargs.pop('end','')
+        takeall = kwargs.pop('all','')
         # Remaining kwargs...
         if kwargs: raise TypeError('Unknown argument(s) : %s' % kwargs)
         
@@ -135,20 +137,20 @@ class Connect():
         for eachHistory in self.hisAll():
             takeit = False
             # Find histories matching ANY keywords in OR_search
-            if AND_search and all([keywords in eachHistory['name'] for keywords in AND_search]):
+            if (AND_search != '') and all([keywords in eachHistory['name'] for keywords in AND_search]):
                 print 'AND_search : Adding %s to recordList' % eachHistory['name']                
                 takeit = True
                 
             # Find histories matching ANY ID in id list       
-            elif OR_search and any([keywords in eachHistory['name'] for keywords in OR_search]):
+            elif (OR_search != '') and any([keywords in eachHistory['name'] for keywords in OR_search]):
                 print 'OR_search : Adding %s to recordList' % eachHistory['name']                
                 takeit = True
                 
-            elif ids and any([id in eachHistory['id'] for id in ids]):
+            elif (ids != '') and any([id in eachHistory['id'] for id in ids]):
                 print 'ID found : Adding %s to recordList' % eachHistory['name']
                 takeit = True
             
-            else:
+            elif takeall != '':
                 print 'Adding %s to recordList' % eachHistory['name']
                 takeit = True
                 

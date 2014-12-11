@@ -83,6 +83,6 @@ class HisRecord():
         return self.data.describe()
         
     def __str__(self):
-        return 'History Record of %s' % self.getHisNameFromId(self.hisId)
+        return 'History Record of %s' % self.name
     
     
