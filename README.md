@@ -16,7 +16,7 @@ If not, module will be installed for System path python but won't work in the en
 		%matplotlib inline
 		import matplotlib.pyplot as plt
 		import re
-		session = ph.NiagaraAXConnection('http://serverIP/','user','password')
+		session = ph.NiagaraAXConnection('http://serverIP/','user','password',[optional] zinc=True)
 
 ![connection.jpg](https://bitbucket.org/repo/Anyjky/images/2185556212-connection.jpg)
 
