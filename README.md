@@ -2,6 +2,8 @@ Pyhaystack is a module that allow python programs to connect to a haystack serve
 
 Actually, connection can be established with Niagara Platform running the nhaystack module.
 
+It's a work in progress and actually, main goal is to connect to server and retrive histories to make numeric analysis. Eventually, other options will be implemented through the REST API.
+
 For this to work with [Anaconda](http://continuum.io/downloads) IPython Notebook in Windows, be sure to use "python setup.py install" using the Anaconda Command Prompt in Windows.
 If not, module will be installed for System path python but won't work in the environment of Anaconda IPython Notebook.
 
