@@ -1,4 +1,4 @@
-#!python
+  #!python
 # -*- coding: utf-8 -*-
 """
 File : HClient.py (2.x)
@@ -9,13 +9,15 @@ import requests
 import json
 from pyhaystack.history.HisRecord import HisRecord
 from pyhaystack.history.Histories import Histories 
+#from pyhaystack.io.read import read
+from pyhaystack.io.zincParser import zincToJson
 
 class Connect():
     """
     Abstact class / Make a connection object to haystack server using requests module
     A class must be made for different type of server. See NiagaraAXConnection(HaystackConnection)
     """
-    def __init__(self, url, username, password):
+    def __init__(self, url, username, password,**kwargs):
         """
         Set local variables
         Open a session object that will be used for connection, with keep-alive feature
@@ -23,6 +25,9 @@ class Connect():
             queryURL : ex. for nhaystack = baseURL+haystack = http://XX.XX.XX.XX/haystack
             USERNAME : used for login
             PASSWORD : used for login
+            **kwargs : 
+                zinc = False or True (compatibility for old device like NPM2 that cannot generate Json coding)
+            
             COOKIE : for persistent login
             isConnected : flag to be used for connection related task (don't try if not connected...)
             s : requests.Session() object
@@ -38,12 +43,20 @@ class Connect():
         self.s = requests.Session()
         self._filteredList = []
         self.timezone = 'UTC'
+        self._forceZincToJson = kwargs.pop('zinc','False')
         
     def authenticate(self):
         """
         This function must be overridden by specific server connection to fit particular needs (urls, other conditions)
         """
         pass
+    
+    def read(self,urlToGet):
+        if self._forceZincToJson:
+            return self.getZinc(urlToGet)
+        else:
+            return self.getJson(urlToGet)
+        
     def getJson(self,urlToGet):
         """
         Helper for GET request. Retrieve information as json string objects
@@ -53,7 +66,6 @@ class Connect():
         if self.isConnected:
             try:
                 req = self.s.get(self.queryURL + urlToGet, headers={'accept': 'application/json; charset=utf-8'})
-                #print 'GET : %s | url : %s' % (req.text, urlToGet)
                 return json.loads(req.text)
             except requests.exceptions.RequestException as e:
                 print 'Request GET error : %s' % e
@@ -69,8 +81,7 @@ class Connect():
         if self.isConnected:
             try:
                 req = self.s.get(self.queryURL + urlToGet, headers={'accept': 'text/plain; charset=utf-8'})
-                #print 'GET : %s | url : %s' % (req.text, urlToGet)
-                return (req.text)
+                return json.loads(zincToJson(req.text))
             except requests.exceptions.RequestException as e:
                 print 'Request GET error : %s' % e
         else:

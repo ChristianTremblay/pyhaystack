@@ -11,5 +11,5 @@ Project Haystack is an open source initiative to streamline working with data fr
 """
 
 __author__ = 'Christian Tremblay'
-__version__ = '0.50.2'
+__version__ = '0.60'
 __license__ = 'AFL'

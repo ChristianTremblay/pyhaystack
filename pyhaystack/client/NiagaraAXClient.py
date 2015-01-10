@@ -14,12 +14,12 @@ class Connect(hc.Connect):
     This class connects to NiagaraAX and fetch haystack servlet
     A session is open and authentication will persist
     """
-    def __init__(self,url,username,password):
+    def __init__(self,url,username,password,**kwargs):
         """
         Define Niagara AX specific local variables : url
         Calls the authenticate function
         """
-        hc.Connect.__init__(self,url,username,password)
+        hc.Connect.__init__(self,url,username,password,**kwargs)
         self.loginURL = self.baseURL + "login/"
         self.queryURL = self.baseURL + "haystack/"
         self.requestAbout = "about"
@@ -76,12 +76,12 @@ class Connect(hc.Connect):
         
         #Continue with haystack login
         if self.isConnected:
-            self.about = self.getJson(self.requestAbout)
+            self.about = self.read(self.requestAbout)
             self.serverName = self.about['rows'][0]['serverName']
             self.haystackVersion = self.about['rows'][0]['haystackVersion']
             self.axVersion = self.about['rows'][0]['productVersion']
-            print 'Connection made with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)        
-            self.timezone = 'America/' + self.getJson('read?filter=site')['rows'][0]['tz']
+            self.timezone = 'America/' + self.read('read?filter=site')['rows'][0]['tz']
             print 'Time Zone used : %s' % self.timezone
+            print 'Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)                                
             self.refreshHisList()    
             

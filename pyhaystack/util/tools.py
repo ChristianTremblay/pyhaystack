@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 18 13:37:36 2014
+Tools
 
 @author: CTremblay
 """
@@ -11,11 +11,14 @@ def isfloat(value):
     """
     Helper function to detect if a value is a float 
     """
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False   
+    if value != '':
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False 
+    else:
+        return False
         
 
 

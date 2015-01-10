@@ -26,16 +26,18 @@ class HisRecord():
         index = []
         values = []
 
-        for eachRows in session.getJson('hisRead?id='+self.hisId+'&range='+dateTimeRange)['rows']:
+        for eachRows in session.read('hisRead?id='+self.hisId+'&range='+dateTimeRange)['rows']:
             index.append(pd.Timestamp(pd.to_datetime(datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-2])))))
             #This will allow conversion of Enum value to float so Pandas will work            
-            if tools.isfloat(float(eachRows['val'])):
-                values.append(float(eachRows['val']))
             
-            elif (eachRows['val'] == 'F'):
+            
+            if (eachRows['val'] == 'F'):
                 values.append(False)
             elif (eachRows['val'] == 'T'):
                 values.append(True)
+            # regex coding here to extract float value when units are part of value (ex. 21.8381°C)
+            elif tools.isfloat(re.findall(r"[-+]?\d*\.*\d+", eachRows['val'])[0]):
+                values.append(float(re.findall(r"[-+]?\d*\.*\d+", eachRows['val'])[0]))    
             else:
                 values.append(eachRows['val'])
         
@@ -51,7 +53,7 @@ class HisRecord():
         """
         Retrieve name from id of an history
         """
-        for each in session.getJson("read?filter=his")['rows']:
+        for each in session.read("read?filter=his")['rows']:
             if each['id'].split(' ',1)[0] == id:
                 return (each['id'].split(' ',1)[1])
         return 'Id Not found'    

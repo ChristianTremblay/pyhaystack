@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 File : pyhaystack.py (2.x)
+THIS IS INCOMPLETE WORK
+Would allow a shell connection to haystack server
+
 This module allow a connection to a haystack server
 Feautures provided allow user to fetch data from the server and eventually, to post to it.
 
