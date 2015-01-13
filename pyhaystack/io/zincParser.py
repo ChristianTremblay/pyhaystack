@@ -23,13 +23,17 @@ def zincToJson(req):
     result = {}
     rows = []
     cols = []
-    meta = []
+    metaDict = {}
     
     #Build Meta
     for each in metaInfo:
         if each != '':
-            metaDict = {each.split(':')[0].replace('"','') : each.split(':')[1].replace('"','') }
-            meta.append(metaDict)
+            #When parsing histories, hisStart and hisEnd Timestamp are separated by a space...
+            #Limiting split of each.split(':',1) because ":" is used in the time portion of datetime
+            try :
+                metaDict[each.split(':',1)[0].replace('"','')] = each.split(':',1)[1].replace('"','')
+            except:
+                pass
     #Buil cols    
     for each in keys:
         if each != '':
@@ -43,7 +47,7 @@ def zincToJson(req):
             rowsDict = dict(zip(keys, values))
             rows.append(rowsDict)
     
-    result['meta'] = meta
+    result['meta'] = metaDict
     result['cols'] = cols
     result['rows'] = rows
     

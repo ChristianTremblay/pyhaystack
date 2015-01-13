@@ -26,4 +26,4 @@ def prettyprint(jsonData):
     """
     Pretty print json object
     """
-    print json.dumps(jsonData, sort_keys=True, indent=4)
+    print '%s' % json.dumps(jsonData, sort_keys=True, indent=4)
