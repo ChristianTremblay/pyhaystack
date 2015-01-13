@@ -16,17 +16,35 @@ import json
 
 def zincToJson(req):
     req = req.split('\n')
-    
+    metaInfo = req[0].split(' ')   
     keys = req[1].split(',')
+    grid = req[2:]
+        
     result = {}
     rows = []
+    cols = []
+    meta = []
     
-    for each in req[2:]:
+    #Build Meta
+    for each in metaInfo:
+        if each != '':
+            metaDict = {each.split(':')[0].replace('"','') : each.split(':')[1].replace('"','') }
+            meta.append(metaDict)
+    #Buil cols    
+    for each in keys:
+        if each != '':
+            colsDict = {'name' : each.replace('"','')}
+            cols.append(colsDict)
+    
+    # Building Rows
+    for each in grid:
         if each != '':
             values = each.replace('"','').split(',')
-            adict = dict(zip(keys, values))
-            rows.append(adict)
+            rowsDict = dict(zip(keys, values))
+            rows.append(rowsDict)
     
+    result['meta'] = meta
+    result['cols'] = cols
     result['rows'] = rows
     
     jsondict = json.dumps(result)
