@@ -10,7 +10,7 @@ If not, module will be installed for System path python but won't work in the en
 #Using pyhaystack
 ##Open a session with Haystack server
 
-:::python
+    :::python
     import pyhaystack.client.NiagaraAXClient as ax
     import pandas as pd
     import numpy as np
