@@ -49,12 +49,12 @@ class HisRecord():
         except Exception:
             print '%s is an Unknown history type' % self.hisId 
     
-    def getHisNameFromId(self,session,id):
+    def getHisNameFromId(self,session,pointId):
         """
         Retrieve name from id of an history
         """
         for each in session.read("read?filter=his")['rows']:
-            if each['id'].split(' ',1)[0] == id:
+            if each['id'].split(' ',1)[0] == pointId:
                 return (each['id'].split(' ',1)[1])
         return 'Id Not found'    
         

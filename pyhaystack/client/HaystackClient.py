@@ -1,7 +1,7 @@
-  #!python
+#!python
 # -*- coding: utf-8 -*-
 """
-File : HClient.py (2.x)
+File : HaystackClient.py (2.x)
 
 """
 
@@ -11,6 +11,7 @@ from pyhaystack.history.HisRecord import HisRecord
 from pyhaystack.history.Histories import Histories 
 #from pyhaystack.io.read import read
 from pyhaystack.io.zincParser import zincToJson
+from pyhaystack.io.haystackRead import HReadAllResult
 
 class Connect():
     """
@@ -112,6 +113,18 @@ class Connect():
         Returns all history names and id
         """
         return self.allHistories.getListofIdsAndNames()
+
+    def readAll(self,filterRequest):
+        """
+        Returns result of filter request
+        """
+        # Should add some verification here
+        req = 'read?filter=' + filterRequest
+        result = self.read(req)
+        
+        for each in result['rows']:
+            print '%s' % each['dis']
+        return HReadAllResult(self,result)
  
     def hisRead(self,**kwargs):
         """
