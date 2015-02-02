@@ -10,8 +10,10 @@ If not, module will be installed for System path python but won't work in the en
 #Using pyhaystack
 ##Open a session with Haystack server
 
-    :::python
-    import pyhaystack.client.NiagaraAXClient as ax
+
+```
+#!python
+  import pyhaystack.client.NiagaraAXClient as ax
     import pandas as pd
     import numpy as np
     %matplotlib inline
@@ -20,6 +22,10 @@ If not, module will be installed for System path python but won't work in the en
     import math
     session = ph.NiagaraAXConnection('http://serverIP/','user','password',[optional] zinc=True)
 
+
+```
+**optional zinc parameter is a way to make it work with old Jace NPM2 devices. Those devices aren't able to serve JSON messages due to a too old Java VM. zinc=true will retrieve the zinc output of the server and re-create a Json message so pyhaystack will be able to work with a Json string.
+**
 ![![connection.jpg](https://bitbucket.org/repo/Anyjky/images/2185556212-connection.jpg)](https://bitbucket.org/repo/Anyjky/images/2656895067-haystack1.JPG)
 
 #Fetching data
