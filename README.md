@@ -12,7 +12,7 @@ If not, module will be installed for System path python but won't work in the en
 
 ```
 #!python
-  import pyhaystack.client.NiagaraAXClient as ax
+    import pyhaystack.client.NiagaraAXClient as ax
     import pandas as pd
     import numpy as np
     %matplotlib inline
