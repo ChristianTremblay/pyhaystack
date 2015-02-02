@@ -10,15 +10,15 @@ If not, module will be installed for System path python but won't work in the en
 #Using pyhaystack
 ##Open a session with Haystack server
 
-	:::python
-		import pyhaystack as ph
-		import pandas as pd
-		import numpy as np
-		# if using Notebook, will allow graph to be inserted directly in the notebook
-		%matplotlib inline
-		import matplotlib.pyplot as plt
-		import re
-		session = ph.NiagaraAXConnection('http://serverIP/','user','password',[optional] zinc=True)
+    :::python
+    import pyhaystack.client.NiagaraAXClient as ax
+    import pandas as pd
+    import numpy as np
+    %matplotlib inline
+    import matplotlib.pyplot as plt
+    import re
+    import math
+    session = ph.NiagaraAXConnection('http://serverIP/','user','password',[optional] zinc=True)
 
 ![connection.jpg](https://bitbucket.org/repo/Anyjky/images/2185556212-connection.jpg)
 
