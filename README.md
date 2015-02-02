@@ -24,6 +24,22 @@ If not, module will be installed for System path python but won't work in the en
 
 #Fetching data
 
+I've been inspired by Skyspark way of reading haystack so I tried something here with the new function readAll wich is simply a way to pass a filter to a request and get the Json result back as a new class named haystackRead. haystackRead allows functions to facilitate the work ex :
+readDis returns a list of dis
+readId returns a list of id
+readCurVal returns a list of curVal
+showVal returns a dict with dis : curVal
+hasTrend returns True or False depending on the presence of the his tag on any Id
+hisRead returns a list of hisrecord 
+         
+```
+#!python
+
+temp = session.readAll('(sensor and temp and air and (not discharge))').hisRead(start='2015-01-26',end='2015-01-30')
+
+```
+
+
 ##Call list of histories
 
 	:::python
