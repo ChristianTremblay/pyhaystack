@@ -10,7 +10,6 @@ If not, module will be installed for System path python but won't work in the en
 #Using pyhaystack
 ##Open a session with Haystack server
 
-
 ```
 #!python
   import pyhaystack.client.NiagaraAXClient as ax
@@ -22,11 +21,15 @@ If not, module will be installed for System path python but won't work in the en
     import math
     session = ph.NiagaraAXConnection('http://serverIP/','user','password',[optional] zinc=True)
 
-
+    """
+    optional zinc parameter is a way to make it work with old Jace NPM2 devices. 
+    Those devices aren't able to serve JSON messages due to a too old Java VM. 
+    zinc=true will retrieve the zinc output of the server and re-create a Json message so pyhaystack will be able to work with a Json string.
+    """"
 ```
-**optional zinc parameter is a way to make it work with old Jace NPM2 devices. Those devices aren't able to serve JSON messages due to a too old Java VM. zinc=true will retrieve the zinc output of the server and re-create a Json message so pyhaystack will be able to work with a Json string.
-**
-![![connection.jpg](https://bitbucket.org/repo/Anyjky/images/2185556212-connection.jpg)](https://bitbucket.org/repo/Anyjky/images/2656895067-haystack1.JPG)
+
+[![connection.jpg](https://bitbucket.org/repo/Anyjky/images/2185556212-connection.jpg)](https://bitbucket.org/repo/Anyjky/images/2656895067-haystack1.JPG)
+
 
 #Fetching data
 
@@ -41,22 +44,31 @@ I've been inspired by Skyspark way of reading haystack so I tried something here
          
 ```
 #!python
-
-temp = session.readAll('(sensor and temp and air and (not discharge))').hisRead(start='2015-01-26',end='2015-01-30')
+    temp = session.readAll('(sensor and temp and air and (not discharge))').hisRead(start='2015-01-26',end='2015-01-30')
 
 ```
 
 
 ##Call list of histories
 
-	:::python
-		hisList = session.hisAll()
+```
+#!python
+    hisList = session.hisAll()
+
+```
 
 ##Get some trend records as list
 
-	:::python
-		trends = session.hisRead(AND_search=['S-3','OA'], start='2014-10-10',end='2014-10-12')
-		trends[0].data
+```
+#!python
+    trends = session.hisRead(AND_search=['S-3','OA'], start='2014-10-10',end='2014-10-12')
+    trends[0].data
+    """"
+    OR (with new readAll() function)
+    """"
+    temp = session.readAll('(sensor and temp and air and (not discharge))').hisRead(start='2015-01-26',end='2015-01-30')
+```
+
 
 ![onerecord.jpg](https://bitbucket.org/repo/Anyjky/images/3727676776-onerecord.jpg)
 
@@ -64,9 +76,13 @@ temp = session.readAll('(sensor and temp and air and (not discharge))').hisRead(
 ##Compute mean by hour of this record
 Using the "between_time" function you can also get this range of data for every day !
 
-	:::python
-		hourlymean_day = trends[0].data.resample('h').between_time('08:00','17:00')
-		hourlymean_day
+
+```
+#!python
+    hourlymean_day = trends[0].data.resample('h').between_time('08:00','17:00')
+    hourlymean_day
+
+```		
 
 ![hourlymean.jpg](https://bitbucket.org/repo/Anyjky/images/775575559-hourlymean.jpg)
 ##Plot a beautiful graph
