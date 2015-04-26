@@ -47,7 +47,7 @@ class HisRecord():
             #Renaming index so the name will be part of the serie
             self.data = self.data.reindex(self.data.index.rename([self.name]))
         except Exception:
-            print '%s is an Unknown history type' % self.hisId 
+            print('%s is an Unknown history type' % self.hisId)
     
     def getHisNameFromId(self,session,pointId):
         """

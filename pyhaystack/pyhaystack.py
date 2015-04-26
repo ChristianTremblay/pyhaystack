@@ -67,11 +67,11 @@ def main():
             sys.argv[1:],
             "vh:a:u:p",
             ["verbose", "help","address=", "user=", "password="])
-    except getopt.GetoptError, e:
+    except getopt.GetoptError as e:
         if e.opt == 'a' and 'requires argument' in e.msg:
-            print "Please indicate url address"
+            print("Please indicate url address")
         else:
-            print e.msg
+            print(e.msg)
         sys.exit(2)
 
     verbose = False
@@ -123,7 +123,7 @@ def main():
             usage()
             sys.exit(0)
         else:
-            print "Unhandled option %s" % opt
+            print("Unhandled option %s" % opt)
             sys.exit(2)
 
     while True:

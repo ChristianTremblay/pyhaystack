@@ -69,11 +69,11 @@ class Connect():
                 req = self.s.get(self.queryURL + urlToGet, headers={'accept': 'application/json; charset=utf-8'})
                 return json.loads(req.text)
             except requests.exceptions.RequestException as e:
-                print 'Request GET error : %s' % e
+                print('Request GET error : %s' % e)
         #else:
         #print 'Session not connected to server, cannot make request'
         else:
-            print 'Session not connected to server, cannot make request'
+            print('Session not connected to server, cannot make request')
         
     def getZinc(self,urlToGet):
         """
@@ -84,9 +84,9 @@ class Connect():
                 req = self.s.get(self.queryURL + urlToGet, headers={'accept': 'text/plain; charset=utf-8'})
                 return json.loads(zincToJson(req.text))
             except requests.exceptions.RequestException as e:
-                print 'Request GET error : %s' % e
+                print('Request GET error : %s' % e)
         else:
-            print 'Session not connected to server, cannot make request'
+            print('Session not connected to server, cannot make request')
     
     def postRequest(self,url,headers={'token':''}):
         """
@@ -97,16 +97,16 @@ class Connect():
             #print 'Post request response : %s' % req.status_code
             #print 'POST : %s | url : %s | headers : %s | auth : %s' % (req, url, headers,self.USERNAME) Gives a 404 response but a connection ????
         except requests.exceptions.RequestException as e:    # This is the correct syntax
-            print 'Request POST error : %s' % e
+            print('Request POST error : %s' % e)
     
     def refreshHisList(self):
         """
         This function retrieves every histories in the server and returns a list of id
         """
-        print 'Retrieving list of histories (trends) in server, please wait...'
+        print('Retrieving list of histories (trends) in server, please wait...')
         self.allHistories = Histories(self)
-        print 'Complete... Use hisAll() to check for trends or refreshHisList() to refresh the list' 
-        print 'Try hisRead() to load a bunch of trend matching criterias' 
+        print('Complete... Use hisAll() to check for trends or refreshHisList() to refresh the list')
+        print('Try hisRead() to load a bunch of trend matching criterias') 
     
     def hisAll(self):
         """
@@ -123,7 +123,7 @@ class Connect():
         result = self.read(req)
         
         for each in result['rows']:
-            print '%s' % each['dis']
+            print('%s' % each['dis'])
         return HReadAllResult(self,result)
  
     def hisRead(self,**kwargs):
@@ -139,7 +139,7 @@ class Connect():
         """
         self._filteredList = [] # Empty list to be returned
         # Keyword Arguments
-        print kwargs
+        print(kwargs)
         ids = kwargs.pop('id','')
         AND_search = kwargs.pop('AND_search','')
         OR_search = kwargs.pop('OR_search','')
@@ -162,20 +162,20 @@ class Connect():
             takeit = False
             # Find histories matching ANY keywords in OR_search
             if (AND_search != '') and all([keywords in eachHistory['name'] for keywords in AND_search]):
-                print 'AND_search : Adding %s to recordList' % eachHistory['name']                
+                print('AND_search : Adding %s to recordList' % eachHistory['name'])               
                 takeit = True
                 
             # Find histories matching ANY ID in id list       
             elif (OR_search != '') and any([keywords in eachHistory['name'] for keywords in OR_search]):
-                print 'OR_search : Adding %s to recordList' % eachHistory['name']                
+                print('OR_search : Adding %s to recordList' % eachHistory['name'])                
                 takeit = True
                 
             elif (ids != '') and any([id in eachHistory['id'] for id in ids]):
-                print 'ID found : Adding %s to recordList' % eachHistory['name']
+                print('ID found : Adding %s to recordList' % eachHistory['name'])
                 takeit = True
             
             elif takeall != '':
-                print 'Adding %s to recordList' % eachHistory['name']
+                print('Adding %s to recordList' % eachHistory['name'])
                 takeit = True
                 
             if takeit:
@@ -183,6 +183,6 @@ class Connect():
             
 
         if self._filteredList == []:
-            print 'No trends found... sorry !'
+            print('No trends found... sorry !')
         
         return self._filteredList

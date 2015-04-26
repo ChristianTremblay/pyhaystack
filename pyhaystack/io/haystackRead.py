@@ -120,7 +120,7 @@ class HReadAllResult():
                 self._hisList.append(HisRecord(self._session,each,datetimeRange))
         
         if self._hisList == []:
-            print 'No trends found... sorry !'
+            print('No trends found... sorry !')
         
         return self._hisList    
     

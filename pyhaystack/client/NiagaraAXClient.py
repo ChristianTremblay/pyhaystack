@@ -4,7 +4,7 @@ Created on Tue Nov 18 13:44:20 2014
 
 @author: CTremblay
 """
-import HaystackClient as hc
+import pyhaystack.client.HaystackClient as hc
 import pyhaystack.info as info
 import requests
 import re
@@ -31,8 +31,8 @@ class Connect(hc.Connect):
         Get the cookie from the server, configure headers, make a POST request with credential informations.
         When connected, ask the haystack for "about" information and print connection information
         """
-        print 'pyhaystack %s | Authentication to %s' % (info.__version__,self.loginURL)
-        print 'Initiating connection'
+        print('pyhaystack %s | Authentication to %s' % (info.__version__,self.loginURL))
+        print('Initiating connection')
         try :
             # Try to reach server before going further 
             connection_status = self.s.get(self.loginURL).status_code
@@ -40,11 +40,11 @@ class Connect(hc.Connect):
             connection_status = 0
             
         if connection_status == 200:
-            print 'Initiating authentication'
+            print('Initiating authentication')
             try:
                 self.COOKIE = self.s.get(self.loginURL).cookies
             except requests.exceptions.RequestException as e:
-                print 'Problem connecting to server : %s' % e
+                print('Problem connecting to server : %s' % e)
 
             if self.COOKIE:
                 try:
@@ -65,14 +65,14 @@ class Connect(hc.Connect):
                 #If word 'login' is in the response page, consider login failed...
                 if re.search(re.compile('login', re.IGNORECASE), req.text):
                     self.isConnected = False
-                    print 'Connection failure, check credentials'
+                    print('Connection failure, check credentials')
                 else:
                     self.isConnected = True
-                    print 'User logged in...'                
+                    print('User logged in...')                
             except requests.exceptions.RequestException as e:
-                print 'Request POST error : %s' % e
+                print('Request POST error : %s' % e)
         else:
-            print 'Connection failed, check your parameters or VPN connection...'
+            print('Connection failed, check your parameters or VPN connection...')
         
         #Continue with haystack login
         if self.isConnected:
@@ -81,7 +81,7 @@ class Connect(hc.Connect):
             self.haystackVersion = self.about['rows'][0]['haystackVersion']
             self.axVersion = self.about['rows'][0]['productVersion']
             self.timezone = 'America/' + self.read('read?filter=site')['rows'][0]['tz']
-            print 'Time Zone used : %s' % self.timezone
-            print 'Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion)                                
+            print('Time Zone used : %s' % self.timezone)
+            print('Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion))                              
             self.refreshHisList()    
             
