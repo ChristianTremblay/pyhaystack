@@ -38,9 +38,11 @@ class Connect(hc.Connect):
             response_dict[key] = value
         HMAC= hmac.new(key=self.password, msg=response_dict['username']+":"+response_dict['userSalt'],
                      digestmod=hashlib.sha1)
+
         h = base64.b64encode(HMAC.digest())
-        HMAC.update(msg=h+":"+response_dict['nonce'])
-        digest = base64.b64encode(HMAC.digest())
+        digest_hash = hashlib.sha1()
+        digest_hash.update(h+":"+response_dict['nonce'])
+        digest = digest_hash.digest().encode("base64")
 
         data = {"Content-Type": 'text/plain; charset=utf-8',
                 "Host" : self.baseURL,
