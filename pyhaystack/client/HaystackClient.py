@@ -15,9 +15,7 @@ import weakref
 from .point import HaystackPoint
 from ..history.HisRecord import HisRecord
 #from ..io.read import read
-from ..io.zincParser import zincToJson
-from ..io.jsonParser import json_decode
-from ..io.haystackRead import HReadAllResult
+from ..haystackIO.haystackRead import HReadAllResult
 from ..exception import HaystackError
 
 try:
@@ -36,7 +34,6 @@ def mk_query(**kwargs):
         for arg, val in kwargs.items()
     ])
 
-
 class Connect():
     """
     Abstact class / Make a connection object to haystack server using requests module
@@ -46,7 +43,7 @@ class Connect():
     # Class used for instantiating Haystack data points.
     _POINT_CLASS = HaystackPoint
 
-    def __init__(self, url, username, password, **kwargs):
+    def __init__(self, url, username, password, proj, **kwargs):
         """
         Set local variables
         Open a session object that will be used for connection, with keep-alive feature
@@ -68,6 +65,7 @@ class Connect():
         self.queryURL = ''
         self.USERNAME = username
         self.PASSWORD = password
+        self.PROJECT = proj
         self.COOKIE = ''
         self.isConnected = False
         self.s = requests.Session()

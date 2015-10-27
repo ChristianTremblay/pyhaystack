@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-File : pyhaystack.py (2.x)
+File : pyhaystackTest.py (2.x)
 This module allow a connection to a haystack server
 Feautures provided allow user to fetch data from the server and eventually, to post to it.
 
