@@ -42,16 +42,36 @@ class Connect(hc.Connect):
         h = base64.b64encode(HMAC.digest())
         digest_hash = hashlib.sha1()
         digest_hash.update(h+":"+response_dict['nonce'])
-        digest = digest_hash.digest().encode("base64")
+        digest = digest_hash.digest().encode("base64").rstrip('\n')
 
-        data = {"Content-Type": 'text/plain; charset=utf-8',
+        head = {"Content-Type": 'text/plain',
                 "Host" : self.baseURL,
-                "nonce": response_dict['nonce'],
-                "digest": digest,
-                "password": self.password,
+                "User-Agent": 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)',
+                "charset": 'utf-8'
                 }
-        r = requests.post(self.loginURL, data)
-        print r.text
+        data = {"nonce": response_dict['nonce'],
+                "digest": digest,
+                }
+        r = requests.Request(method='POST', url=self.loginURL, headers=head, data=data)
+        prepared = r.prepare()
+
+        def pretty_print_POST(req):
+            """
+            At this point it is completely built and ready
+            to be fired; it is "prepared".
+
+            However pay attention at the formatting used in
+            this function because it is programmed to be pretty
+            printed and may differ from the actual request.
+            """
+            print('{}\n{}\n{}\n\n{}'.format(
+                '-----------START-----------',
+                req.method + ' ' + req.url,
+                '\n'.join('{}:{}'.format(k, v) for k, v in req.headers.items()),
+                req.body,
+            ))
+        #print data
+        print pretty_print_POST(prepared)
         # """
         # Login to the server
         # Get the cookie from the server, configure headers, make a POST request with credential informations.
