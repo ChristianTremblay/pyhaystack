@@ -46,8 +46,7 @@ import pyhaystack.client.SkysparkClient as sky
 
 def hconnect(address,user,password,proj):
     session = sky.Connect(address,user,password,proj)
-    
-    
+    return session
     pass
     
 
