@@ -58,7 +58,7 @@ class Connect():
 
 
 def main():
-    parser = argparse.ArgumentParser(description='A pyhastack client',
+    parser = argparse.ArgumentParser(description='A mango client',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-a', '--address', default="http://localhost",
                     help="This is the adress of the server")
