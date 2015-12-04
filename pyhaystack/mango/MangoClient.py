@@ -52,12 +52,15 @@ class Connect():
         else:
             if r.status_code == 200:
                 self.isConnected = True
+                print "Connected"
+            else:
+                print "Could Not connect"
 
 
 def main():
     parser = argparse.ArgumentParser(description='A pyhastack client',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-a', '--address', default="http://localhost/haystack/about",
+    parser.add_argument('-a', '--address', default="http://localhost",
                     help="This is the adress of the server")
     parser.add_argument('-u', '--user', default=None,
                     help="username", required=True )
