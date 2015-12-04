@@ -3,6 +3,8 @@ import requests
 
 ip = 'http://52.16.65.135:8080'
 
+#TODO : See Haystack client as a template.
+
 def loginApi(ip,username, password):
     myHeader = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'password': password}
