@@ -3,6 +3,7 @@ import requests
 
 ip = 'http://XX.XX.XX.XXX:XXXX'
 
+
 def loginApi(ip, username, password):
     myHeader = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'password': password}
