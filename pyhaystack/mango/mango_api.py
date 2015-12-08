@@ -2,7 +2,7 @@ __author__ = 'Yafit'
 import requests
 import json
 
-ip = 'http://xxxxxxxxxx'
+ip = 'http://xxxxxx'
 
 
 def loginApi(ip, username, password):
@@ -312,6 +312,74 @@ def getPathToPointByXid(ip, reqCookie, Xid):
     print r.content
 
 # =========== POINT VALUES =============
+
+
+
+
+def getPointValuesHistoryByTimeRange(ip, reqCookie, Xid, fromDate, endDate, rollup, timePeriodType):
+    """
+    :param ip:
+    :param reqCookie:
+    :param Xid:
+    :param fromDate:
+    :param toDate:
+    :param rollup: NONE/AVERAGE/DELTA/MINIMUM/MAXIMUM/ACCUMULATOR/SUM/FIRST/LAST/COUNT/INTEGRAL/FFT
+    :param timePeriodType: MILLISECONDES/SECONDES/MINUTES/HOURS/DAYS/WEEKS/MONTHS/YEARS
+    :return:
+    """
+    newFromDate = str(fromDate).replace(':','%3A')
+    newEndDate = str(endDate).replace(':','%3A')
+    print newFromDate
+    print newEndDate
+    myHeader = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
+    r = requests.get(ip + '/rest/v1/point-values/'+Xid+'?useRendered=true&unitConversion=true&from='+newFromDate+
+                     '&to='+newEndDate+'&rollup='+rollup+'&timePeriodType='+timePeriodType, headers=myHeader, cookies=reqCookie)
+    print r.status_code
+    print r.content
+
+
+def CountPointvaluesInTimeRange(ip, reqCookie, Xid, fromDate, endDate, rollup, timePeriodType):
+    """
+    :param ip:
+    :param reqCookie:
+    :param Xid:
+    :param fromDate:
+    :param endDate:
+    :param rollup: NONE/AVERAGE/DELTA/MINIMUM/MAXIMUM/ACCUMULATOR/SUM/FIRST/LAST/COUNT/INTEGRAL/FFT
+    :param timePeriodType: MILLISECONDES/SECONDES/MINUTES/HOURS/DAYS/WEEKS/MONTHS/YEARS
+    :return:
+    """
+    newFromDate = str(fromDate).replace(':','%3A')
+    newEndDate = str(endDate).replace(':','%3A')
+    print newFromDate
+    print newEndDate
+    myHeader = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
+    r = requests.get(ip + '/rest/v1/point-values/'+Xid+'/count?from='+newFromDate+'&to='+newEndDate+
+    '&rollup='+rollup+'&timePeriodType='+ timePeriodType, headers=myHeader, cookies=reqCookie)
+    print r.status_code
+    print r.content
+
+
+def getFirstAndLastPointValuesInTimeRange(ip, reqCookie, Xid, fromDate, endDate):
+    """
+    :param ip:
+    :param reqCookie:
+    :param Xid:
+    :param fromDate:
+    :param endDate:
+    :return:
+    """
+    newFromDate = str(fromDate).replace(':','%3A')
+    newEndDate = str(endDate).replace(':','%3A')
+    print newFromDate
+    print newEndDate
+    myHeader = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
+    r = requests.get(ip + '/rest/v1/point-values/'+Xid+'/first-last?useRendered=false&unitConversion=false&from='+newFromDate+
+                     '&to='+newEndDate,headers=myHeader, cookies=reqCookie)
+    print r.status_code
+    print r.content
+
+
 def getLatestPointValues(ip, reqCookie, Xid, limit):
     """
     :param ip:
@@ -327,7 +395,7 @@ def getLatestPointValues(ip, reqCookie, Xid, limit):
     print r.content
 
 
-def getPointStatistics(ip, reqCookie, Xid, fromDate, toDate):
+def getPointStatistics(ip, reqCookie, Xid, fromDate, endDate):
     """
     :param ip:
     :param reqCookie:
@@ -336,10 +404,13 @@ def getPointStatistics(ip, reqCookie, Xid, fromDate, toDate):
     :param toDate:
     :return: Get Point Statistics
     """
+    newFromDate = str(fromDate).replace(':','%3A')
+    newEndDate = str(endDate).replace(':','%3A')
+    print newFromDate
+    print newEndDate
     myHeader = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
     r = requests.get(ip + '/rest/v1/point-values/'+Xid+'/statistics?useRendered=false&unitConversion=false'
-                                                       '&from='+fromDate+'&useCache=true',
-                     headers=myHeader, cookies=reqCookie)
+                    '&from='+newFromDate+'&to='+newEndDate, headers=myHeader, cookies=reqCookie)
     print r.status_code
     print r.content
 
@@ -494,13 +565,14 @@ def getAllUserComments(ip, reqCookie, limit):
 # ============ USERS ============
 
 
-def newUser(ip, reqCookie, userName, userPassword, userEmail):
+def newUser(ip, reqCookie, userName, userPassword, userEmail, level):
     """
     :param ip:
     :param reqCookie:
     :param userName:
     :param userPassword:
     :param userEmail:
+    :param level: INFORMATION/ERRORE/WARNING
     :return: create  a new user
     """
     payload = {'username': userName,
@@ -516,7 +588,7 @@ def newUser(ip, reqCookie, userName, userPassword, userEmail):
                'systemTimezone': "Etc/UTC",
                'timezone': "Etc/UTC",
                'validationMessages': [{'message': "",
-                                       'level': "INFORMATION",
+                                       'level': level,
                                        'property': ""}]
                }
     parameters_json = json.dumps(payload)
@@ -639,7 +711,7 @@ def getUserByName(ip, reqCookie, userName):
     print r.content
 
 
-def setUser(ip, reqCookie, currentUserName, newUserName, newPass, newMail):
+def setUser(ip, reqCookie, currentUserName, newUserName, newPass, newMail,level):
     """
     :param ip:
     :param reqCookie:
@@ -662,7 +734,7 @@ def setUser(ip, reqCookie, currentUserName, newUserName, newPass, newMail):
                'systemTimezone': "Etc/UTC",
                'timezone': "Etc/UTC",
                'validationMessages': [{'message': "",
-                                       'level': "INFORMATION",
+                                       'level': level,
                                        'property': ""}]
                }
     parameters_json = json.dumps(payload)
@@ -731,17 +803,17 @@ def parseMyCookie(reqCookie):
     return myCookie
 
 
-username = 'xxxx'
-password = 'xxxxx'
+username = 'xxx'
+password = 'xxx'
 myCookie = loginApi(ip, username, password)  # must login before doing anything else!!!
 parsedCookie = parseMyCookie(myCookie)
 
 # usersApi(ip, parsedCookie)
 # currentUser(ip, parsedCookie)
 # deleteUser(ip, parsedCookie,'yafit')
-#newUser(ip, parsedCookie, 'test', 'test123', 'test123@mail')
+#newUser(ip, parsedCookie, 'test', 'test123', 'test123@mail','WARNING' )
 #getUserByName(ip, parsedCookie, 'test')
-#setUser(ip, parsedCookie, 'yafit', 'test', '12345', '@mail')
+#setUser(ip, parsedCookie, 'yafit', 'test', '12345', '@mail','WARNING')
 #setUserHomePage(ip, parsedCookie,'test','www.123.com')
 #setUserMuteSettings(ip, parsedCookie,'test','false')
 
@@ -788,7 +860,10 @@ parsedCookie = parseMyCookie(myCookie)
 #getRecentLogsFromFile(ip, parsedCookie,'ma.log')
 #getLatestPointValues(ip, parsedCookie, 'DP_519610', 100 )
 #getPointHierarchyFolderByName(ip, parsedCookie,'Demo Data' )
-getPathToPointByXid(ip, parsedCookie,'teat 2-watts')
-
+#getPathToPointByXid(ip, parsedCookie,'teat 2-watts')
+#getPointStatistics(ip, parsedCookie, 'DP_653257', '2014-08-10T00:00:00.000-10:00', '2015-12-11T23:59:59.999-10:00')
+#getPointValuesHistoryByTimeRange(ip, parsedCookie,'DP_653257', '2014-08-10T00:00:00.000-10:00', '2015-12-11T23:59:59.999-10:00', "", "")
+#CountPointvaluesInTimeRange(ip, parsedCookie,'DP_653257', '2014-08-10T00:00:00.000-10:00', '2015-12-11T23:59:59.999-10:00', 'NONE', 'HOURS')
+getFirstAndLastPointValuesInTimeRange(ip, parsedCookie,'DP_653257', '2014-08-10T00:00:00.000-10:00', '2015-12-11T23:59:59.999-10:00')
 # logoutApi(ip, parsedCookie)
 # logoutUserByPOST(ip, parsedCookie, username)
