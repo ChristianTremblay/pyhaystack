@@ -10,7 +10,7 @@ from ..history.HisRecord import HisRecord
 class HReadAllResult():
     """
     This class would allow the usage of function based on readAll result
-    ex : readAll('sensor and temp and air and discharge').hisRead('today')
+    ex : readAll('point and temp and air and discharge').hisRead('today')
     """
     def __init__(self,session,jsonResult,**kwargs):
         """
@@ -124,3 +124,5 @@ class HReadAllResult():
 
         return self._hisList
 
+    def getData(self):
+        return self._jsonResult['rows']

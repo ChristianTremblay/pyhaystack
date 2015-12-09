@@ -52,8 +52,12 @@ class Connect():
             USERNAME : used for login
             PASSWORD : used for login
             **kwargs :
+<<<<<<< master
                 zinc = False or True (compatibility for old device like NPM2 that cannot generate Json coding)
                 log = logging.Logger instance to use when emitting messages.
+=======
+                zinc = False or True (compatibility for old equip like NPM2 that cannot generate Json coding)
+>>>>>>> HEAD~13
 
             COOKIE : for persistent login
             isConnected : flag to be used for connection related task (don't try if not connected...)
@@ -155,6 +159,7 @@ class Connect():
         """
         Helper for GET request
         """
+<<<<<<< master
         if headers is None:
             headers = {}
 
@@ -173,6 +178,22 @@ class Connect():
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
         return req
+=======
+        if self.isConnected:
+            try:
+                if data:
+                    req = self.s.post(self.queryURL + urlToGet, data=data)
+                    #print req.text.encode('ascii','ignore')
+                else:
+                    req = self.s.get(self.queryURL + urlToGet, headers={'accept': 'text/plain; charset=utf-8'})
+                print req.text.encode('ascii','ignore')
+                print json.loads(zincToJson(req.text))
+                return json.loads(zincToJson(req.text))
+            except requests.exceptions.RequestException as e:
+                print('Request GET error : %s' % e)
+        else:
+            print('Session not connected to server, cannot make request')
+>>>>>>> HEAD~13
 
     def _post_request(self, url, content_type, data, headers=None, **kwargs):
         """
@@ -273,6 +294,7 @@ class Connect():
     def readAll(self, filterRequest):
         """
         Returns result of filter request
+        :rtype : pyhaystack.haystackIO.haystackRead.HReadAllResult
         """
         # Should add some verification here
         log = self._log.getChild('read_all')

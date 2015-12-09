@@ -29,6 +29,7 @@ import sys
 import argparse
 #import fnmatch
 import time
+import cProfile,cStringIO,pstats
 #import subprocess
 #from subprocess import PIPE, call, Popen
 #import smtplib
@@ -51,6 +52,8 @@ def hconnect(address,user,password,proj):
     
 
 def main():
+    pr = cProfile.Profile()
+    pr.enable()
     parser = argparse.ArgumentParser(description='A pyhastack client',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-a', '--address', default="http://localhost/haystack/about",
@@ -90,6 +93,12 @@ def main():
             time.sleep(watchInterval)
         else:
             break
+    pr.disable()
+    s = cStringIO.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print s.getvalue()
 
 if __name__ == "__main__":
     try:

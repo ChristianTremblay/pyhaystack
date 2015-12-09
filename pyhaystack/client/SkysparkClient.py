@@ -137,6 +137,6 @@ class Connect(hc.Connect):
             print('Time Zone used : %s' % self.timezone)
             print('Connection succeed with haystack on %s (%s) running haystack version %s' % (
                 self.serverName, self.axVersion, self.haystackVersion))
-            #print self.readAll('(his and temp)').hisRead(start='2015-10-27',end='2015-10-28')[1].data
+            # print self.readAll('(po)').hisRead(start="2015-10-01",end="2015-10-15")
 
             # self.refreshHisList()
