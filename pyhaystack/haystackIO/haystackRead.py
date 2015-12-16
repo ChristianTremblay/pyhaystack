@@ -117,8 +117,7 @@ class HReadAllResult():
 
         # Build hisList with all record that have his marker
         for each in self.readId():
-            if self.hasTrend(each):
-                self._hisList.append(HisRecord(self._session,each,datetimeRange))
+            self._hisList.append(HisRecord(self._session,each,datetimeRange))
 
         if self._hisList == []:
             print('No trends found... sorry !')
@@ -126,4 +125,4 @@ class HReadAllResult():
         return self._hisList
 
     def getData(self):
-        return self._jsonResult['rows']
+        return self._jsonResult[:]
