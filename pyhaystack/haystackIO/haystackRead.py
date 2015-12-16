@@ -41,7 +41,7 @@ class HReadAllResult():
         Id are split so only first part is taken
         u'@S.site.AC~2d1.TAli site AC-1 AC-1 TAli' => u'@S.site.AC~2d1.TAli
         """
-        self._listOfId = [each['id'].split(' ',1)[0] for each in self._jsonResult]
+        self._listOfId = [each['id'].name for each in self._jsonResult]
         #print '%s' % self._listOfId
         return self._listOfId
 
@@ -83,7 +83,8 @@ class HReadAllResult():
         self._displayAndHisMarker = []
         rowsDict = dict(zip(keys, values))
         self._displayAndHisMarker.append(rowsDict)
-        return self._displayAndHisMarker[0][pointId] == 'M'
+        # return self._displayAndHisMarker[0][pointId] == 'm:'
+        return pointId in self._displayAndHisMarker[0]
 
     def hisRead(self,**kwargs):
         """
@@ -100,7 +101,7 @@ class HReadAllResult():
         self._hisList = []
         # Keyword Argument
         # print kwargs
-        ids = kwargs.pop('id','')
+        ids = kwargs.pop('id','').replace('r:','')
         rng = kwargs.pop('rng','')
         start = kwargs.pop('start','')
         end = kwargs.pop('end','')

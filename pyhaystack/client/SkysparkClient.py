@@ -133,10 +133,10 @@ class Connect(hc.Connect):
             self.serverName = self.about['rows'][0]['serverName']
             self.haystackVersion = self.about['rows'][0]['haystackVersion']
             self.axVersion = self.about['rows'][0]['productVersion']
-            self.timezone =  self.read('read?filter=site')['rows'][0]['tz']
+            self.timezone = self.about['rows'][0]['tz']
             print('Time Zone used : %s' % self.timezone)
             print('Connection succeed with haystack on %s (%s) running haystack version %s' % (
                 self.serverName, self.axVersion, self.haystackVersion))
-            # print self.readAll('(po)').hisRead(start="2015-10-01",end="2015-10-15")
-
+            print self.readAll('(po)').hisRead(start="2015-10-01",end="2015-10-01")
+            # print self.read('eval','readById(1d088539-e5f58291).hisRead(now()-30min..now())')
             # self.refreshHisList()
