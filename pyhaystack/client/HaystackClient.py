@@ -523,3 +523,27 @@ class Connect():
             return found.get(point_ids[0])
         else:
             return found
+
+    def commit(self, diff):
+        """
+        Implements skyspark commit. It accepts a Json and returns the server responce.
+        :param diff: a Json of the following type:
+        {
+            "meta":{"ver":"haystack version","commit":"add/update/remove"},
+            "cols":[{"name":"col1 name"},{"name":"col2 name"}]
+            "rows":[{"col1 name":"col1 val",{"col2 name":"col2 val"}]
+        }
+        The json needs to have an id. And in case of update or remove, a mod value which is the time of last change.
+        :return: returns the servers response as a Json.
+
+        Don't ask.
+        """
+        return self.s.post(self.queryURL+"commit", data=json.dumps(diff), headers={'accept': 'application/json; charset=utf-8', 'content-type':'application/json'})
+
+    def makeZinc(self,data):
+        """
+        Not sure if needed. Will convert json to zinc
+        :param data:
+        :return:
+        """
+        pass
