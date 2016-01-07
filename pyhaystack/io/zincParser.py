@@ -51,5 +51,4 @@ def zincToJson(req):
     result['cols'] = cols
     result['rows'] = rows
 
-    jsondict = json.dumps(result)
-    return jsondict
+    return result

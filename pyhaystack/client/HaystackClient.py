@@ -93,7 +93,7 @@ class Connect():
         if self.isConnected:
             try:
                 req = self.s.get(self.queryURL + urlToGet, headers=self._get_headers(accept='text/plain; charset=utf-8'))
-                return json.loads(zincToJson(req.text))
+                return zincToJson(req.text)
             except requests.exceptions.RequestException as e:
                 print('Request GET error : %s' % e)
         else:
