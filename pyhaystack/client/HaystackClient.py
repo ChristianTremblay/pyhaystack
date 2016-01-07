@@ -46,6 +46,17 @@ class Connect():
         self.timezone = 'UTC'
         self._forceZincToJson = kwargs.pop('zinc','False')
 
+        # Headers to pass in each request.
+        self._rq_headers = {}
+
+    def _get_headers(self, **kwargs):
+        '''
+        Get a dict of headers to submit.
+        '''
+        headers = self._rq_headers.copy()
+        headers.update(kwargs)
+        return headers
+
     def authenticate(self):
         """
         This function must be overridden by specific server connection to fit particular needs (urls, other conditions)
@@ -66,7 +77,7 @@ class Connect():
         """
         if self.isConnected:
             try:
-                req = self.s.get(self.queryURL + urlToGet, headers={'accept': 'application/json; charset=utf-8'})
+                req = self.s.get(self.queryURL + urlToGet, headers=self._get_headers(accept='application/json; charset=utf-8'))
                 return json.loads(req.text)
             except requests.exceptions.RequestException as e:
                 print('Request GET error : %s' % e)
@@ -81,7 +92,7 @@ class Connect():
         """
         if self.isConnected:
             try:
-                req = self.s.get(self.queryURL + urlToGet, headers={'accept': 'text/plain; charset=utf-8'})
+                req = self.s.get(self.queryURL + urlToGet, headers=self._get_headers(accept='text/plain; charset=utf-8'))
                 return json.loads(zincToJson(req.text))
             except requests.exceptions.RequestException as e:
                 print('Request GET error : %s' % e)
