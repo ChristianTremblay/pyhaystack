@@ -24,7 +24,7 @@ class Connect(hc.Connect):
         self.queryURL = self.baseURL + "haystack/"
         self.requestAbout = "about"
         self.authenticate()
-        
+
     def authenticate(self):
         """
         Login to the server
@@ -34,11 +34,11 @@ class Connect(hc.Connect):
         print('pyhaystack %s | Authentication to %s' % (info.__version__,self.loginURL))
         print('Initiating connection')
         try :
-            # Try to reach server before going further 
+            # Try to reach server before going further
             connection_status = self.s.get(self.loginURL).status_code
         except requests.exceptions.RequestException as e:
             connection_status = 0
-            
+
         if connection_status == 200:
             print('Initiating authentication')
             try:
@@ -68,12 +68,12 @@ class Connect(hc.Connect):
                     print('Connection failure, check credentials')
                 else:
                     self.isConnected = True
-                    print('User logged in...')                
+                    print('User logged in...')
             except requests.exceptions.RequestException as e:
                 print('Request POST error : %s' % e)
         else:
             print('Connection failed, check your parameters or VPN connection...')
-        
+
         #Continue with haystack login
         if self.isConnected:
             self.about = self.read(self.requestAbout)
@@ -82,6 +82,5 @@ class Connect(hc.Connect):
             self.axVersion = self.about['rows'][0]['productVersion']
             self.timezone = 'America/' + self.read('read?filter=site')['rows'][0]['tz']
             print('Time Zone used : %s' % self.timezone)
-            print('Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion))                              
-            self.refreshHisList()    
-            
+            print('Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion))
+            self.refreshHisList()

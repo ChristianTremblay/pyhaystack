@@ -5,4 +5,4 @@ Christian Tremblay        christian.tremblay@servisys.com
 -----------------------------------------------------------------------------
 
 This project goal is to give to project-haystack users one more way to connect to server and fetch data
-Numeric analysis power of Python using Pandas, numpy, matplotlib, scipy makes it a wonderful tool to work with haystack 
+Numeric analysis power of Python using Pandas, numpy, matplotlib, scipy makes it a wonderful tool to work with haystack

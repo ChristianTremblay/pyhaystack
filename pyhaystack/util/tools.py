@@ -9,17 +9,17 @@ import json
 
 def isfloat(value):
     """
-    Helper function to detect if a value is a float 
+    Helper function to detect if a value is a float
     """
     if value != '':
         try:
             float(value)
             return True
         except ValueError:
-            return False 
+            return False
     else:
         return False
-        
+
 
 
 def prettyprint(jsonData):

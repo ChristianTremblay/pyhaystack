@@ -120,5 +120,3 @@ Distribution plot draw a graph showing how many records are between 20-20.5degC,
 .. |coverage| image:: https://coveralls.io/repos/ChristianTremblay/pyhaystack/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/ChristianTremblay/pyhaystack?branch=master
    :alt: Coverage
-
-

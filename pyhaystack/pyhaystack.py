@@ -46,10 +46,10 @@ import pyhaystack.client.NiagaraAXClient as ax
 
 def hconnect(address,user,password):
     session = ax.Connect(address,user,password)
-    
-    
+
+
     pass
-    
+
 
 def usage():
     print("Usage: %s [OPTIONS]" % (sys.argv[0]))
@@ -60,7 +60,7 @@ def usage():
     print("  -u <username>, --user=<username>     Username")
     print("  -p <password>, --password=<password> Password")
 
-            
+
 def main():
     try:
         opts, args = getopt.getopt(
@@ -83,7 +83,7 @@ def main():
     #depth = None
     #quiet = False
     #ignoreBranch = r'^$'  # empty string
-    address = "http://localhost/haystack/about" 
+    address = "http://localhost/haystack/about"
     user = None
     password = None
     for opt, arg in opts:
@@ -132,7 +132,7 @@ def main():
             address,
             user,
             password
-        )       
+        )
 
         if watchInterval:
             time.sleep(watchInterval)
