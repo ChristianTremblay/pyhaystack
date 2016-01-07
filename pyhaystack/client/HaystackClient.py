@@ -78,7 +78,7 @@ class Connect():
         if self.isConnected:
             try:
                 req = self.s.get(self.queryURL + urlToGet, headers=self._get_headers(accept='application/json; charset=utf-8'))
-                return json.loads(req.text)
+                return req.json()
             except requests.exceptions.RequestException as e:
                 print('Request GET error : %s' % e)
         #else:
