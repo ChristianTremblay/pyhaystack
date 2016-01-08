@@ -54,8 +54,12 @@ class HisRecord():
         Retrieve name from id of an history
         """
         for each in session.read("read?filter=his")['rows']:
-            if each['id'].split(' ',1)[0] == pointId:
-                return (each['id'].split(' ',1)[1])
+            try:
+                if each['id'].name == pointId:
+                    return each['id'].value
+            except AttributeError:
+                if each['id'].split(' ',1)[0] == pointId:
+                    return (each['id'].split(' ',1)[1])
         return 'Id Not found'
 
     def plot(self):
