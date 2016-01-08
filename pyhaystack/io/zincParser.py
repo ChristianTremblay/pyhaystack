@@ -12,43 +12,55 @@ It's a patch to support old devices
 @author: CTremblay
 """
 import json
-
+import hszinc
+import datetime
 
 def zincToJson(req):
-    req = req.split('\n')
-    metaInfo = req[0].split(' ')
-    keys = req[1].split(',')
-    grid = req[2:]
+    # Parse the zinc text into grids
+    grids = hszinc.parse(req)
 
-    result = {}
-    rows = []
-    cols = []
-    metaDict = {}
+    # Convert this back to a format that pyhaystack understands.
+    # JSON grids have the following structure:
+    # // JSON
+    # {
+    #   "meta": {"ver":"2.0", "projName":"test"},
+    #   "cols":[
+    #     {"name":"dis", "dis":"Equip Name"},
+    #     {"name":"equip"},
+    #     {"name":"siteRef"},
+    #     {"name":"installed"}
+    #   ],
+    #   "rows":[
+    #     {"dis":"RTU-1", "equip":"m:",
+    #       "siteRef":"r:153c-699a HQ", "installed":"d:2005-06-01"},
+    #     {"dis":"RTU-2", "equip":"m:",
+    #       "siteRef":"r:153c-699a HQ", "installed":"d:999-07-12"}
+    #   ]
+    # }
+    #
+    # There is only support for one grid at a time.  Out of pure laziness on my
+    # part, this does not convert scalar values to JSON format but rather, the
+    # equivalent Python type.
+    if len(grids) != 1:
+        raise ValueError('Unable to handle result with %d grids' % \
+                len(grids))
 
-    #Build Meta
-    for each in metaInfo:
-        if each != '':
-            #When parsing histories, hisStart and hisEnd Timestamp are separated by a space...
-            #Limiting split of each.split(':',1) because ":" is used in the time portion of datetime
-            try :
-                metaDict[each.split(':',1)[0].replace('"','')] = each.split(':',1)[1].replace('"','')
-            except:
-                pass
-    #Buil cols
-    for each in keys:
-        if each != '':
-            colsDict = {'name' : each.replace('"','')}
-            cols.append(colsDict)
+    grid = grids[0]
+    grid_meta = {'ver':'2.0'}
+    grid_cols = []
+    grid_rows = []
+    json_grid = {
+            'meta': grid_meta,
+            'cols': grid_cols,
+            'rows': grid_rows,
+    }
 
-    # Building Rows
-    for each in grid:
-        if each != '':
-            values = each.replace('"','').split(',')
-            rowsDict = dict(zip(keys, values))
-            rows.append(rowsDict)
-
-    result['meta'] = metaDict
-    result['cols'] = cols
-    result['rows'] = rows
-
-    return result
+    grid_meta.update(grid.metadata)
+    def _col_to_json(c):
+        (name, meta) = c
+        json_col = dict(meta)
+        json_col['name'] = name
+        return json_col
+    grid_cols.extend(map(_col_to_json, grid.column.items()))
+    grid_rows.extend(grid)
+    return json_grid
