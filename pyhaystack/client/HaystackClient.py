@@ -64,9 +64,10 @@ class Connect():
         '''
         Get a dict of kwargs to submit.
         '''
+        headers = kwargs.pop('headers',{})
         kwargs = self._rq_kwargs.copy()
         kwargs.update(kwargs)
-        kwargs['headers'] = self._get_headers(**kwargs.pop('headers',{}))
+        kwargs['headers'] = self._get_headers(**headers)
         return kwargs
 
     def authenticate(self):
