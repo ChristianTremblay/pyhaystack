@@ -87,32 +87,27 @@ class Connect():
         urlToGet must include only the request ex. "read?filter=site"
         Queryurl (ex. http://serverIp/haystack) is already known
         """
-        if self.isConnected:
-            try:
-                req = self.s.get(self.queryURL + urlToGet,
-                        **self._get_kwargs(headers=dict(
-                            accept='application/json; charset=utf-8')))
-                return req.json()
-            except requests.exceptions.RequestException as e:
-                print('Request GET error : %s' % e)
-        #else:
-        #print 'Session not connected to server, cannot make request'
-        else:
-            print('Session not connected to server, cannot make request')
+        if not self.isConnected:
+            self.authenticate()
+
+        req = self.s.get(self.queryURL + urlToGet,
+                **self._get_kwargs(headers=dict(
+                    accept='application/json; charset=utf-8')))
+        req.raise_for_status()
+        return req.json()
 
     def getZinc(self, urlToGet):
         """
-        Helper for GET request. Retrieve information as default Zinc string objects
+        Helper for GET request. Retrieve information as default Zinc string
+        objects
         """
-        if self.isConnected:
-            try:
-                req = self.s.get(self.queryURL + urlToGet, **self._get_kwargs(
-                    headers=dict(accept='text/plain; charset=utf-8')))
-                return zincToJson(req.text)
-            except requests.exceptions.RequestException as e:
-                print('Request GET error : %s' % e)
-        else:
-            print('Session not connected to server, cannot make request')
+        if not self.isConnected:
+            self.authenticate()
+
+        req = self.s.get(self.queryURL + urlToGet, **self._get_kwargs(
+            headers=dict(accept='text/plain; charset=utf-8')))
+        req.raise_for_status()
+        return zincToJson(req.text)
 
     def postRequest(self, url, headers=None):
         """
@@ -120,21 +115,17 @@ class Connect():
         """
         if headers is None:
             headers = {'token': ''}
-        try:
-            req = self.s.post(url, **self._get_kwargs(headers=headers))
-            #print 'Post request response : %s' % req.status_code
-            #print 'POST : %s | url : %s | headers : %s | auth : %s' % (req, url, headers,self.USERNAME) Gives a 404 response but a connection ????
-        except requests.exceptions.RequestException as e:    # This is the correct syntax
-            print('Request POST error : %s' % e)
+
+        req = self.s.post(url, **self._get_kwargs(headers=headers))
+        req.raise_for_status()
+        return req
 
     def refreshHisList(self):
         """
-        This function retrieves every histories in the server and returns a list of id
+        This function retrieves every histories in the server and returns a
+        list of id
         """
-        print('Retrieving list of histories (trends) in server, please wait...')
         self.allHistories = Histories(self)
-        print('Complete... Use hisAll() to check for trends or refreshHisList() to refresh the list')
-        print('Try hisRead() to load a bunch of trend matching criterias')
 
     def hisAll(self):
         """
