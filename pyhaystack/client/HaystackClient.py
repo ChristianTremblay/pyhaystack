@@ -11,6 +11,7 @@ from pyhaystack.history.HisRecord import HisRecord
 from pyhaystack.history.Histories import Histories
 #from pyhaystack.io.read import read
 from pyhaystack.io.zincParser import zincToJson
+from .io.jsonParser import json_decode
 from pyhaystack.io.haystackRead import HReadAllResult
 
 class Connect():
@@ -95,7 +96,7 @@ class Connect():
                 **self._get_kwargs(headers=dict(
                     accept='application/json; charset=utf-8')))
         req.raise_for_status()
-        return req.json()
+        return json_decode(req.json())
 
     def getZinc(self, urlToGet):
         """
