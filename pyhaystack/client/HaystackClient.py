@@ -44,7 +44,7 @@ class Connect():
         self.s = requests.Session()
         self._filteredList = []
         self.timezone = 'UTC'
-        self._forceZincToJson = kwargs.pop('zinc','False')
+        self._forceZincToJson = bool(kwargs.pop('zinc',False))
 
         # Headers to pass in each request.
         self._rq_headers = {}
