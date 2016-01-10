@@ -18,7 +18,7 @@ class Connect():
     Abstact class / Make a connection object to haystack server using requests module
     A class must be made for different type of server. See NiagaraAXConnection(HaystackConnection)
     """
-    def __init__(self, url, username, password,**kwargs):
+    def __init__(self, url, username, password, **kwargs):
         """
         Set local variables
         Open a session object that will be used for connection, with keep-alive feature
@@ -75,13 +75,13 @@ class Connect():
         """
         pass
 
-    def read(self,urlToGet):
+    def read(self, urlToGet):
         if self._forceZincToJson:
             return self.getZinc(urlToGet)
         else:
             return self.getJson(urlToGet)
 
-    def getJson(self,urlToGet):
+    def getJson(self, urlToGet):
         """
         Helper for GET request. Retrieve information as json string objects
         urlToGet must include only the request ex. "read?filter=site"
@@ -100,7 +100,7 @@ class Connect():
         else:
             print('Session not connected to server, cannot make request')
 
-    def getZinc(self,urlToGet):
+    def getZinc(self, urlToGet):
         """
         Helper for GET request. Retrieve information as default Zinc string objects
         """
@@ -114,7 +114,7 @@ class Connect():
         else:
             print('Session not connected to server, cannot make request')
 
-    def postRequest(self,url,headers=None):
+    def postRequest(self, url, headers=None):
         """
         Helper for POST request
         """
@@ -142,7 +142,7 @@ class Connect():
         """
         return self.allHistories.getListofIdsAndNames()
 
-    def readAll(self,filterRequest):
+    def readAll(self, filterRequest):
         """
         Returns result of filter request
         """
@@ -152,7 +152,7 @@ class Connect():
 
         for each in result['rows']:
             print('%s' % each['dis'])
-        return HReadAllResult(self,result)
+        return HReadAllResult(self, result)
 
     def hisRead(self,**kwargs):
         """
@@ -161,7 +161,7 @@ class Connect():
         ids : a ID or a list of ID
         AND_search : a list of keywords to look for in trend names
         OR_search : a list of keywords to look for in trend names
-        rng : haystack range (today,yesterday, last24hours...
+        rng : haystack range (today, yesterday, last24hours...
         start : string representation of start time ex. '2014-01-01T00:00'
         end : string representation of end time ex. '2014-01-01T00:00'
         """
@@ -207,7 +207,7 @@ class Connect():
                 takeit = True
 
             if takeit:
-                self._filteredList.append(HisRecord(self,eachHistory['id'],datetimeRange))
+                self._filteredList.append(HisRecord(self, eachHistory['id'],datetimeRange))
 
 
         if self._filteredList == []:
