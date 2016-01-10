@@ -49,6 +49,9 @@ class Connect():
         # Headers to pass in each request.
         self._rq_headers = {}
 
+        # Keyword arguments to pass to each request.
+        self._rq_kwargs = {}
+
     def _get_headers(self, **kwargs):
         '''
         Get a dict of headers to submit.
@@ -56,6 +59,15 @@ class Connect():
         headers = self._rq_headers.copy()
         headers.update(kwargs)
         return headers
+
+    def _get_kwargs(self, **kwargs):
+        '''
+        Get a dict of kwargs to submit.
+        '''
+        kwargs = self._rq_kwargs.copy()
+        kwargs.update(kwargs)
+        kwargs['headers'] = self._get_headers(**kwargs.pop('headers',{}))
+        return kwargs
 
     def authenticate(self):
         """
@@ -77,7 +89,9 @@ class Connect():
         """
         if self.isConnected:
             try:
-                req = self.s.get(self.queryURL + urlToGet, headers=self._get_headers(accept='application/json; charset=utf-8'))
+                req = self.s.get(self.queryURL + urlToGet,
+                        **self._get_kwargs(headers=dict(
+                            accept='application/json; charset=utf-8')))
                 return req.json()
             except requests.exceptions.RequestException as e:
                 print('Request GET error : %s' % e)
@@ -92,19 +106,22 @@ class Connect():
         """
         if self.isConnected:
             try:
-                req = self.s.get(self.queryURL + urlToGet, headers=self._get_headers(accept='text/plain; charset=utf-8'))
+                req = self.s.get(self.queryURL + urlToGet, **self._get_kwargs(
+                    headers=dict(accept='text/plain; charset=utf-8')))
                 return zincToJson(req.text)
             except requests.exceptions.RequestException as e:
                 print('Request GET error : %s' % e)
         else:
             print('Session not connected to server, cannot make request')
 
-    def postRequest(self,url,headers={'token':''}):
+    def postRequest(self,url,headers=None):
         """
         Helper for POST request
         """
+        if headers is None:
+            headers = {'token': ''}
         try:
-            req = self.s.post(url, params=headers,auth=(self.USERNAME, self.PASSWORD))
+            req = self.s.post(url, **self._get_kwargs(headers=headers))
             #print 'Post request response : %s' % req.status_code
             #print 'POST : %s | url : %s | headers : %s | auth : %s' % (req, url, headers,self.USERNAME) Gives a 404 response but a connection ????
         except requests.exceptions.RequestException as e:    # This is the correct syntax

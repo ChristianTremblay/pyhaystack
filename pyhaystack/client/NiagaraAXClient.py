@@ -25,6 +25,11 @@ class Connect(hc.Connect):
         self.requestAbout = "about"
         self.authenticate()
 
+    def _get_kwargs(self, **kwargs):
+        if 'auth' not in kwargs:
+            kwargs['auth'] = (self.USERNAME, self.PASSWORD)
+        return super(NiagaraAXClient, self)._get_kwargs(**kwargs)
+
     def authenticate(self):
         """
         Login to the server
