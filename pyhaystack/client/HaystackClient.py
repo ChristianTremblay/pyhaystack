@@ -146,11 +146,6 @@ class Connect():
         if headers is None:
             headers = {}
 
-        headers.update({
-            'Accept': 'text/plain; charset=utf-8',
-            'Content-Type': 'text/plain; charset=utf-8',
-        })
-
         url = self.queryURL + url
         kwargs = self._get_kwargs(headers=headers, **kwargs)
         self._log.getChild('http').debug(
