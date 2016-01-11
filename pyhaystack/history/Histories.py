@@ -16,12 +16,8 @@ class Histories():
                      'id':''}
 
         for each in session.read("read?filter=his")['rows']:
-            try:
-                self._his['id'] = each['id'].name
-                self._his['name'] = each['id'].value
-            except AttributeError:
-                self._his['name'] = each['id'].split(' ',1)[1]
-                self._his['id'] = each['id'].split(' ',1)[0]
+            self._his['id'] = each['id'].name
+            self._his['name'] = each['id'].value
             self._allHistories.append(self._his.copy())
 
     def getListofIdsAndNames(self):

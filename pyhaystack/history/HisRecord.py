@@ -21,33 +21,26 @@ class HisRecord():
         """
         GET data from server and fill this object with historical info
         """
+        # Grab logger child from session
+        self._log = session._log.getChild('hisRecord.%s' % hisId)
+
         self.hisId = hisId
         self.name = self.getHisNameFromId(session,self.hisId)
-        index = []
-        values = []
 
-        for eachRows in session.read('hisRead?id='+self.hisId+'&range='+dateTimeRange)['rows']:
-            index.append(pd.Timestamp(pd.to_datetime(datetime.datetime(*map(int, re.split('[^\d]', eachRows['ts'].split(' ')[0])[:-2])))))
-            #This will allow conversion of Enum value to float so Pandas will work
-
-
-            if (eachRows['val'] == 'F'):
-                values.append(False)
-            elif (eachRows['val'] == 'T'):
-                values.append(True)
-            # regex coding here to extract float value when units are part of value (ex. 21.8381°C)
-            elif tools.isfloat(re.findall(r"[-+]?\d*\.*\d+", eachRows['val'])[0]):
-                values.append(float(re.findall(r"[-+]?\d*\.*\d+", eachRows['val'])[0]))
-            else:
-                values.append(eachRows['val'])
+        # Convert the list of {ts: foo, val: bar} dicts to a pair of
+        # lists.
+        (index, values) = zip(*map(lambda row : (row['ts'], row['val']), \
+                session.read('hisRead?id=%s&range=%s' % \
+                (self.hisId, dateTimeRange))['rows']))
 
         try:
             #Declare Series and localize using Site Timezone
             self.data = Series(values,index=index).tz_localize(session.timezone)
             #Renaming index so the name will be part of the serie
             self.data = self.data.reindex(self.data.index.rename([self.name]))
-        except Exception:
-            print('%s is an Unknown history type' % self.hisId)
+        except:
+            log.error('%s is an Unknown history type', self.hisId)
+            raise
 
     def getHisNameFromId(self,session,pointId):
         """
