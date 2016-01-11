@@ -93,7 +93,8 @@ class Connect(hc.Connect):
             self.timezone = haystack_tz[\
                     self.read('read?filter=site')['rows'][0]['tz']]
             self._log.getChild('authenticate').debug(
-                    'Connected to haystack instance on %s (%s version %s).  '\
+                    'Connected to haystack instance on %s '\
+                            '(protocol %s, version %s).  '\
                             'Time Zone used : %s',
                             self.serverName,
                             self.haystackVersion, axVersion,
