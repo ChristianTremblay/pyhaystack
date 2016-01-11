@@ -10,6 +10,8 @@ If not, module will be installed for System path python but won't work in the en
 #Using pyhaystack
 ##Open a session with Haystack server
 
+[![Join the chat at https://gitter.im/ChristianTremblay/pyhaystack](https://badges.gitter.im/ChristianTremblay/pyhaystack.svg)](https://gitter.im/ChristianTremblay/pyhaystack?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ```
 #!python
     import pyhaystack.client.NiagaraAXClient as ax
