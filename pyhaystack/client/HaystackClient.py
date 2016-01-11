@@ -14,6 +14,7 @@ from pyhaystack.history.Histories import Histories
 from pyhaystack.io.zincParser import zincToJson
 from ..io.jsonParser import json_decode
 from pyhaystack.io.haystackRead import HReadAllResult
+from ..exception import HaystackError
 
 class Connect():
     """
@@ -108,7 +109,11 @@ class Connect():
 
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
-        return json_decode(req.json())
+        decoded = json_decode(req.json())
+        if 'err' in decoded['meta']:
+            raise HaystackError(decoded['meta'].get('dis', 'Unknown error'),
+                                traceback=decoded['meta'].get('traceback',None))
+        return decoded
 
     def getZinc(self, urlToGet):
         """
@@ -118,27 +123,32 @@ class Connect():
         if not self.isConnected:
             self.authenticate()
 
-        url = self.queryURL + urlToGet
         kwargs = self._get_kwargs(headers=dict(
+        url = self.queryURL + urlToGet
             accept='text/plain; charset=utf-8'))
         self._log.getChild('http').debug(
                 'Submitting ZINC GET request for %s, headers: %s',
                 url, kwargs.get('headers',{}))
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
-        return zincToJson(req.text)
+        decoded = zincToJson(req.text)
+        if 'err' in decoded['meta']:
+            raise HaystackError(decoded['meta'].get('dis', 'Unknown error'),
+                                traceback=decoded['meta'].get('traceback',None))
+        return decoded
 
-    def postRequest(self, url, headers=None):
+    def postRequest(self, url, headers=None, **kwargs):
         """
         Helper for POST request
         """
         if headers is None:
             headers = {'token': ''}
 
+        url = self.queryURL + url
         self._log.getChild('http').debug(
                 'Submitting POST request for %s, headers: %s, data: %r',
-                url, kwargs.get('headers',{}, kwargs.get('data',None)))
-        req = self.s.post(url, **self._get_kwargs(headers=headers))
+                url, kwargs.get('headers',{}), kwargs.get('data',None))
+        req = self.s.post(url, **self._get_kwargs(headers=headers, **kwargs))
         req.raise_for_status()
         return req
 
