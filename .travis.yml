@@ -11,5 +11,5 @@ install:
 - pip install coveralls
 - pip install nose
 script:
-- nosetests --with-coverage --cover-package=BAC0 -v
+- nosetests --with-coverage --cover-package=pyhaystack -v
 after_success: coveralls
