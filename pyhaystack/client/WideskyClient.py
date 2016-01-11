@@ -23,7 +23,6 @@ class Connect(hc.Connect):
         hc.Connect.__init__(self,url,username,password,**kwargs)
         self.loginURL = self.baseURL + "login/"
         self.queryURL = self.baseURL + "api/"
-        self.requestAbout = "about"
         self._login_expiry = 0
         self.isConnected = property(lambda self : \
                 self._login_expiry > time.time())
@@ -35,8 +34,6 @@ class Connect(hc.Connect):
         Get the cookie from the server, configure headers, make a POST request with credential informations.
         When connected, ask the haystack for "about" information and print connection information
         """
-        print('pyhaystack %s | Authentication to %s' % (info.__version__,self.loginURL))
-        print('Initiating connection')
 
         # Source: https://vrtsystems.atlassian.net/wiki/display/WSDOC/WideSky+API+Reference
         # Authentication
@@ -88,16 +85,19 @@ class Connect(hc.Connect):
 
         #Continue with haystack login
         if self.isConnected:
-            print('User logged in...')
-            self.about = self.read(self.requestAbout)
+            self.about = self.read('about')
             self.serverName = self.about['rows'][0]['serverName']
             self.haystackVersion = self.about['rows'][0]['haystackVersion']
             axVersion = self.about['rows'][0]['productVersion']
             haystack_tz = zoneinfo.get_tz_map()
             self.timezone = haystack_tz[\
                     self.read('read?filter=site')['rows'][0]['tz']]
-            print('Time Zone used : %s' % self.timezone)
-            print('Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,axVersion,self.haystackVersion))
+            self._log.getChild('authenticate').debug(
+                    'Connected to haystack instance on %s (%s version %s).  '\
+                            'Time Zone used : %s',
+                            self.serverName,
+                            self.haystackVersion, axVersion,
+                            self.timezone)
             self.refreshHisList()
         else:
             # TODO: better exception
