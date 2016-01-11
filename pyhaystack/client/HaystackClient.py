@@ -176,7 +176,10 @@ class Connect():
         """
         history = {}
         for pt in self.read('read?filter=his')['rows']:
-            history[pt['id'].name] = pt
+            pt_id = pt.pop('id')
+            if pt_id.has_value:
+                pt['name'] = pt_id.value
+            history[pt_id.name] = pt
         self._history = history
         self._history_expiry = time.time() + 300.0  # TODO: make configurable
 
@@ -185,7 +188,7 @@ class Connect():
         Returns all history names and id
         """
         return [
-                {'id': his_id, 'name': his_meta['id'].value} \
+                {'id': his_id, 'name': his_meta.get('name')} \
                         for his_id, his_meta in
                         self.allHistories.items()
         ]
