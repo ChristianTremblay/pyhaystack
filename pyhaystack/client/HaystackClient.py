@@ -163,6 +163,14 @@ class Connect():
         self.refreshHisList()
         return self._history.copy()
 
+    def getHistMeta(self, hist_id):
+        '''
+        Get the metadata for a given historical data point.  Raises KeyError
+        if the item does not exist.
+        '''
+        self.refreshHisList()
+        return self._history[hist_id]
+
     def refreshHisList(self, force_refresh=False):
         """
         This function retrieves every histories in the server and returns a
