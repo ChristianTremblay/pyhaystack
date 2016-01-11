@@ -12,7 +12,7 @@ from pyhaystack.history.HisRecord import HisRecord
 from pyhaystack.history.Histories import Histories
 #from pyhaystack.io.read import read
 from pyhaystack.io.zincParser import zincToJson
-from .io.jsonParser import json_decode
+from ..io.jsonParser import json_decode
 from pyhaystack.io.haystackRead import HReadAllResult
 
 class Connect():
