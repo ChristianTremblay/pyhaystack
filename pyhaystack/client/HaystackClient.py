@@ -5,6 +5,7 @@ File : HaystackClient.py (2.x)
 
 """
 
+import logging
 import requests
 import json
 from pyhaystack.history.HisRecord import HisRecord
@@ -29,6 +30,7 @@ class Connect():
             PASSWORD : used for login
             **kwargs :
                 zinc = False or True (compatibility for old device like NPM2 that cannot generate Json coding)
+                log = logging.Logger instance to use when emitting messages.
 
             COOKIE : for persistent login
             isConnected : flag to be used for connection related task (don't try if not connected...)
@@ -46,6 +48,11 @@ class Connect():
         self._filteredList = []
         self.timezone = 'UTC'
         self._forceZincToJson = bool(kwargs.pop('zinc',False))
+
+        log = kwargs.pop('log', None)
+        if log is None:
+            log = logging.getLogger('pyhaystack.client')
+        self._log = log
 
         # Headers to pass in each request.
         self._rq_headers = {}
@@ -140,14 +147,17 @@ class Connect():
         Returns result of filter request
         """
         # Should add some verification here
+        log = self._log.getChild('read_all')
         req = 'read?filter=' + filterRequest
         result = self.read(req)
 
-        for each in result['rows']:
-            print('%s' % each['dis'])
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug('Read %d rows:\n%s', '\n'.join([
+                '  %s' % each['dis']
+                for each in result['rows'])
         return HReadAllResult(self, result)
 
-    def hisRead(self,**kwargs):
+    def hisRead(self, **kwargs):
         """
         This method returns a list of history records
         arguments are :
@@ -159,8 +169,9 @@ class Connect():
         end : string representation of end time ex. '2014-01-01T00:00'
         """
         self._filteredList = [] # Empty list to be returned
+        log = self._log.getChild('his_read')
         # Keyword Arguments
-        print(kwargs)
+        log.debug('Keywords: %s', kwargs)
         ids = kwargs.pop('id','')
         AND_search = kwargs.pop('AND_search','')
         OR_search = kwargs.pop('OR_search','')
@@ -183,27 +194,28 @@ class Connect():
             takeit = False
             # Find histories matching ANY keywords in OR_search
             if (AND_search != '') and all([keywords in eachHistory['name'] for keywords in AND_search]):
-                print('AND_search : Adding %s to recordList' % eachHistory['name'])
+                log.debug('AND_search : Adding %s to recordList',
+                    eachHistory['name'])
                 takeit = True
 
             # Find histories matching ANY ID in id list
             elif (OR_search != '') and any([keywords in eachHistory['name'] for keywords in OR_search]):
-                print('OR_search : Adding %s to recordList' % eachHistory['name'])
+                log.debug('OR_search : Adding %s to recordList',
+                    eachHistory['name'])
                 takeit = True
 
             elif (ids != '') and any([id in eachHistory['id'] for id in ids]):
-                print('ID found : Adding %s to recordList' % eachHistory['name'])
+                log.debug('ID found : Adding %s to recordList',
+                        eachHistory['name'])
                 takeit = True
 
             elif takeall != '':
-                print('Adding %s to recordList' % eachHistory['name'])
+                log.debug('Adding %s to recordList', eachHistory['name'])
                 takeit = True
 
             if takeit:
                 self._filteredList.append(HisRecord(self, eachHistory['id'],datetimeRange))
 
 
-        if self._filteredList == []:
-            print('No trends found... sorry !')
-
+        log.debug('%d trends found', len(self._filteredList))
         return self._filteredList
