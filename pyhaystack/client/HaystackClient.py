@@ -124,8 +124,8 @@ class Connect():
         if not self.isConnected:
             self.authenticate()
 
-        kwargs = self._get_kwargs(headers=dict(
         url = self.queryURL + urlToGet
+        kwargs = self._get_kwargs(headers=dict(
             accept='text/plain; charset=utf-8'))
         self._log.getChild('http').debug(
                 'Submitting ZINC GET request for %s, headers: %s',
@@ -145,11 +145,18 @@ class Connect():
         if headers is None:
             headers = {'token': ''}
 
+        headers.update({
+            'Accept': 'text/plain; charset=utf-8',
+            'Content-Type': 'text/plain; charset=utf-8',
+        })
+
+        url = self.queryURL + urlToGet
+        kwargs = self._get_kwargs(headers=headers, **kwargs)
         url = self.queryURL + url
         self._log.getChild('http').debug(
                 'Submitting POST request for %s, headers: %s, data: %r',
                 url, kwargs.get('headers',{}), kwargs.get('data',None))
-        req = self.s.post(url, **self._get_kwargs(headers=headers, **kwargs))
+        req = self.s.post(url, **kwargs)
         req.raise_for_status()
         return req
 
