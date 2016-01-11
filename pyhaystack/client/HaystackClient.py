@@ -49,6 +49,8 @@ class Connect():
         self._filteredList = []
         self.timezone = 'UTC'
         self._forceZincToJson = bool(kwargs.pop('zinc',False))
+        self._history = None
+        self._history_expiry = 0
 
         log = kwargs.pop('log', None)
         if log is None:
@@ -152,18 +154,34 @@ class Connect():
         req.raise_for_status()
         return req
 
+    @property
+    def allHistories(self):
+        '''
+        Return a list of all history items known to the client.
+        '''
+        if self._history_expiry < time.time():
+            self.refreshHisList()
+        return self._history.copy()
+
     def refreshHisList(self):
         """
         This function retrieves every histories in the server and returns a
         list of id
         """
-        self.allHistories = Histories(self)
+        history = {}
+        for pt in self.read('read?filter=his')['rows']:
+            history[pt.id] = pt.value
+        self._history = history
+        self._history_expiry = time.time() + 300.0  # TODO: make configurable
 
     def hisAll(self):
         """
         Returns all history names and id
         """
-        return self.allHistories.getListofIdsAndNames()
+        return [
+                {'id': his_id, 'name': his_name} for his_id, his_name in
+                self.allHistories.items()
+        ]
 
     def readAll(self, filterRequest):
         """
