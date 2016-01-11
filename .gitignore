@@ -5,3 +5,4 @@
 *.pyc
 /.coverage
 /.travis.yml
+tests/haystackClient/*.py
