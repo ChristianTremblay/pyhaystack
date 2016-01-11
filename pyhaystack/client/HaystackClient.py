@@ -99,9 +99,13 @@ class Connect():
         if not self.isConnected:
             self.authenticate()
 
-        req = self.s.get(self.queryURL + urlToGet,
-                **self._get_kwargs(headers=dict(
-                    accept='application/json; charset=utf-8')))
+        url = self.queryURL + urlToGet
+        kwargs = self._get_kwargs(headers=dict(
+            accept='application/json; charset=utf-8'))
+        log.getChild('http', 'Submitting JSON GET request for %s, headers: %s',
+                url, headers)
+
+        req = self.s.get(url, **kwargs)
         req.raise_for_status()
         return json_decode(req.json())
 
@@ -113,8 +117,12 @@ class Connect():
         if not self.isConnected:
             self.authenticate()
 
-        req = self.s.get(self.queryURL + urlToGet, **self._get_kwargs(
-            headers=dict(accept='text/plain; charset=utf-8')))
+        url = self.queryURL + urlToGet
+        kwargs = self._get_kwargs(headers=dict(
+            accept='text/plain; charset=utf-8'))
+        log.getChild('http', 'Submitting ZINC GET request for %s, headers: %s',
+                url, headers)
+        req = self.s.get(url, **kwargs)
         req.raise_for_status()
         return zincToJson(req.text)
 
@@ -154,7 +162,7 @@ class Connect():
         if log.isEnabledFor(logging.DEBUG):
             log.debug('Read %d rows:\n%s', '\n'.join([
                 '  %s' % each['dis']
-                for each in result['rows'])
+                for each in result['rows']]))
         return HReadAllResult(self, result)
 
     def hisRead(self, **kwargs):
