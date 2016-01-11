@@ -8,6 +8,7 @@ File : HaystackClient.py (2.x)
 import logging
 import requests
 import json
+import time
 from pyhaystack.history.HisRecord import HisRecord
 #from pyhaystack.io.read import read
 from pyhaystack.io.zincParser import zincToJson
