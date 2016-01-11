@@ -215,18 +215,22 @@ class Connect():
         ids = kwargs.pop('id','')
         AND_search = kwargs.pop('AND_search','')
         OR_search = kwargs.pop('OR_search','')
-        rng = kwargs.pop('rng','')
-        start = kwargs.pop('start','')
-        end = kwargs.pop('end','')
+        rng = kwargs.pop('rng',None)
+        start = kwargs.pop('start',None)
+        end = kwargs.pop('end',None)
         takeall = kwargs.pop('all','')
         # Remaining kwargs...
         if kwargs: raise TypeError('Unknown argument(s) : %s' % kwargs)
 
         # Build datetimeRange based on start and end
-        if start and end:
+        if (start is not None) and (end is not None):
             datetimeRange = start+','+end
-        else:
+            if rng is not None:
+                raise ValueError('rng and start/end are mutually exclusive')
+        elif rng is not None:
             datetimeRange = rng
+        else:
+            raise ValueError('start and end or rng is required')
 
 
         # Find histories matching ALL keywords in AND_search
