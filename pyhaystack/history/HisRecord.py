@@ -27,11 +27,16 @@ class HisRecord():
         self.hisId = hisId
         self.name = self.getHisNameFromId(session,self.hisId)
 
+        result = session.read('hisRead?id=%s&range=%s' % \
+                        (self.hisId, dateTimeRange))
         # Convert the list of {ts: foo, val: bar} dicts to a pair of
         # lists.
-        (index, values) = zip(*map(lambda row : (row['ts'], row['val']), \
-                session.read('hisRead?id=%s&range=%s' % \
-                (self.hisId, dateTimeRange))['rows']))
+        if bool(result['rows']):
+            (index, values) = zip(*map(lambda row : (row['ts'], row['val']), \
+                    result['rows']))
+        else:
+            # No data
+            (index, values) = ([], [])
 
         try:
             #Declare Series and localize using Site Timezone
