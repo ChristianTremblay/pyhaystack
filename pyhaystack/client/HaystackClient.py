@@ -165,15 +165,17 @@ class Connect():
         '''
         Return a list of all history items known to the client.
         '''
-        if self._history_expiry < time.time():
-            self.refreshHisList()
+        self.refreshHisList()
         return self._history.copy()
 
-    def refreshHisList(self):
+    def refreshHisList(self, force_refresh=False):
         """
         This function retrieves every histories in the server and returns a
         list of id
         """
+        if (self._history_expiry > time.time()) and (not force_refresh):
+            return
+
         history = {}
         for pt in self.read('read?filter=his')['rows']:
             pt_id = pt.pop('id')
@@ -187,10 +189,11 @@ class Connect():
         """
         Returns all history names and id
         """
+        self.refreshHisList()
         return [
                 {'id': his_id, 'name': his_meta.get('name')} \
                         for his_id, his_meta in
-                        self.allHistories.items()
+                        self._history.items()
         ]
 
     def readAll(self, filterRequest):
