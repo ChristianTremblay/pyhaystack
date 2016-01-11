@@ -9,7 +9,6 @@ import logging
 import requests
 import json
 from pyhaystack.history.HisRecord import HisRecord
-from pyhaystack.history.Histories import Histories
 #from pyhaystack.io.read import read
 from pyhaystack.io.zincParser import zincToJson
 from ..io.jsonParser import json_decode
