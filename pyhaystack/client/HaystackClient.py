@@ -102,8 +102,9 @@ class Connect():
         url = self.queryURL + urlToGet
         kwargs = self._get_kwargs(headers=dict(
             accept='application/json; charset=utf-8'))
-        log.getChild('http', 'Submitting JSON GET request for %s, headers: %s',
-                url, headers)
+        self._log.getChild('http').debug(
+                'Submitting JSON GET request for %s, headers: %s',
+                url, kwargs.get('headers',{}))
 
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
@@ -120,8 +121,9 @@ class Connect():
         url = self.queryURL + urlToGet
         kwargs = self._get_kwargs(headers=dict(
             accept='text/plain; charset=utf-8'))
-        log.getChild('http', 'Submitting ZINC GET request for %s, headers: %s',
-                url, headers)
+        self._log.getChild('http').debug(
+                'Submitting ZINC GET request for %s, headers: %s',
+                url, kwargs.get('headers',{}))
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
         return zincToJson(req.text)
@@ -133,6 +135,9 @@ class Connect():
         if headers is None:
             headers = {'token': ''}
 
+        self._log.getChild('http').debug(
+                'Submitting POST request for %s, headers: %s, data: %r',
+                url, kwargs.get('headers',{}, kwargs.get('data',None)))
         req = self.s.post(url, **self._get_kwargs(headers=headers))
         req.raise_for_status()
         return req
