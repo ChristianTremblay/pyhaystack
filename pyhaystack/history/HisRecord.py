@@ -29,6 +29,7 @@ class HisRecord():
 
         result = session.read('hisRead?id=%s&range=%s' % \
                         (self.hisId, dateTimeRange))
+        self._log.debug('Received result set: %s', result)
         # Convert the list of {ts: foo, val: bar} dicts to a pair of
         # lists.
         if bool(result['rows']):
