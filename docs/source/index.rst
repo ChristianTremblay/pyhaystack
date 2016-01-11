@@ -5,9 +5,10 @@
 
 Welcome to pyhaystack's documentation!
 ======================================
+.. include:: README.rst
 
-Contents:
-
+Table of contents
+==================
 .. toctree::
    :maxdepth: 2
 
