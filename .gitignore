@@ -3,3 +3,5 @@
 /pyhaystack.egg-info
 /pyhaystack/*.pyc
 *.pyc
+/.travis.yml
+/.coverage
