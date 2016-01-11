@@ -6,3 +6,4 @@
 /.coverage
 /.travis.yml
 tests/haystackClient/*.py
+tests/haystackClient/HaystackClientTest.py
