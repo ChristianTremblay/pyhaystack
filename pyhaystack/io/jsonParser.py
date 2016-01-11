@@ -144,3 +144,6 @@ def json_decode(raw_json):
     if match:
         (lat,lng) = match.groups()
         return hszinc.Coord(lat,lng)
+
+    # Maybe it's a bare string?
+    return raw_json
