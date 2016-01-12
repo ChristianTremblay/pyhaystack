@@ -56,8 +56,8 @@ class HisRecord():
         self.hisId = hisId
         self.name = self._meta.get('name')
 
-        result = session.read('hisRead?id=%s&range=%s' % \
-                        (self.hisId, dateTimeRange))
+        result = session.read('hisRead', id='@%s' % self.hisId,
+                range=dateTimeRange)
         self._log.debug('Received result set: %s', result)
         # Convert the list of {ts: foo, val: bar} dicts to a pair of
         # lists.
@@ -69,12 +69,12 @@ class HisRecord():
             (index, values) = ([], [])
 
         try:
-            #Declare Series and localize using Site Timezone
-            self.data = Series(values,index=index).tz_localize(session.timezone)
+            #Declare Series converted to local time for session
+            self.data = Series(values,index=index).tz_convert(session.timezone)
             #Renaming index so the name will be part of the serie
             self.data = self.data.reindex(self.data.index.rename([self.name]))
         except:
-            log.error('%s is an Unknown history type', self.hisId)
+            self._log.error('%s is an Unknown history type', self.hisId)
             raise
 
     def plot(self):
