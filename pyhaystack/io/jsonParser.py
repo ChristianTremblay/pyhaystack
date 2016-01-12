@@ -35,7 +35,7 @@ import iso8601
 
 # Type regular expressions
 MARKER      = 'm:'
-NUMBER_RE   = re.compile(r'^n:(\d+(:?\.\d+)?(:?[eE][+\-]?\d+))?(:? (.*))?$')
+NUMBER_RE   = re.compile(r'^n:(\d+(:?\.\d+)?(:?[eE][+\-]?\d+)?)(:? (.*))?$')
 REF_RE      = re.compile(r'^r:([a-zA-Z0-9_:\-.~]+)(:? (.*))?$')
 STR_RE      = re.compile(r'^s:(.*)$')
 DATE_RE     = re.compile(r'^d:(\d{4})-(\d{2})-(\d{2})$')
@@ -72,6 +72,7 @@ def json_decode(raw_json):
     if match:
         # We'll get a value and a unit, amongst other tokens.
         matched = match.groups()
+        print matched
         value = float(matched[0])
         if matched[-1] is not None:
             # It's a quantity
