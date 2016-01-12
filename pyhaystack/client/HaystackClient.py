@@ -9,12 +9,24 @@ import logging
 import requests
 import json
 import time
+import urllib
 from pyhaystack.history.HisRecord import HisRecord
 #from pyhaystack.io.read import read
 from pyhaystack.io.zincParser import zincToJson
 from ..io.jsonParser import json_decode
 from pyhaystack.io.haystackRead import HReadAllResult
 from ..exception import HaystackError
+
+
+def mk_query(**kwargs):
+    '''
+    Construct a URI query string from the arguments given.
+    '''
+    return '&'.join([
+        '%s=%s' % (arg, urllib.quote_plus(val))
+        for arg, val in kwargs.items()
+    ])
+
 
 class Connect():
     """
@@ -87,22 +99,28 @@ class Connect():
         """
         pass
 
-    def read(self, urlToGet):
+    def read(self, urlToGet, **kwargs):
         if self._forceZincToJson:
-            return self.getZinc(urlToGet)
+            return self.getZinc(urlToGet, **kwargs)
         else:
-            return self.getJson(urlToGet)
+            return self.getJson(urlToGet, **kwargs)
 
-    def getJson(self, urlToGet):
+    def getJson(self, urlToGet, **kwargs):
         """
         Helper for GET request. Retrieve information as json string objects
         urlToGet must include only the request ex. "read?filter=site"
         Queryurl (ex. http://serverIp/haystack) is already known
+
+        Query arguments should be passed as kwargs.
         """
         if not self.isConnected:
             self.authenticate()
 
         url = self.queryURL + urlToGet
+        if bool(kwargs):
+            # additional query string
+            url += '?' + mk_query(**kwargs)
+
         kwargs = self._get_kwargs(headers=dict(
             accept='application/json; charset=utf-8'))
         self._log.getChild('http').debug(
@@ -117,7 +135,7 @@ class Connect():
                                 traceback=decoded['meta'].get('traceback',None))
         return decoded
 
-    def getZinc(self, urlToGet):
+    def getZinc(self, urlToGet, **kwargs):
         """
         Helper for GET request. Retrieve information as default Zinc string
         objects
@@ -126,6 +144,10 @@ class Connect():
             self.authenticate()
 
         url = self.queryURL + urlToGet
+        if bool(kwargs):
+            # additional query string
+            url += '?' + mk_query(**kwargs)
+
         kwargs = self._get_kwargs(headers=dict(
             accept='text/plain; charset=utf-8'))
         self._log.getChild('http').debug(
@@ -180,7 +202,7 @@ class Connect():
             return
 
         history = {}
-        for pt in self.read('read?filter=his')['rows']:
+        for pt in self.read('read', filter='his')['rows']:
             pt_id = pt.pop('id')
             if pt_id.has_value:
                 pt['name'] = pt_id.value
@@ -205,8 +227,7 @@ class Connect():
         """
         # Should add some verification here
         log = self._log.getChild('read_all')
-        req = 'read?filter=' + filterRequest
-        result = self.read(req)
+        result = self.read(req, filter=filterRequest)
 
         if log.isEnabledFor(logging.DEBUG):
             log.debug('Read %d rows:\n%s', '\n'.join([
