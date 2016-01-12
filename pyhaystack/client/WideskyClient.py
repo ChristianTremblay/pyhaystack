@@ -86,18 +86,20 @@ class Connect(hc.Connect):
         #Continue with haystack login
         if self.isConnected:
             self.about = self.read('about')
-            self.serverName = self.about['rows'][0]['serverName']
-            self.haystackVersion = self.about['rows'][0]['haystackVersion']
-            axVersion = self.about['rows'][0]['productVersion']
+            versionInfo = self.about['rows'][0]
+            self.serverName = versionInfo['serverName']
+            self.haystackVersion = versionInfo['haystackVersion']
             haystack_tz = zoneinfo.get_tz_map()
             self.timezone = haystack_tz[\
                     self.read('read?filter=site')['rows'][0]['tz']]
             self._log.getChild('authenticate').debug(
                     'Connected to haystack instance on %s '\
-                            '(protocol %s, version %s).  '\
+                            '(protocol %s, implementation %s %s).  '\
                             'Time Zone used : %s',
                             self.serverName,
-                            self.haystackVersion, axVersion,
+                            self.haystackVersion,
+                            versionInfo.get('productName','Unknown'),
+                            versionInfo.get('productVersion','Unknown'),
                             self.timezone)
             self.refreshHisList()
         else:
