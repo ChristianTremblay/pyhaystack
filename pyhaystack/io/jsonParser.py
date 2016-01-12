@@ -72,7 +72,6 @@ def json_decode(raw_json):
     if match:
         # We'll get a value and a unit, amongst other tokens.
         matched = match.groups()
-        print matched
         value = float(matched[0])
         if matched[-1] is not None:
             # It's a quantity
