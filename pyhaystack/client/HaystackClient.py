@@ -241,9 +241,9 @@ class Connect():
 
         # Build datetimeRange based on start and end
         if (start is not None) and (end is not None):
-            datetimeRange = start+','+end
             if rng is not None:
                 raise ValueError('rng and start/end are mutually exclusive')
+            datetimeRange = (start, end)
         elif rng is not None:
             datetimeRange = rng
         else:
