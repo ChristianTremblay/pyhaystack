@@ -5,12 +5,10 @@ HisRecord must be seen as the representation of one historical trend to be analy
 
 @author: CTremblay
 """
-import re,datetime
+import datetime
 import numpy as np
-import pyhaystack.util.tools as tools
 import pandas as pd
 from pandas import Series
-import datetime
 from hszinc import zoneinfo, Quantity
 
 class HisRecord():
