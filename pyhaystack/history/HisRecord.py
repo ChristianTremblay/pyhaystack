@@ -10,6 +10,8 @@ import numpy as np
 import pyhaystack.util.tools as tools
 import pandas as pd
 from pandas import Series
+import datetime
+from hszinc import zoneinfo
 
 class HisRecord():
     """
@@ -17,15 +19,42 @@ class HisRecord():
     - hisId is the haystack Id of the trend
     - data is created as DataFrame to be used directly in Pandas
     """
-    def __init__(self,session,hisId,dateTimeRange='today'):
+    def __init__(self, session, hisId, dateTimeRange='today'):
         """
         GET data from server and fill this object with historical info
         """
         # Grab logger child from session
         self._log = session._log.getChild('hisRecord.%s' % hisId)
 
+        # Grab metadata
+        self._meta      = session.getHistMeta(hisId)
+        self.tz_name    = self._meta['tz']
+        self.tz         = zoneinfo.timezone(self.tz_name)
+
+        # Is dateTimeRange a tuple object?
+        if isinstance(dateTimeRange, tuple):
+            (dtStart, dtEnd) = dateTimeRange
+            # Convert these to native time
+            def _to_native(dt):
+                self._log.debug('Converting %s to native time', dt)
+                if isinstance(dt, datetime.datetime):
+                    if dt.tzinfo is None:
+                        # Assume time is already local
+                        self._log.debug('Localise to timezone %s', self.tz_name)
+                        dt = self.tz.localize(dt)
+                    else:
+                        self._log.debug('Convert to timezone %s', self.tz_name)
+                        dt = dt.astimezone(self.tz)
+
+                    return '%s %s' % (dt.isoformat(), self.tz_name)
+                elif isinstance(dt, datetime.date):
+                    return dt.isoformat()
+                else:
+                    return dt
+            dateTimeRange = '%s,%s' % (_to_native(dtStart), _to_native(dtEnd))
+
         self.hisId = hisId
-        self.name = self.getHisNameFromId(session,self.hisId)
+        self.name = self._meta.get('name')
 
         result = session.read('hisRead?id=%s&range=%s' % \
                         (self.hisId, dateTimeRange))
@@ -47,19 +76,6 @@ class HisRecord():
         except:
             log.error('%s is an Unknown history type', self.hisId)
             raise
-
-    def getHisNameFromId(self,session,pointId):
-        """
-        Retrieve name from id of an history
-        """
-        for each in session.read("read?filter=his")['rows']:
-            try:
-                if each['id'].name == pointId:
-                    return each['id'].value
-            except AttributeError:
-                if each['id'].split(' ',1)[0] == pointId:
-                    return (each['id'].split(' ',1)[1])
-        return 'Id Not found'
 
     def plot(self):
         """
