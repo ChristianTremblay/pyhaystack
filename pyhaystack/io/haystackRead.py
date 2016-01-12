@@ -4,8 +4,7 @@
 File : haystackRead.py (2.x)
 
 """
-from pyhaystack.history.HisRecord import HisRecord
-from pyhaystack.history.Histories import Histories
+from ..history.HisRecord import HisRecord
 
 class HReadAllResult():
     """

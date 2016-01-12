@@ -9,21 +9,26 @@ import logging
 import requests
 import json
 import time
-import urllib
-from pyhaystack.history.HisRecord import HisRecord
-#from pyhaystack.io.read import read
-from pyhaystack.io.zincParser import zincToJson
+from ..history.HisRecord import HisRecord
+#from ..io.read import read
+from ..io.zincParser import zincToJson
 from ..io.jsonParser import json_decode
-from pyhaystack.io.haystackRead import HReadAllResult
+from ..io.haystackRead import HReadAllResult
 from ..exception import HaystackError
 
+try:
+    # Python 3.x case
+    from urllib.parse import quote_plus
+except ImportError:
+    # Python 2.x case
+    from urllib import quote_plus
 
 def mk_query(**kwargs):
     '''
     Construct a URI query string from the arguments given.
     '''
     return '&'.join([
-        '%s=%s' % (arg, urllib.quote_plus(val))
+        '%s=%s' % (arg, quote_plus(val))
         for arg, val in kwargs.items()
     ])
 

@@ -3,8 +3,8 @@
 @author: Stuart Longland
 Based on NiagaraAX client code.
 """
-import pyhaystack.client.HaystackClient as hc
-import pyhaystack.info as info
+from . import HaystackClient as hc
+from .. import info as info
 import requests
 import json
 import time

@@ -63,7 +63,7 @@ def json_decode(raw_json):
             result[json_decode(key)] = json_decode(value)
         return result
     elif isinstance(raw_json, list):
-        return map(json_decode, raw_json)
+        return list(map(json_decode, raw_json))
     elif isinstance(raw_json, tuple):
         return tuple(map(json_decode, raw_json))
 
