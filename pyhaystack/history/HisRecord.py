@@ -11,7 +11,7 @@ import pyhaystack.util.tools as tools
 import pandas as pd
 from pandas import Series
 import datetime
-from hszinc import zoneinfo
+from hszinc import zoneinfo, Quantity
 
 class HisRecord():
     """
@@ -62,8 +62,10 @@ class HisRecord():
         # Convert the list of {ts: foo, val: bar} dicts to a pair of
         # lists.
         if bool(result['rows']):
-            (index, values) = zip(*map(lambda row : (row['ts'], row['val']), \
-                    result['rows']))
+            strip_unit = lambda v : v.value if isinstance(v, Quantity) else v
+            (index, values) = zip(*map(lambda row : \
+                            (row['ts'], strip_unit(row['val'])), \
+                            result['rows']))
         else:
             # No data
             (index, values) = ([], [])
