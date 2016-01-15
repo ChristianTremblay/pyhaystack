@@ -9,6 +9,7 @@ import logging
 import requests
 import json
 import time
+import hszinc
 from ..history.HisRecord import HisRecord
 #from ..io.read import read
 from ..io.zincParser import zincToJson
@@ -166,19 +167,20 @@ class Connect():
                                 traceback=decoded['meta'].get('traceback',None))
         return decoded
 
-    def postRequest(self, url, headers=None, **kwargs):
+    def postRequest(self, url, content_type, data, headers=None, **kwargs):
         """
         Helper for POST request
         """
         if headers is None:
             headers = {}
 
+        headers['Content-Type'] = content_type
         url = self.queryURL + url
         kwargs = self._get_kwargs(headers=headers, **kwargs)
         self._log.getChild('http').debug(
                 'Submitting POST request for %s, headers: %s, data: %r',
-                url, kwargs.get('headers',{}), kwargs.get('data',None))
-        req = self.s.post(url, **kwargs)
+                url, kwargs.get('headers',{}), data)
+        req = self.s.post(url, data=data, **kwargs)
         req.raise_for_status()
         return req
 
@@ -306,3 +308,84 @@ class Connect():
 
         log.debug('%d trends found', len(self._filteredList))
         return self._filteredList
+
+    def hisWrite(self, records):
+        '''
+        Write one or more records to one or more entities.
+
+        records may be:
+        - a list of dicts
+        - a single dict (for a single record)
+
+        the dicts take the form:
+        - a key named 'ts' with a datetime object
+        - IDs and the sample values in key-value pairs.
+        '''
+        if not isinstance(records, dict):
+            records = [records]
+
+        # Get a list of all points being written to.
+        points = set()
+        for r in records:
+            points.update(set(r.keys()) - set('ts'))
+
+        # Get the timezones needed for each point
+        tz = dict([
+            (point, hszinc.zoneinfo.timezone(self.getHistMeta(point)['ts']))
+            for point in points
+        ])
+
+        if len(points) == 1:
+            # Single point hist-write.
+            point_id = list(points)[0]
+            tz = tz[point_id]
+            grid = hszinc.Grid()
+            grid.metadata['id'] = hszinc.Ref(point_id)
+            grid.column['ts'] = {}
+            grid.column['val'] = {}
+            for r in records:
+                ts = r['ts']
+                value = r[point_id]
+
+                # Localise timestamp
+                if ts.tzinfo is None:
+                    ts = tz.localize(ts)
+                else:
+                    ts = ts.astimezone(tz)
+
+                grid.append({'ts': ts, 'val': value})
+        else:
+            # Multi-point hist-write.
+            grid = hszinc.Grid()
+            grid.metadata['id'] = hszinc.Ref(point_id)
+            grid.column['ts'] = {}
+            grid_cols = {}
+            for num, point in zip(range(0, len(points)), points):
+                col = 'v%d' % num
+                grid_cols[point] = col
+                grid.column[col] = {'id': hszinc.Ref(point)}
+
+            for r in records:
+                ts = r['ts']
+                row = {}
+
+                for point, col in grid_cols.items():
+                    if 'ts' not in row:
+                        # Localise timestamp
+                        if ts.tzinfo is None:
+                            row['ts'] = tz[point].localize(ts)
+                        else:
+                            row['ts'] = ts.astimezone(tz[point])
+                    row[col] = r.get(point)
+                grid.append(row)
+
+        # Format as JSON or ZINC?
+        if self._forceZincToJson:
+            # Output ZINC
+            post_body = hszinc.dump(grid)
+            content_type = 'text/zinc'
+        else:
+            # Output JSON -- TODO
+            raise NotImplementedError('TODO: implement json')
+
+        self.postRequest('hisWrite', content_type, post_body)
