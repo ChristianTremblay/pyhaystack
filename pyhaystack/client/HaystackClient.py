@@ -66,7 +66,7 @@ class Connect():
         self.s = requests.Session()
         self._filteredList = []
         self.timezone = 'UTC'
-        self._forceZincToJson = bool(kwargs.pop('zinc',False))
+        self._zinc = bool(kwargs.pop('zinc',False))
         self._history = None
         self._history_expiry = 0
 
@@ -106,7 +106,7 @@ class Connect():
         pass
 
     def read(self, urlToGet, **kwargs):
-        if self._forceZincToJson:
+        if self._zinc:
             return self.getZinc(urlToGet, **kwargs)
         else:
             return self.getJson(urlToGet, **kwargs)
@@ -380,12 +380,13 @@ class Connect():
                 grid.append(row)
 
         # Format as JSON or ZINC?
-        if self._forceZincToJson:
+        if self._zinc:
             # Output ZINC
             post_body = hszinc.dump(grid)
             content_type = 'text/zinc'
         else:
-            # Output JSON -- TODO
-            raise NotImplementedError('TODO: implement json')
+            # Output JSON
+            post_body = hszinc.dump(grid, mode=hszinc.MODE_JSON)
+            content_type = 'application/json'
 
         self.postRequest('hisWrite', content_type, post_body)
