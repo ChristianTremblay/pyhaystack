@@ -30,7 +30,7 @@ class HReadAllResult():
         """
         Read all points from request and look for dis marker
         """
-        self._listOfDis = [each['dis'] for each in self._jsonResult['rows']]
+        self._listOfDis = [each['dis'] for each in self._jsonResult]
         #print '%s' % self._listOfDis
         return self._listOfDis
 
@@ -40,7 +40,7 @@ class HReadAllResult():
         Id are split so only first part is taken
         u'@S.site.AC~2d1.TAli site AC-1 AC-1 TAli' => u'@S.site.AC~2d1.TAli
         """
-        self._listOfId = [each['id'].split(' ',1)[0] for each in self._jsonResult['rows']]
+        self._listOfId = [each['id'].split(' ',1)[0] for each in self._jsonResult]
         #print '%s' % self._listOfId
         return self._listOfId
 
@@ -48,7 +48,7 @@ class HReadAllResult():
         """
         Read all points from request and look for CurVal marker
         """
-        self._listOfCurVal = [each['curVal'] for each in self._jsonResult['rows']]
+        self._listOfCurVal = [each['curVal'] for each in self._jsonResult]
         #print '%s' % self._listOfCurVal
         return self._listOfCurVal
 
@@ -56,7 +56,7 @@ class HReadAllResult():
         """
         Read all points from request and look for his marker
         """
-        self._listOfHisMarker = [each['his'] for each in self._jsonResult['rows']]
+        self._listOfHisMarker = [each['his'] for each in self._jsonResult]
         #print '%s' % self._listOfCurVal
         return self._listOfHisMarker
 

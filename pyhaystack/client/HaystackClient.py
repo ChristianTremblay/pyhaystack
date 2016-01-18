@@ -135,10 +135,10 @@ class Connect():
 
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
-        decoded = json_decode(req.json())
-        if 'err' in decoded['meta']:
-            raise HaystackError(decoded['meta'].get('dis', 'Unknown error'),
-                                traceback=decoded['meta'].get('traceback',None))
+        decoded = hszinc.parse(req.json(), mode=hszinc.MODE_JSON)
+        if 'err' in decoded.metadata:
+            raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
+                                traceback=decoded.metadata.get('traceback',None))
         return decoded
 
     def getZinc(self, urlToGet, **kwargs):
@@ -161,10 +161,10 @@ class Connect():
                 url, kwargs.get('headers',{}))
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
-        decoded = zincToJson(req.text)
-        if 'err' in decoded['meta']:
-            raise HaystackError(decoded['meta'].get('dis', 'Unknown error'),
-                                traceback=decoded['meta'].get('traceback',None))
+        decoded = hszinc.parse(req.text, mode=hszinc.MODE_ZINC)[0]
+        if 'err' in decoded.metadata:
+            raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
+                                traceback=decoded.metadata.get('traceback',None))
         return decoded
 
     def postRequest(self, url, content_type, data, headers=None, **kwargs):
@@ -209,7 +209,7 @@ class Connect():
             return
 
         history = {}
-        for pt in self.read('read', filter='his')['rows']:
+        for pt in self.read('read', filter='his'):
             pt_id = pt.pop('id')
             if pt_id.has_value:
                 pt['name'] = pt_id.value
@@ -239,7 +239,7 @@ class Connect():
         if log.isEnabledFor(logging.DEBUG):
             log.debug('Read %d rows:\n%s', '\n'.join([
                 '  %s' % each['dis']
-                for each in result['rows']]))
+                for each in result]))
         return HReadAllResult(self, result)
 
     def hisRead(self, **kwargs):

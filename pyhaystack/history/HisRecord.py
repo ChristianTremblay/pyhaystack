@@ -59,11 +59,10 @@ class HisRecord():
         self._log.debug('Received result set: %s', result)
         # Convert the list of {ts: foo, val: bar} dicts to a pair of
         # lists.
-        if bool(result['rows']):
+        if bool(result):
             strip_unit = lambda v : v.value if isinstance(v, Quantity) else v
             (index, values) = zip(*map(lambda row : \
-                            (row['ts'], strip_unit(row['val'])), \
-                            result['rows']))
+                            (row['ts'], strip_unit(row['val'])), result))
         else:
             # No data
             (index, values) = ([], [])
