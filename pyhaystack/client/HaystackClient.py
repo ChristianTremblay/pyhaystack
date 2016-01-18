@@ -42,6 +42,10 @@ class Connect():
     Abstact class / Make a connection object to haystack server using requests module
     A class must be made for different type of server. See NiagaraAXConnection(HaystackConnection)
     """
+
+    # Class used for instantiating Haystack data points.
+    _POINT_CLASS = HaystackPoint
+
     def __init__(self, url, username, password, **kwargs):
         """
         Set local variables
@@ -443,7 +447,7 @@ class Connect():
                 point._load_meta(row)
             except KeyError:
                 # Nope, create a new one.
-                point = HaystackPoint(self, point_id, row)
+                point = self._POINT_CLASS(self, point_id, row)
                 self._point[point_id] = point
 
             found[point_id] = point
@@ -461,20 +465,43 @@ class Connect():
         multi = isinstance(point_ids, list)
         if not multi:
             point_ids = [point_ids]
+        elif not bool(point_ids):
+            return {}
 
-        if len(point_ids) > 1:
-            # Make a request grid and POST it
-            grid = hszinc.Grid()
-            grid.column['id'] = {}
-            grid.extend([{'id': hszinc.Ref(point_id)}
-                        for point_id in point_ids])
-            res = self._post_grid_rq('read', grid)
-        else:
-            # Make a GET request
-            res = self._get_grid('read',
-                    id=hszinc.dump_scalar(hszinc.Ref(point_ids[0])))
+        # Locate items that already exist.
+        found = {}
+        for point_id in point_ids:
+            try:
+                point = self._point[point_id]
+            except KeyError:
+                # It doesn't exist.
+                continue
 
-        found = self._get_points_from_grid(res)
+            # Is the point due for refresh?
+            if point._refresh_due:
+                # Pretend it doesn't exist.
+                continue
+
+            found[point_id] = point
+
+        # Get a list of points that need fetching
+        to_fetch = filter(lambda pid : pid not in found, point_ids)
+
+        if len(to_fetch) == 0:
+            if len(to_fetch) > 1:
+                # Make a request grid and POST it
+                grid = hszinc.Grid()
+                grid.column['id'] = {}
+                grid.extend([{'id': hszinc.Ref(point_id)}
+                            for point_id in to_fetch])
+                res = self._post_grid_rq('read', grid)
+            else:
+                # Make a GET request
+                res = self._get_grid('read',
+                        id=hszinc.dump_scalar(hszinc.Ref(to_fetch[0])))
+
+            found.update(self._get_points_from_grid(res))
+
         if not multi:
             return found.get(point_ids[0])
         else:
