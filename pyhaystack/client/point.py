@@ -40,11 +40,18 @@ class HaystackPoint(object):
         return '%s(%r, %r)' % (self.__class__.__name__,
                 self._session, self._point_id)
 
+    @property
+    def _refresh_due(self):
+        """
+        Return True if a refresh is due.
+        """
+        return (self._meta_expiry <= time.time())
+
     def _refresh_meta(self, force=False):
         """
         Retrieve the metadata from the server if out of date.
         """
-        if (not force) and (self._meta_expiry > time.time()):
+        if not (force or self._refresh_due):
             # We're not being forced and the refresh isn't due yet.
             return
 
