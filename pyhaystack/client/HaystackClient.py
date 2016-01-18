@@ -426,7 +426,8 @@ class Connect():
         A dict of matching points is returned with the IDs as keys.
         """
         # TODO: make an AST abstraction for this filter format.
-        return self._get_points_from_grid(self._get_grid('read', filter=filter))
+        return self._get_points_from_grid(self._get_grid('read',
+            filter=str(filter)))
 
     def _get_points_from_grid(self, grid):
         """
