@@ -117,11 +117,17 @@ class Connect():
             # additional query string
             url += '?' + mk_query(**kwargs)
 
-        req = self._get_request(url)
-        if self._zinc:
-            decoded = hszinc.parse(req.text, mode=hszinc.MODE_ZINC)[0]
-        else:
-            decoded = hszinc.parse(req.text, mode=hszinc.MODE_JSON)
+        return self._parse_response(self._get_request(url))
+
+    def _parse_response(self, res):
+        """
+        Parse the response sent back from the Haystack server.
+        """
+        content_type = res.headers['Content-Type']
+        if content_type in ('text/zinc', 'text/plain'):
+            decoded = hszinc.parse(res.text, mode=hszinc.MODE_ZINC)[0]
+        elif content_type == 'application/json':
+            decoded = hszinc.parse(res.text, mode=hszinc.MODE_JSON)
 
         if 'err' in decoded.metadata:
             raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
@@ -184,6 +190,24 @@ class Connect():
             data = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
 
         return self._post_request(url, content_type, data, headers, **kwargs)
+
+    def _post_grid_rq(self, url, grid, headers=None, accept=None, **kwargs):
+        """
+        Post a request grid to the Haystack server then parse the response.
+        """
+        if headers is None:
+            headers = {}
+
+        if accept is None:
+            if self._zinc:
+                accept = 'text/zinc'
+            else:
+                accept = 'application/json'
+
+        headers['Accept'] = accept
+
+        return self._parse_response(self._post_grid(
+            url, grid, headers=headers, **kwargs))
 
     @property
     def allHistories(self):
