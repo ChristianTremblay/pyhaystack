@@ -105,67 +105,50 @@ class Connect():
         """
         pass
 
-    def read(self, urlToGet, **kwargs):
+    def read(self, url, **kwargs):
+        """
+        Read a grid from the given URL, optionally with query arguments.
+        """
+
+        if not self.isConnected:
+            self.authenticate()
+
+        if bool(kwargs):
+            # additional query string
+            url += '?' + mk_query(**kwargs)
+
+        req = self._get_request(url)
         if self._zinc:
-            return self.getZinc(urlToGet, **kwargs)
+            decoded = hszinc.parse(req.text, mode=hszinc.MODE_ZINC)[0]
         else:
-            return self.getJson(urlToGet, **kwargs)
+            decoded = hszinc.parse(req.text, mode=hszinc.MODE_JSON)
 
-    def getJson(self, urlToGet, **kwargs):
-        """
-        Helper for GET request. Retrieve information as json string objects
-        urlToGet must include only the request ex. "read?filter=site"
-        Queryurl (ex. http://serverIp/haystack) is already known
-
-        Query arguments should be passed as kwargs.
-        """
-        if not self.isConnected:
-            self.authenticate()
-
-        url = self.queryURL + urlToGet
-        if bool(kwargs):
-            # additional query string
-            url += '?' + mk_query(**kwargs)
-
-        kwargs = self._get_kwargs(headers=dict(
-            accept='application/json; charset=utf-8'))
-        self._log.getChild('http').debug(
-                'Submitting JSON GET request for %s, headers: %s',
-                url, kwargs.get('headers',{}))
-
-        req = self.s.get(url, **kwargs)
-        req.raise_for_status()
-        decoded = hszinc.parse(req.json(), mode=hszinc.MODE_JSON)
         if 'err' in decoded.metadata:
             raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
-                                traceback=decoded.metadata.get('traceback',None))
+                    traceback=decoded.metadata.get('traceback',None))
         return decoded
 
-    def getZinc(self, urlToGet, **kwargs):
+    def _get_request(self, url, accept=None, headers=None, **kwargs):
         """
-        Helper for GET request. Retrieve information as default Zinc string
-        objects
+        Helper for GET request
         """
-        if not self.isConnected:
-            self.authenticate()
+        if headers is None:
+            headers = {}
 
-        url = self.queryURL + urlToGet
-        if bool(kwargs):
-            # additional query string
-            url += '?' + mk_query(**kwargs)
+        if accept is None:
+            if self._zinc:
+                accept = 'text/zinc'
+            else:
+                accept = 'application/json'
 
-        kwargs = self._get_kwargs(headers=dict(
-            accept='text/plain; charset=utf-8'))
+        headers['Accept'] = accept
+        url = self.queryURL + url
         self._log.getChild('http').debug(
-                'Submitting ZINC GET request for %s, headers: %s',
-                url, kwargs.get('headers',{}))
-        req = self.s.get(url, **kwargs)
+                'Submitting %s GET request for %s, headers: %s',
+                accept, url, kwargs.get('headers',{}))
+        req = self.s.get(url, headers=headers, **kwargs)
         req.raise_for_status()
-        decoded = hszinc.parse(req.text, mode=hszinc.MODE_ZINC)[0]
-        if 'err' in decoded.metadata:
-            raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
-                                traceback=decoded.metadata.get('traceback',None))
-        return decoded
+        return req
 
     def _post_request(self, url, content_type, data, headers=None, **kwargs):
         """
