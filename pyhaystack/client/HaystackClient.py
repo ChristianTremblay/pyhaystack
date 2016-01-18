@@ -321,17 +321,17 @@ class Connect():
         - a key named 'ts' with a datetime object
         - IDs and the sample values in key-value pairs.
         '''
-        if not isinstance(records, dict):
+        if isinstance(records, dict):
             records = [records]
 
         # Get a list of all points being written to.
         points = set()
         for r in records:
-            points.update(set(r.keys()) - set('ts'))
+            points.update(set(r.keys()) - set(['ts']))
 
         # Get the timezones needed for each point
         tz = dict([
-            (point, hszinc.zoneinfo.timezone(self.getHistMeta(point)['ts']))
+            (point, hszinc.zoneinfo.timezone(self.getHistMeta(point)['tz']))
             for point in points
         ])
 
