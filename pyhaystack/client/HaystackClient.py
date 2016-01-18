@@ -171,6 +171,10 @@ class Connect():
         """
         Post a grid to the Haystack server.
         """
+
+        if not self.isConnected:
+            self.authenticate()
+
         if self._zinc:
             content_type = 'application/json'
             data = hszinc.dump(grid, mode=hszinc.MODE_JSON)
