@@ -462,10 +462,13 @@ class Connect():
 
         If a list is given, a dict is returned with the located IDs as keys.
         """
+        log = self._log.getChild('getitem')
         multi = isinstance(point_ids, list)
         if not multi:
+            log.debug('Retrieving single point %s', point_ids)
             point_ids = [point_ids]
         elif not bool(point_ids):
+            log.debug('No points to retrieve')
             return {}
 
         # Locate items that already exist.
@@ -475,19 +478,23 @@ class Connect():
                 point = self._point[point_id]
             except KeyError:
                 # It doesn't exist.
+                log.debug('Not yet retrieved point %s', point_id)
                 continue
 
             # Is the point due for refresh?
             if point._refresh_due:
                 # Pretend it doesn't exist.
+                log.debug('Stale point %s', point_id)
                 continue
 
+            log.debug('Existing point %s', point_id)
             found[point_id] = point
 
         # Get a list of points that need fetching
         to_fetch = filter(lambda pid : pid not in found, point_ids)
+        log.debug('Need to retrieve points %s', to_fetch)
 
-        if len(to_fetch) == 0:
+        if bool(to_fetch):
             if len(to_fetch) > 1:
                 # Make a request grid and POST it
                 grid = hszinc.Grid()
@@ -502,6 +509,7 @@ class Connect():
 
             found.update(self._get_points_from_grid(res))
 
+        log.debug('Retrieved %s', list(found.keys()))
         if not multi:
             return found.get(point_ids[0])
         else:
