@@ -138,7 +138,7 @@ class HaystackPoint(object):
                 self._refresh_meta()
                 return self.__dict__['_meta'][attr]
             except KeyError:
-                raise
+                raise AttributeError(attr)
 
     # Historical data access
 
@@ -184,7 +184,7 @@ class HaystackPoint(object):
         grid.column['ts'] = {}
         grid.column['val'] = {}
         grid.extend([
-            {'ts': self._localize(r['ts']), 'val': r['val']}
+            {'ts': self._localise_dt(r['ts']), 'val': r['val']}
             for r in records
         ])
         self._session._post_grid('hisWrite', grid)
