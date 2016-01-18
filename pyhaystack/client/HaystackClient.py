@@ -10,6 +10,9 @@ import requests
 import json
 import time
 import hszinc
+import weakref
+
+from .point import HaystackPoint
 from ..history.HisRecord import HisRecord
 #from ..io.read import read
 from ..io.zincParser import zincToJson
@@ -80,6 +83,9 @@ class Connect():
 
         # Keyword arguments to pass to each request.
         self._rq_kwargs = {}
+
+        # Existing point objects
+        self._point = weakref.WeakValueDictionary()
 
     def _get_headers(self, **kwargs):
         '''
@@ -405,3 +411,71 @@ class Connect():
                 grid.append(row)
 
         self._post_grid('hisWrite', grid)
+
+    # Point access
+
+    def find_points(self, filter):
+        """
+        Find points that match a given filter string.  The filter string
+        syntax is given at http://project-haystack.org/doc/Filters.
+
+        A dict of matching points is returned with the IDs as keys.
+        """
+        # TODO: make an AST abstraction for this filter format.
+        return self._get_points_from_grid(self._get_grid('read', filter=filter))
+
+    def _get_points_from_grid(self, grid):
+        """
+        Parse the points returned in the grid and create/update them here
+        as required.
+        """
+        found = {}
+        for row in grid:
+            point_id = row.get('id',None)
+            if point_id is None:
+                continue
+            point_id = point_id.name
+
+            # Does the point already exist?
+            try:
+                # It does, refresh its metadata from the row given
+                point = self._point[point_id]
+                point._load_meta(row)
+            except KeyError:
+                # Nope, create a new one.
+                point = HaystackPoint(self, point_id, row)
+                self._point[point_id] = point
+
+            found[point_id] = point
+        return found
+
+    def __getitem__(self, point_ids):
+        """
+        Get a specific named point or list of points.
+
+        If a single point is requested, the return type is that point, or None
+        if not found.
+
+        If a list is given, a dict is returned with the located IDs as keys.
+        """
+        multi = isinstance(point_ids, list)
+        if not multi:
+            point_ids = [point_ids]
+
+        if len(point_ids) > 1:
+            # Make a request grid and POST it
+            grid = hszinc.Grid()
+            grid.column['id'] = {}
+            grid.extend([{'id': hszinc.Ref(point_id)}
+                        for point_id in point_ids])
+            res = self._post_grid_rq('read', grid)
+        else:
+            # Make a GET request
+            res = self._get_grid('read',
+                    id=hszinc.dump_scalar(hszinc.Ref(point_ids[0])))
+
+        found = self._get_points_from_grid(res)
+        if not multi:
+            return found.get(point_ids[0])
+        else:
+            return found
