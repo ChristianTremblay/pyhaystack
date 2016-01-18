@@ -48,7 +48,7 @@ class HaystackPoint(object):
             # We're not being forced and the refresh isn't due yet.
             return
 
-        meta = self._session.read('read', \
+        meta = self._session._get_grid('read', \
                 id=hszinc.dump_scalar(hszinc.Ref(self._point_id)))
         self._load_meta(meta[0])
 

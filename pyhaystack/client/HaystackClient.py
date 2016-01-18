@@ -105,9 +105,9 @@ class Connect():
         """
         pass
 
-    def read(self, url, **kwargs):
+    def _get_grid(self, url, **kwargs):
         """
-        Read a grid from the given URL, optionally with query arguments.
+        Read a grid via GET from the given URL, optionally with query arguments.
         """
 
         if not self.isConnected:
@@ -209,7 +209,7 @@ class Connect():
             return
 
         history = {}
-        for pt in self.read('read', filter='his'):
+        for pt in self._get_grid('read', filter='his'):
             pt_id = pt.pop('id')
             if pt_id.has_value:
                 pt['name'] = pt_id.value
@@ -234,7 +234,7 @@ class Connect():
         """
         # Should add some verification here
         log = self._log.getChild('read_all')
-        result = self.read(req, filter=filterRequest)
+        result = self._get_grid(req, filter=filterRequest)
 
         if log.isEnabledFor(logging.DEBUG):
             log.debug('Read %d rows:\n%s', '\n'.join([

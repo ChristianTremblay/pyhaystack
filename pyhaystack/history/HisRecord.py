@@ -54,7 +54,7 @@ class HisRecord():
         self.hisId = hisId
         self.name = self._meta.get('name')
 
-        result = session.read('hisRead', id='@%s' % self.hisId,
+        result = session._get_grid('hisRead', id='@%s' % self.hisId,
                 range=dateTimeRange)
         self._log.debug('Received result set: %s', result)
         # Convert the list of {ts: foo, val: bar} dicts to a pair of

@@ -81,11 +81,11 @@ class Connect(hc.Connect):
 
         #Continue with haystack login
         if self.isConnected:
-            about = self.read(self.requestAbout)
+            about = self._get_grid(self.requestAbout)
             self.serverName = about[0]['serverName']
             self.haystackVersion = about[0]['haystackVersion']
             self.axVersion = about[0]['productVersion']
-            self.timezone = 'America/' + self.read('read?filter=site')[0]['tz']
+            self.timezone = 'America/' + self._get_grid('read?filter=site')[0]['tz']
             print('Time Zone used : %s' % self.timezone)
             print('Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion))
             self.refreshHisList()
