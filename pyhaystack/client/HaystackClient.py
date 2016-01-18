@@ -167,7 +167,7 @@ class Connect():
                                 traceback=decoded.metadata.get('traceback',None))
         return decoded
 
-    def postRequest(self, url, content_type, data, headers=None, **kwargs):
+    def _post_request(self, url, content_type, data, headers=None, **kwargs):
         """
         Helper for POST request
         """
@@ -183,6 +183,19 @@ class Connect():
         req = self.s.post(url, data=data, **kwargs)
         req.raise_for_status()
         return req
+
+    def _post_grid(self, url, grid, headers=None, **kwargs):
+        """
+        Post a grid to the Haystack server.
+        """
+        if self._zinc:
+            content_type = 'application/json'
+            data = hszinc.dump(grid, mode=hszinc.MODE_JSON)
+        else:
+            content_type = 'text/zinc'
+            data = hszinc.dump(grid, mode=hszinc.MODE_ZINC)
+
+        return self._post_request(url, content_type, data, headers, **kwargs)
 
     @property
     def allHistories(self):
@@ -379,14 +392,4 @@ class Connect():
                     row[col] = r.get(point)
                 grid.append(row)
 
-        # Format as JSON or ZINC?
-        if self._zinc:
-            # Output ZINC
-            post_body = hszinc.dump(grid)
-            content_type = 'text/zinc'
-        else:
-            # Output JSON
-            post_body = hszinc.dump(grid, mode=hszinc.MODE_JSON)
-            content_type = 'application/json'
-
-        self.postRequest('hisWrite', content_type, post_body)
+        self._post_grid('hisWrite', grid)
