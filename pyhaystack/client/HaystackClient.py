@@ -142,11 +142,12 @@ class Connect():
                 accept = 'application/json'
 
         headers['Accept'] = accept
+        kwargs = self._get_kwargs(headers=headers, **kwargs)
         url = self.queryURL + url
         self._log.getChild('http').debug(
                 'Submitting %s GET request for %s, headers: %s',
                 accept, url, kwargs.get('headers',{}))
-        req = self.s.get(url, headers=headers, **kwargs)
+        req = self.s.get(url, **kwargs)
         req.raise_for_status()
         return req
 
