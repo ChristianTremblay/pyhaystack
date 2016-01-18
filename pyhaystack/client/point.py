@@ -59,7 +59,7 @@ class HaystackPoint(object):
         meta_id = meta.pop('id',None)
         if meta_id is None:
             raise ValueError('Point %s no longer exists' % self._point_id)
-        elif meta_id.name != self._point_id
+        elif meta_id.name != self._point_id:
             raise ValueError('Metadata for incorrect point (%s vs %s)' \
                     % (meta_id.name, self._point_id))
 
