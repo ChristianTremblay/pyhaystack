@@ -134,10 +134,19 @@ class Connect():
         Parse the response sent back from the Haystack server.
         """
         content_type = res.headers['Content-Type']
+        if ';' in content_type:
+            # Separate encoding from content type
+            (content_type, encoding) = content_type.split(';',1)
+            content_type = content_type.strip()
+            # TODO: do we need to convert to Unicode, of so, how?
+
         if content_type in ('text/zinc', 'text/plain'):
             decoded = hszinc.parse(res.text, mode=hszinc.MODE_ZINC)[0]
         elif content_type == 'application/json':
             decoded = hszinc.parse(res.text, mode=hszinc.MODE_JSON)
+        else:
+            raise NotImplementedError('Don\'t know how to parse type %s' \
+                    % content_type)
 
         if 'err' in decoded.metadata:
             raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
