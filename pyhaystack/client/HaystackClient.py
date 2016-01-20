@@ -73,7 +73,7 @@ class Connect():
         self.s = requests.Session()
         self._filteredList = []
         self.timezone = 'UTC'
-        self._zinc = bool(kwargs.pop('zinc',False))
+        self._zinc = bool(kwargs.pop('zinc',True))
         self._history = None
         self._history_expiry = 0
 
@@ -119,16 +119,13 @@ class Connect():
         """
         Read a grid via GET from the given URL, optionally with query arguments.
         """
-        print('url_avant:',url)
         if not self.isConnected:
             self.authenticate()
 
         if bool(kwargs):
             # additional query string
             url += '?' + mk_query(**kwargs)
-        print('url_apres:',url)
         response = self._get_request(url)
-        print('response',response)
         return self._parse_response(response)
 
     def _parse_response(self, res):
@@ -138,10 +135,19 @@ class Connect():
         #decoded = '' # Referenced before assignment protection
         # content_type we get with nHaystack is Content_type : application/json; charset=UTF-8
         content_type = res.headers['Content-Type']
-        if ('text/zinc' in content_type) or ('text/plain' in content_type):
+        if ';' in content_type:
+            # Separate encoding from content type
+            (content_type, encoding) = content_type.split(';',1)
+            content_type = content_type.strip()
+            # TODO: do we need to convert to Unicode, of so, how?
+
+        if content_type in ('text/zinc', 'text/plain'):
             decoded = hszinc.parse(res.text, mode=hszinc.MODE_ZINC)[0]
         elif 'application/json' in content_type:
             decoded = hszinc.parse(res.text, mode=hszinc.MODE_JSON)
+        else:
+            raise NotImplementedError("Don't know how to parse type %s" \
+                    % content_type)
         if 'err' in decoded.metadata:
             raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
                     traceback=decoded.metadata.get('traceback',None))
@@ -247,16 +253,11 @@ class Connect():
             return
 
         history = {}
-        # Problem with has_value...
-        # changing for "in" syntax
-        # We will need to talk about naming...  in nHaystack, we have navName
-        # that gives a human readable name to history
         for pt in self._get_grid('read', filter='his'):
-            if 'id' in pt:
-                if pt['id'] != '':
-                    his_id = pt.pop('id')
-            # else: raise a no id exception ?
-            history[his_id] = pt
+            pt_id = pt.pop('id')
+            if pt_id.has_value:
+                pt['name'] = pt_id.value
+            history[pt_id.name] = pt
         self._history = history
         self._history_expiry = time.time() + 300.0  # TODO: make configurable
 
