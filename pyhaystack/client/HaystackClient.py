@@ -113,32 +113,35 @@ class Connect():
         """
         This function must be overridden by specific server connection to fit particular needs (urls, other conditions)
         """
-        pass
+        raise NotImplementedError()
 
     def _get_grid(self, url, **kwargs):
         """
         Read a grid via GET from the given URL, optionally with query arguments.
         """
-
+        print('url_avant:',url)
         if not self.isConnected:
             self.authenticate()
 
         if bool(kwargs):
             # additional query string
             url += '?' + mk_query(**kwargs)
-
-        return self._parse_response(self._get_request(url))
+        print('url_apres:',url)
+        response = self._get_request(url)
+        print('response',response)
+        return self._parse_response(response)
 
     def _parse_response(self, res):
         """
         Parse the response sent back from the Haystack server.
         """
+        #decoded = '' # Referenced before assignment protection
+        # content_type we get with nHaystack is Content_type : application/json; charset=UTF-8
         content_type = res.headers['Content-Type']
-        if content_type in ('text/zinc', 'text/plain'):
+        if ('text/zinc' in content_type) or ('text/plain' in content_type):
             decoded = hszinc.parse(res.text, mode=hszinc.MODE_ZINC)[0]
-        elif content_type == 'application/json':
+        elif 'application/json' in content_type:
             decoded = hszinc.parse(res.text, mode=hszinc.MODE_JSON)
-
         if 'err' in decoded.metadata:
             raise HaystackError(decoded.metadata.get('dis', 'Unknown error'),
                     traceback=decoded.metadata.get('traceback',None))
@@ -244,11 +247,16 @@ class Connect():
             return
 
         history = {}
+        # Problem with has_value...
+        # changing for "in" syntax
+        # We will need to talk about naming...  in nHaystack, we have navName
+        # that gives a human readable name to history
         for pt in self._get_grid('read', filter='his'):
-            pt_id = pt.pop('id')
-            if pt_id.has_value:
-                pt['name'] = pt_id.value
-            history[pt_id.name] = pt
+            if 'id' in pt:
+                if pt['id'] != '':
+                    his_id = pt.pop('id')
+            # else: raise a no id exception ?
+            history[his_id] = pt
         self._history = history
         self._history_expiry = time.time() + 300.0  # TODO: make configurable
 
@@ -258,7 +266,7 @@ class Connect():
         """
         self.refreshHisList()
         return [
-                {'id': his_id, 'name': his_meta.get('name')} \
+                {'id': his_id, 'name': his_meta.get('navName')} \
                         for his_id, his_meta in
                         self._history.items()
         ]
