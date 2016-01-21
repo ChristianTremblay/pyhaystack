@@ -226,6 +226,13 @@ class Connect():
         return self._parse_response(self._post_grid(
             url, grid, headers=headers, **kwargs))
 
+    def _exec(self, data, headers=None, **kwargs):
+        """
+        Execute an "exec" API call.
+        """
+        return self._parse_response(self._post_request(
+            url, 'text/plain', data, headers=headers, **kwargs))
+
     @property
     def allHistories(self):
         '''
