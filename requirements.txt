@@ -1,5 +1,6 @@
 pandas==0.14
 requests==2.4
+six
 parsimonious
 iso8601 
 hszinc
