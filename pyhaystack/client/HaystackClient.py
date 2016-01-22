@@ -42,7 +42,7 @@ class Connect():
     # Class used for instantiating Haystack data points.
     _POINT_CLASS = HaystackPoint
 
-    def __init__(self, url, username, password, proj, **kwargs):
+    def __init__(self, url, username, password, proj = None, **kwargs):
         """
         Set local variables
         Open a session object that will be used for connection, with keep-alive feature
