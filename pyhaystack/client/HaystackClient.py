@@ -15,9 +15,7 @@ import weakref
 from .point import HaystackPoint
 from ..history.HisRecord import HisRecord
 #from ..io.read import read
-from ..io.zincParser import zincToJson
-from ..io.jsonParser import json_decode
-from ..io.haystackRead import HReadAllResult
+from ..haystackIO.haystackRead import HReadAllResult
 from ..exception import HaystackError
 
 try:
@@ -36,7 +34,6 @@ def mk_query(**kwargs):
         for arg, val in kwargs.items()
     ])
 
-
 class Connect():
     """
     Abstact class / Make a connection object to haystack server using requests module
@@ -46,7 +43,7 @@ class Connect():
     # Class used for instantiating Haystack data points.
     _POINT_CLASS = HaystackPoint
 
-    def __init__(self, url, username, password, **kwargs):
+    def __init__(self, url, username, password, proj, **kwargs):
         """
         Set local variables
         Open a session object that will be used for connection, with keep-alive feature
@@ -68,6 +65,7 @@ class Connect():
         self.queryURL = ''
         self.USERNAME = username
         self.PASSWORD = password
+        self.PROJECT = proj
         self.COOKIE = ''
         self.isConnected = False
         self.s = requests.Session()
@@ -228,6 +226,13 @@ class Connect():
         return self._parse_response(self._post_grid(
             url, grid, headers=headers, **kwargs))
 
+    def _exec(self, data, headers=None, **kwargs):
+        """
+        Execute an "exec" API call.
+        """
+        return self._parse_response(self._post_request(
+            url, 'text/plain', data, headers=headers, **kwargs))
+
     @property
     def allHistories(self):
         '''
@@ -275,6 +280,7 @@ class Connect():
     def readAll(self, filterRequest):
         """
         Returns result of filter request
+        :rtype : pyhaystack.haystackIO.haystackRead.HReadAllResult
         """
         # Should add some verification here
         log = self._log.getChild('read_all')
@@ -524,3 +530,27 @@ class Connect():
             return found.get(point_ids[0])
         else:
             return found
+
+    def commit(self, diff):
+        """
+        Implements skyspark commit. It accepts a Json and returns the server responce.
+        :param diff: a Json of the following type:
+        {
+            "meta":{"ver":"haystack version","commit":"add/update/remove"},
+            "cols":[{"name":"col1 name"},{"name":"col2 name"}]
+            "rows":[{"col1 name":"col1 val",{"col2 name":"col2 val"}]
+        }
+        The json needs to have an id. And in case of update or remove, a mod value which is the time of last change.
+        :return: returns the servers response as a Json.
+
+        Don't ask.
+        """
+        return self.s.post(self.queryURL+"commit", data=json.dumps(diff), headers={'accept': 'application/json; charset=utf-8', 'content-type':'application/json'})
+
+    def makeZinc(self,data):
+        """
+        Not sure if needed. Will convert json to zinc
+        :param data:
+        :return:
+        """
+        pass

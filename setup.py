@@ -26,7 +26,7 @@ setup(name='pyhaystack',
       url='http://www.project-haystack.com/',
 	long_description = "\n".join(info.__doc__.split('\n')),
 	install_requires = ['requests','setuptools','pandas','numpy', 'parsimonious', 'iso8601', 'hszinc'],
-      packages=['pyhaystack', 'pyhaystack.client', 'pyhaystack.io','pyhaystack.history','pyhaystack.util','pyhaystack.server',],
+      packages=['pyhaystack', 'pyhaystack.client', 'pyhaystack.haystackIO','pyhaystack.history','pyhaystack.util','pyhaystack.server',],
       entry_points={
           'console_scripts': ['pyhaystack=pyhaystack:main'],
       },
