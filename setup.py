@@ -2,12 +2,8 @@
 """
 Setup file for pyhaystack
 """
-#from pyhaystack.client.HaystackConnection import HaystackConnection
-#from pyhaystack.client.NiagaraAXConnection import NiagaraAXConnection
-#from pyhaystack import pyhaystack as ph
 import pyhaystack.info as info
 
-#from setuptools import setup
 from distutils.core import setup
 
 import re
@@ -20,14 +16,36 @@ os.environ['COPYFILE_DISABLE'] = 'true'
 
 setup(name='pyhaystack',
       version=info.__version__,
-	description='Python Haystack Utility',
-      author='Christian Tremblay',
-      author_email='christian.tremblay@servisys.com',
+	 description='Python Haystack Utility',
+      author=info.__author__,
+      author_email=info.__author_email__,
       url='http://www.project-haystack.com/',
-	long_description = "\n".join(info.__doc__.split('\n')),
-	install_requires = ['requests','setuptools','pandas','numpy', 'parsimonious', 'iso8601', 'hszinc'],
-      packages=['pyhaystack', 'pyhaystack.client', 'pyhaystack.haystackIO','pyhaystack.history','pyhaystack.util','pyhaystack.server',],
-      entry_points={
-          'console_scripts': ['pyhaystack=pyhaystack:main'],
-      },
-      )
+      keywords = ['tags', 'hvac', 'project-haystack', 'building', 'automation', 'analytic'],
+	 long_description = "\n".join(info.__doc__.split('\n')),
+	 install_requires = [
+          'requests',
+          'setuptools',
+          'pandas',
+          'parsimonious', 
+          'iso8601', 
+          'hszinc'],
+      packages=[
+          'pyhaystack',
+          'pyhaystack.client', 
+          'pyhaystack.haystackIO',
+          'pyhaystack.history',
+          'pyhaystack.util',
+          'pyhaystack.server',],
+#      entry_points={
+#          'console_scripts': ['pyhaystack=pyhaystack:main'],
+#     },
+      long_description=open('README.rst').read(),
+      classifiers=[
+          "Development Status :: 4 - Beta",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: System :: Networking",
+          "Topic :: Utilities",
+          ],)

@@ -102,9 +102,9 @@ class Unary(Base):
 
     def __str__(self):
         if isinstance(self.value, Binary):
-            return '%s ( %s )' % (self,OP, self.value)
+            return '%s ( %s )' % (self.OP, self.value)
         else:
-            return '%s %s' % (self,OP, self.value)
+            return '%s %s' % (self.OP, self.value)
 
 
 class Equal(Binary):
