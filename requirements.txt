@@ -3,3 +3,4 @@ requests==2.4
 parsimonious
 iso8601 
 hszinc
+six
