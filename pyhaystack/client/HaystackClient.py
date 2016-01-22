@@ -12,9 +12,8 @@ import time
 import hszinc
 import weakref
 
-from .point import HaystackPoint
+from ..io.haystackPoint import HaystackPoint
 from ..history.HisRecord import HisRecord
-#from ..io.read import read
 from ..io.haystackRead import HReadAllResult
 from ..exception import HaystackError
 
