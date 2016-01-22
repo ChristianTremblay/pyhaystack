@@ -15,7 +15,7 @@ import weakref
 from .point import HaystackPoint
 from ..history.HisRecord import HisRecord
 #from ..io.read import read
-from ..haystackIO.haystackRead import HReadAllResult
+from ..io.haystackRead import HReadAllResult
 from ..exception import HaystackError
 
 try:
@@ -280,7 +280,7 @@ class Connect():
     def readAll(self, filterRequest):
         """
         Returns result of filter request
-        :rtype : pyhaystack.haystackIO.haystackRead.HReadAllResult
+        :rtype : pyhaystack.io.haystackRead.HReadAllResult
         """
         # Should add some verification here
         log = self._log.getChild('read_all')
