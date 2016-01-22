@@ -9,6 +9,7 @@ python:
 bundler_args: "--retry 3"
 install:
 - pip install six
+- pip install pytz
 - pip install -r requirements.txt
 - pip install coveralls
 - pip install nose
