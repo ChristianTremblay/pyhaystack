@@ -5,7 +5,7 @@ Created on Sat Jan 23 20:57:16 2016
 @author: CTremblay, sjlongland
 """
 
-from ..history.HisRecord import HisRecord
+from ...history.HisRecord import HisRecord
 
 import hszinc
 import time

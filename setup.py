@@ -32,6 +32,7 @@ setup(name='pyhaystack',
       packages=[
           'pyhaystack',
           'pyhaystack.client', 
+          'pyhaystack.client.mixins',
           'pyhaystack.io',
           'pyhaystack.history',
           'pyhaystack.util',

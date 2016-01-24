@@ -14,12 +14,13 @@ class Connect(hc.Connect):
     This class connects to NiagaraAX and fetch haystack servlet
     A session is open and authentication will persist
     """
-    def __init__(self,url,username,password,*, refreshHisList = True):
+    def __init__(self,url,username,password,*, refreshHisList = True, **kwargs):
         """
         Define Niagara AX specific local variables : url
         Calls the authenticate function
         """
         hc.Connect.__init__(self,url,username,password,**kwargs)
+        self.logoutURL = self.baseURL + "logout/"
         self.loginURL = self.baseURL + "login/"
         self.queryURL = self.baseURL + "haystack/"
         self.requestAbout = "about"
@@ -90,3 +91,6 @@ class Connect(hc.Connect):
             print('Connection succeed with haystack on %s (%s) running haystack version %s' %(self.serverName,self.axVersion,self.haystackVersion))
         if refreshHisList:            
             self.refreshHisList()
+            
+    def disconnect(self):
+        self.s.get(self.logoutURL)

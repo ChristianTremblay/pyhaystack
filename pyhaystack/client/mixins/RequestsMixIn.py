@@ -14,7 +14,7 @@ class DisconnectedException(Exception):
     """
     pass
 
-def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
+def retry(ExceptionToCheck, tries=4, delay=1, backoff=2, logger=None):
     """Retry calling the decorated function using an exponential backoff.
 
     http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
@@ -56,7 +56,7 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
 
     return deco_retry
   
-class RequestsMixIn(object):
+class RequestsMixin(object):
     """
     This class holds every functions related to requests that apply to
     HaystackClient
@@ -87,10 +87,10 @@ class RequestsMixIn(object):
                 accept, url, kwargs.get('headers',{}))
         req = self.s.get(url, **kwargs)
         req.raise_for_status()
-        # Detect disconnection
-        if 'text/html' in req.headers:
+        # Detect if disconnected
+        if 'text/html' in req.headers['content-type']:
             self.isConnected = False
-            raise DisconnectedException
+            raise DisconnectedException('Session disconnected')
             
         return req
 
@@ -116,7 +116,7 @@ class RequestsMixIn(object):
         # Detect disconnection
         if 'text/html' in req.headers:
             self.isConnected = False
-            raise DisconnectedException
+            raise DisconnectedException('Session disconnected')
         return req
         
 

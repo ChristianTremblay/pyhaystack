@@ -4,7 +4,7 @@ Created on Sat Jan 23 20:57:16 2016
 
 @author: CTremblay, sjlongland
 """
-from ..exception import HaystackError
+from ...exception import HaystackError
 import hszinc
 
 try:
@@ -23,7 +23,7 @@ def mk_query(**kwargs):
         for arg, val in kwargs.items()
     ])
 
-class HszincMixIn(object):
+class HszincMixin(object):
     """
     This class holds every functions related to hszinc that apply to
     HaystackClient

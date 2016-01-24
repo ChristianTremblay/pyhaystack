@@ -10,7 +10,9 @@ import requests
 import hszinc
 import weakref
 
-from .mixins import RequestsMixin, HszincMixin, HistoriesMixin
+from .mixins.RequestsMixin import RequestsMixin
+from .mixins.HszincMixin import HszincMixin
+from .mixins.HistoriesMixin import HistoriesMixin
 from ..io.haystackPoint import HaystackPoint
 
 from ..io.haystackRead import HReadAllResult
@@ -195,5 +197,11 @@ class Connect(RequestsMixin, HszincMixin, HistoriesMixin):
             return found.get(point_ids[0])
         else:
             return found
+            
+    def disconnext(self):
+        """
+        Used to disconnect from server
+        """
+        raise NotImplementedError('Must be overridden')
 
 
