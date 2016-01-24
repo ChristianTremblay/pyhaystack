@@ -59,7 +59,7 @@ class HszincMixIn(object):
         Read a grid via GET from the given URL, optionally with query arguments.
         """
         if not self.isConnected:
-            self.authenticate()
+            self.authenticate(refreshHisList = False)
 
         if bool(kwargs):
             # additional query string
