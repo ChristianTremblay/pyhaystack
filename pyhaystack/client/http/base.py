@@ -8,6 +8,7 @@ convenient and to aid portability of pyhaystack.
 import re
 import urllib
 
+from .auth import AuthenticationCredentials
 
 class HTTPClient(object):
     """
@@ -144,6 +145,12 @@ class HTTPClient(object):
         proxies = _merge(proxies, self.proxies, exclude_proxies)
         auth = auth or self.auth or None
         timeout = timeout or self.timeout or None
+
+        if not ((auth is None) or isinstance(auth, AuthenticationCredentials)):
+            raise TypeError('%s is not a subclass of the '\
+                    'AuthenticationCredentials class.' \
+                    % auth.__class__.__name__)
+
         if tls_verify is None:
             tls_verify = self.tls_verify
             if (tls_verify is None) and url.startswith('https://'):
@@ -212,33 +219,3 @@ class HTTPClient(object):
         """
         raise NotImplementedError('TODO: implement in %s' \
                 % self.__class__.__name__)
-
-
-class AuthenticationCredentials(object):
-    """
-    A base class to represent authentication credentials.
-    """
-    pass
-
-
-class UserPasswordAuthenticationCredentials(AuthenticationCredentials):
-    """
-    A base class that represents username/password type authentication.
-    """
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-
-
-class BasicAuthenticationCredentials(UserPasswordAuthenticationCredentials):
-    """
-    A class that represents Basic authentication.
-    """
-    pass
-
-
-class DigestAuthenticationCredentials(UserPasswordAuthenticationCredentials):
-    """
-    A class that represents Digest authentication.
-    """
-    pass
