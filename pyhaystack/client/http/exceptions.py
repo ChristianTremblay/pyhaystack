@@ -35,7 +35,8 @@ class HTTPStatusError(HTTPBaseError):
     """
     Error class to represent a returned failed status from the host.
     """
-    def __init__(self, message, status, headers=None):
+    def __init__(self, message, status, headers=None, body=None):
         self.headers = headers
+        self.body = body
         self.status = status
         super(HTTPStatusError, self).__init__(message, status)
