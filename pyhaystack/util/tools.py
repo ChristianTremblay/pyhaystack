@@ -20,7 +20,17 @@ def isfloat(value):
     else:
         return False
 
-
+def isBool(value):
+    """
+    Helper function to detect if a value is a float
+    """
+    if value != '':
+        if isinstance(value, bool):
+            return True
+        else:
+            return False
+    else:
+        return False
 
 def prettyprint(jsonData):
     """

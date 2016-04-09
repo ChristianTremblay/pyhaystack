@@ -198,7 +198,7 @@ class Connect(RequestsMixin, HszincMixin, HistoriesMixin):
         else:
             return found
             
-    def disconnext(self):
+    def disconnect(self):
         """
         Used to disconnect from server
         """

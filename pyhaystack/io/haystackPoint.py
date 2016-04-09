@@ -10,6 +10,7 @@ import logging
 import datetime
 
 from ..history.HisRecord import HisRecord
+from ..util.tools import isfloat, isBool
 
 class HaystackPoint(object):
     """
@@ -162,7 +163,7 @@ class HaystackPoint(object):
         elif rng is None:
             raise ValueError('start and end or rng is required')
 
-        return HisRecord(self._session, self._point_id)
+        return HisRecord(self._session, self._point_id, rng)
 
     def his_write(self, records):
         """
@@ -201,7 +202,10 @@ class HaystackPoint(object):
         Otherwise, the parameter is taken as a raw range.
         """
         if isinstance(rng, slice):
-            return self.his_read(start=slice.start, end=slice.stop)
+            # Correction needed as the request was build : 
+            # &range=<member+%27start%27+of+%27slice%27+objects>%2C<member+%27stop%27+of+%27slice%27+objects>
+            start, stop, step = rng.indices(len(self)) 
+            return self.his_read(start=start, end=stop)
         return self.his_read(rng=rng)
 
     def __setitem__(self, ts, value):
@@ -211,3 +215,14 @@ class HaystackPoint(object):
         writes.  For bulk inserts, see `his_write`.
         """
         return self.his_write({'ts': ts, 'val': value})
+        
+    @property
+    def value(self):
+        if isBool(self.curVal):
+            return self.curVal
+        elif isinstance(self.curVal, hszinc.Quantity): 
+            return float(self.curVal)
+        else:
+            raise ValueError("Don't know what to return")
+            
+        

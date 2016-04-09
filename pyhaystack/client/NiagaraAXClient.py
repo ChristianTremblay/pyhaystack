@@ -63,7 +63,8 @@ class Connect(hc.Connect):
                              'absPathBase':'/',
                              'content-type':'application/x-niagara-login-support',
                              'Referer':self.baseURL+'login/',
-                             'accept':'application/json; charset=utf-8'
+                             'accept':'application/json; charset=utf-8',
+                             'Accept-Encoding': 'gzip'
                             }
             # Authentication post request
             try:

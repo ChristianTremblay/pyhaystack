@@ -26,6 +26,8 @@ class HReadAllResult():
         self._session = session
         self._listOfHisMarker = []
         self._displayAndHisMarker = {}
+        self.readDis()
+        self.readId()
 
     def readDis(self):
         """
@@ -126,3 +128,7 @@ class HReadAllResult():
 
     def getData(self):
         return self._jsonResult[:]
+        
+    def __iter__(self):
+        for ids in self._listOfId:
+            yield ids
