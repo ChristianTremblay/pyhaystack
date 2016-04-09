@@ -118,5 +118,3 @@ class RequestsMixin(object):
             self.isConnected = False
             raise DisconnectedException('Session disconnected')
         return req
-        
-
