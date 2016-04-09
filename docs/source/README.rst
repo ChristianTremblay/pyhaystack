@@ -3,7 +3,7 @@ pyhaystack |build-status| |coverage| |docs|
 
 Pyhaystack is a module that allow python programs to connect to a haystack server [project-haystack.org](http://www.project-haystack.org).
 
-Actually, connection can be established with Niagara Platform running the nhaystack module.
+Actually, connection can be established with Niagara Platform running the nhaystack module, And skyspark application of skyfoundry.
 
 It's a work in progress and actually, main goal is to connect to server and retrive histories to make numeric analysis. Eventually, other options will be implemented through the REST API.
 
@@ -13,7 +13,7 @@ If not, module will be installed for System path python but won't work in the en
 Using pyhaystack
 ================
 Open a session with Haystack server
-------------------------------------
+-----------------------------------
 
 Example ::
    
@@ -120,3 +120,15 @@ Distribution plot draw a graph showing how many records are between 20-20.5degC,
 .. |coverage| image:: https://coveralls.io/repos/ChristianTremblay/pyhaystack/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/ChristianTremblay/pyhaystack?branch=master
    :alt: Coverage
+
+
+![breakdownplot.jpg](https://bitbucket.org/repo/Anyjky/images/859471603-breakdownplot.jpg)
+
+
+##To Add to README:
+[ ] Skyspark example
+[ ] Explanation for skyspark connector class
+
+This is the skyspark connector code, based on the work made by Christian Tremblay for NiagaraAX 
+Please notice that the Niagara module would probably fail to work since we changed the base Classes to fit our needs. 
+The work here was done by Smart-Green inc. for some internal needs but has been released free for the benefit of the community.

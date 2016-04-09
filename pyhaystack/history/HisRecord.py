@@ -54,15 +54,27 @@ class HisRecord():
         self.hisId = hisId
         self.name = self._meta.get('name')
 
-        result = session._get_grid('hisRead', id='@%s' % self.hisId,
-                range=dateTimeRange)
+        use_eval = hasattr(session, '_eval')
+        if use_eval:
+            result = session._eval(\
+                    'readById(%(hisId)s).hisRead(%(dtRange)s)' \
+                    % {
+                        'hisId': self.hisId,
+                        'dtRange': dateTimeRange.replace(',','..'),
+                    })
+            val_field = 'v0'
+        else:
+            result = session._get_grid('hisRead', id='@%s' % self.hisId,
+                    range=dateTimeRange)
+            val_field = 'val'
+
         self._log.debug('Received result set: %s', result)
         # Convert the list of {ts: foo, val: bar} dicts to a pair of
         # lists.
         if bool(result):
             strip_unit = lambda v : v.value if isinstance(v, Quantity) else v
             (index, values) = zip(*map(lambda row : \
-                            (row['ts'], strip_unit(row['val'])), result))
+                            (row['ts'], strip_unit(row[val_field])), result))
         else:
             # No data
             (index, values) = ([], [])

@@ -48,9 +48,6 @@ def hconnect(address,user,password):
     session = ax.Connect(address,user,password)
 
 
-    pass
-
-
 def usage():
     print("Usage: %s [OPTIONS]" % (sys.argv[0]))
     print("Check multiple git repository in one pass")

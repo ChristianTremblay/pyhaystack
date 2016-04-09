@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-File : pyhaystack.py (2.x)
+File : pyhaystackTest.py (2.x)
 This module allow a connection to a haystack server
 Feautures provided allow user to fetch data from the server and eventually, to post to it.
 
@@ -10,6 +10,7 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 """
 
-__author__ = 'Christian Tremblay'
-__version__ = '0.70.0'
-__license__ = 'AFL'
+__author__ = 'Christian Tremblay, @sjlongland, @sudo-Whateverman, Igor'
+__author_email__ = 'christian.tremblay@servisys.com'
+__version__ = '0.71.0_issue6'
+__license__ = 'LGPL'
