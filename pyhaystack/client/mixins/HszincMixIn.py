@@ -6,7 +6,6 @@ Created on Sat Jan 23 20:57:16 2016
 """
 from ...exception import HaystackError
 import hszinc
-import json
 
 try:
     # Python 3.x case
@@ -158,4 +157,4 @@ class HszincMixin(object):
         :param data:
         :return:
         """
-        pass
+        passS
