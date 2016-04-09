@@ -1,6 +1,12 @@
 Contributors:
 
 Christian Tremblay        christian.tremblay@servisys.com
+Stuart J. Longland        stuartl@vrt.com.au 
+
+Needle merge
+Nick | sudo-Whateverman (Github Username)
+Igor Zhalkin | ArujBarbaross (Github Username)
+Yafitush (Github Username)
 
 -----------------------------------------------------------------------------
 
