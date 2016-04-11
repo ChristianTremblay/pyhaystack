@@ -75,7 +75,7 @@ class HaystackSession(object):
         """
         return self._grid_format
 
-    def authenticate(self):
+    def authenticate(self, callback=None):
         """
         Authenticate with the Project Haystack server.  If an authentication
         attempt is in progress, we return it, otherwise we instantiate a new
@@ -86,39 +86,55 @@ class HaystackSession(object):
         else:
             auth_op = None
 
-        if auth_op is None:
+        new = auth_op is None
+        if new:
             auth_op = self._AUTH_OPERATION(self)
             auth_op.done_sig.connect(self._on_authenticate_done)
+
+        if callback is not None:
+            if auth_op.is_done:
+                # Already done
+                return callback(auth_op)
+            else:
+                auth_op.done_sig.connect(callback)
+
+        if new:
             auth_op.go()
             self._auth_op = weakref.ref(auth_op)
 
         return auth_op
 
-    def about(self):
+    def about(self, callback=None):
         """
         Retrieve the version information of this Project Haystack server.
         """
         op = self._ABOUT_OPERATION(self)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def ops(self):
+    def ops(self, callback=None):
         """
         Retrieve the operations supported by this Project Haystack server.
         """
         op = self._OPS_OPERATION(self)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def formats(self):
+    def formats(sel, callback=None):
         """
         Retrieve the grid formats supported by this Project Haystack server.
         """
         op = self._FORMATS_OPERATION(self)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def read(self, ids=None, filter_expr=None, limit=None):
+    def read(self, ids=None, filter_expr=None, limit=None, callback=None):
         """
         Retrieve information on entities matching the given criteria.
         Either ids or filter_expr may be given.  ids may be given as a
@@ -137,30 +153,37 @@ class HaystackSession(object):
             # Make sure we always pass a list.
             ids = [ids]
         op = self._READ_OPERATION(self, ids, filter_expr, limit)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def nav(self, nav_id=None):
+    def nav(self, nav_id=None, callback=None):
         """
         The nav op is used navigate a project for learning and discovery. This
         operation allows servers to expose the database in a human-friendly
         tree (or graph) that can be explored.
         """
         op = self._NAV_OPERATION(self, nav_id)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def watch_sub(self, points, watch_id=None, watch_dis=None, lease=None):
+    def watch_sub(self, points, watch_id=None, watch_dis=None,
+            lease=None, callback=None):
         """
         This creates a new watch with debug string watch_dis, identifier
         watch_id (string) and a lease time of lease (integer) seconds.  points
         is a list of strings, Entity objects or hszinc.Ref objects.
         """
         op = self._WATCH_SUB_OPERATION(self, watch_id, watch_dis, lease)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def watch_unsub(self, watch, points=None):
+    def watch_unsub(self, watch, points=None, callback=None):
         """
         watch is either the value of watch_id given when creating a watch, or
         an instance of a Watch object.
@@ -170,10 +193,12 @@ class HaystackSession(object):
         Otherwise, it closes the Watch object.
         """
         op = self._WATCH_SUB_OPERATION(self, watch, points)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def watch_poll(self, watch, refresh=False):
+    def watch_poll(self, watch, refresh=False, callback=None):
         """
         watch is either the value of watch_id given when creating a watch, or
         an instance of a Watch object.
@@ -182,10 +207,13 @@ class HaystackSession(object):
         just those that have changed since the last poll.
         """
         op = self._WATCH_POLL_OPERATION(self, watch, refresh)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def point_write(self, point, level=None, val=None, who=None, duration=None):
+    def point_write(self, point, level=None, val=None, who=None,
+            duration=None, callback=None):
         """
         point is either the ID of the writeable point entity, or an instance of
         the writeable point entity to retrieve the write status of or write a
@@ -196,10 +224,12 @@ class HaystackSession(object):
         performed to the nominated point.
         """
         op = self._POINT_WRITE_OPERATION(self, point, level, val, who, duration)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def his_write(self, point, timestamp_records):
+    def his_write(self, point, timestamp_records, callback=None):
         """
         point is either the ID of the writeable historical point entity, or an
         instance of the writeable historical point entity to write historical
@@ -208,10 +238,12 @@ class HaystackSession(object):
         Pandas Series object.
         """
         op = self._HIS_WRITE_OPERATION(self, point, timestamp_records)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
-    def his_read(self, point, rng):
+    def his_read(self, point, rng, callback=None):
         """
         point is either the ID of the historical point entity, or an instance
         of the historical point entity to read historical from.  rng is
@@ -221,6 +253,8 @@ class HaystackSession(object):
         slice of datetime.dates or datetime.datetimes.
         """
         op = self._HIS_READ_OPERATION(self, point, rng)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
@@ -231,6 +265,8 @@ class HaystackSession(object):
         parameters required for the user action.
         """
         op = self._INVOKE_ACTION_OPERATION(self, entity, action, kwargs)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
