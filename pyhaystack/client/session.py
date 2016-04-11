@@ -41,12 +41,13 @@ class HaystackSession(object):
     _GET_GRID_OPERATION = grid_ops.GetGridOperation
     _POST_GRID_OPERATION = grid_ops.PostGridOperation
 
-    def __init__(self, uri, grid_format=hszinc.MODE_ZINC,
+    def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None, log=None):
         """
         Initialise a base Project Haystack session handler.
 
         :param uri: Base URI for the Haystack installation.
+        :param api_dir: Subdirectory relative to URI where API calls are made.
         :param grid_format: What format to use for grids in GET/POST requests?
         :param http_client: HTTP client class to use.
         :param http_args: Optional HTTP client arguments to configure.
@@ -66,6 +67,7 @@ class HaystackSession(object):
 
         # Create the HTTP client object
         self._client = http_client(uri=uri, **http_args)
+        self._api_dir = api_dir
 
         # Current in-progress authentication operation, if any.
         self._auth_op = None
@@ -317,12 +319,14 @@ class HaystackSession(object):
 
     # Protected methods/properties
 
-    def _get(self, uri, callback, **kwargs):
+    def _get(self, uri, callback, api=True, **kwargs):
         """
         Perform a raw HTTP GET operation.  This is a convenience wrapper around
         the HTTP client class that allows pre/post processing of the request by
         the session instance.
         """
+        if api:
+            uri = '%s/%s' % (self._api_dir, uri)
         return self._client._get(uri, callback, **kwargs)
 
     def _get_grid(self, uri, callback, expect_format=None, **kwargs):
@@ -337,14 +341,16 @@ class HaystackSession(object):
         op.go()
         return op
 
-    def _post(self, url, callback, body, body_type=None, body_size=None,
-            headers=None, **kwargs):
+    def _post(self, uri, callback, body, body_type=None, body_size=None,
+            headers=None, api=True, **kwargs):
         """
         Perform a raw HTTP POST operation.  This is a convenience wrapper around
         the HTTP client class that allows pre/post processing of the request by
         the session instance.
         """
-        return self._client._post(self, url, callback, body, body_type,
+        if api:
+            uri = '%s/%s' % (self._api_dir, uri)
+        return self._client._post(self, uri, callback, body, body_type,
                 body_size, headers, **kwargs)
 
     def _post_grid(self, uri, grid, callback, post_format=None,
