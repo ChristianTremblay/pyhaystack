@@ -105,31 +105,19 @@ class HaystackSession(object):
         """
         Retrieve the version information of this Project Haystack server.
         """
-        op = self._ABOUT_OPERATION(self)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        return self._get_grid('about', callback)
 
     def ops(self, callback=None):
         """
         Retrieve the operations supported by this Project Haystack server.
         """
-        op = self._OPS_OPERATION(self)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        return self._get_grid('ops', callback)
 
     def formats(self, callback=None):
         """
         Retrieve the grid formats supported by this Project Haystack server.
         """
-        op = self._FORMATS_OPERATION(self)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        return self._get_grid('formats', callback)
 
     def read(self, ids=None, filter_expr=None, limit=None, callback=None):
         """
@@ -149,11 +137,28 @@ class HaystackSession(object):
         if isinstance(ids, string_types) or isinstance(ids, hszinc.Ref):
             # Make sure we always pass a list.
             ids = [ids]
-        op = self._READ_OPERATION(self, ids, filter_expr, limit)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+
+        if bool(ids):
+            if filter_expr is not None:
+                raise ValueError('Either specify ids or filter_expr, not both')
+
+            ids = [self._obj_to_ref(r) for r in ids]
+
+            if len(ids) == 1:
+                # Reading a single entity
+                return self._get_grid('read', callback, params={'id': ids[0]})
+            else:
+                # Reading several entities
+                grid = hszinc.Grid()
+                grid.column['id'] = {}
+                grid.extend([{'id': r} for r in ids])
+                return self._post_grid('read', grid, callback)
+        else:
+            params = {'filter': filter_expr}
+            if limit is not None:
+                params['limit'] = int(limit)
+
+            return self._get_grid('read', callback, params=params)
 
     def nav(self, nav_id=None, callback=None):
         """
@@ -161,11 +166,7 @@ class HaystackSession(object):
         operation allows servers to expose the database in a human-friendly
         tree (or graph) that can be explored.
         """
-        op = self._NAV_OPERATION(self, nav_id)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        return self._get_grid('nav', callback, params={'nav_id': nav_id})
 
     def watch_sub(self, points, watch_id=None, watch_dis=None,
             lease=None, callback=None):
@@ -174,11 +175,16 @@ class HaystackSession(object):
         watch_id (string) and a lease time of lease (integer) seconds.  points
         is a list of strings, Entity objects or hszinc.Ref objects.
         """
-        op = self._WATCH_SUB_OPERATION(self, watch_id, watch_dis, lease)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        grid = hszinc.Grid()
+        grid.column['id'] = {}
+        grid.extend([{'id': self._obj_to_ref(p)} for p in points])
+        if watch_id is not None:
+            grid.metadata['watchId'] = watch_id
+        if watch_dis is not None:
+            grid.metadata['watchDis'] = watch_dis
+        if lease is not None:
+            grid.metadata['lease'] = lease
+        return self._post_grid('watchSub', grid, callback)
 
     def watch_unsub(self, watch, points=None, callback=None):
         """
@@ -189,11 +195,18 @@ class HaystackSession(object):
         hszinc.Ref objects which will be removed from the Watch object.
         Otherwise, it closes the Watch object.
         """
-        op = self._WATCH_SUB_OPERATION(self, watch, points)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        grid = hszinc.Grid()
+        grid.column['id'] = {}
+
+        if not isinstance(watch, string_types):
+            watch = watch.id
+        grid.metadata['watchId'] = watch
+
+        if points is not None:
+            grid.extend([{'id': self._obj_to_ref(p)} for p in points])
+        else:
+            grid.metadata['close'] = hszinc.MARKER
+        return self._post_grid('watchSub', grid, callback)
 
     def watch_poll(self, watch, refresh=False, callback=None):
         """
@@ -203,11 +216,13 @@ class HaystackSession(object):
         If refresh is True, then all points on the watch will be updated, not
         just those that have changed since the last poll.
         """
-        op = self._WATCH_POLL_OPERATION(self, watch, refresh)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        grid = hszinc.Grid()
+        grid.column['empty'] = {}
+
+        if not isinstance(watch, string_types):
+            watch = watch.id
+        grid.metadata['watchId'] = watch
+        return self._post_grid('watchPoll', grid, callback)
 
     def point_write(self, point, level=None, val=None, who=None,
             duration=None, callback=None):
@@ -220,25 +235,24 @@ class HaystackSession(object):
         write status of the point is retrieved.  Otherwise, a write is
         performed to the nominated point.
         """
-        op = self._POINT_WRITE_OPERATION(self, point, level, val, who, duration)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
-
-    def his_write(self, point, timestamp_records, callback=None):
-        """
-        point is either the ID of the writeable historical point entity, or an
-        instance of the writeable historical point entity to write historical
-        data to.  timestamp_records should be a dict mapping timestamps
-        (datetime.datetime) to the values to be written at those times, or a
-        Pandas Series object.
-        """
-        op = self._HIS_WRITE_OPERATION(self, point, timestamp_records)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        params = {
+                'id': self._obj_to_ref(point),
+        }
+        if level is None:
+            if (val is not None) or (who is not None) or (duration is not None):
+                raise ValueError(
+                        'If level is None, val, who and duration must '\
+                        'be None too.')
+        else:
+            params.update({
+                    'level': level,
+                    'val': val,
+            })
+            if who is not None:
+                params['who'] = who
+            if duration is not None:
+                params['duration'] = duration
+        return self._get_grid('pointWrite', callback, params=params)
 
     def his_read(self, point, rng, callback=None):
         """
@@ -249,11 +263,42 @@ class HaystackSession(object):
         datetime.datetime (providing all samples since the nominated time) or a
         slice of datetime.dates or datetime.datetimes.
         """
-        op = self._HIS_READ_OPERATION(self, point, rng)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        if isinstance(rng, slice):
+            str_rng = ','.join([hszinc.dump_scalar(p) for p in
+                (rng.start, rng.stop)])
+        elif not isinstance(rng, string_types):
+            str_rng = hszinc.dump_scalar(rng)
+        else:
+            # Better be valid!
+            str_rng = rng
+
+        return self._get_grid('hisRead', callback, params={
+            'id': self._obj_to_ref(point),
+            'range': str_rng,
+        })
+
+    def his_write(self, point, timestamp_records, callback=None):
+        """
+        point is either the ID of the writeable historical point entity, or an
+        instance of the writeable historical point entity to write historical
+        data to.  timestamp_records should be a dict mapping timestamps
+        (datetime.datetime) to the values to be written at those times, or a
+        Pandas Series object.
+        """
+        grid = hszinc.Grid()
+        grid.metadata['id'] = self._obj_to_ref(entity)
+        grid.column['ts'] = {}
+        grid.column['val'] = {}
+
+        if hasattr(timestamp_records, 'to_dict'):
+            timestamp_records = timestamp_records.to_dict()
+
+        timestamp_records = timestamp_records.items()
+        timestamp_records.sort(key=lambda rec : rec[0])
+        for (ts, val) in timestamp_records:
+            grid.append({'ts': ts, 'val': val})
+
+        return self._post_grid('hisWrite', grid, callback)
 
     def invoke_action(self, entity, action, callback=None, **kwargs):
         """
@@ -261,11 +306,14 @@ class HaystackSession(object):
         invoke the named action on.  Keyword arguments give any additional
         parameters required for the user action.
         """
-        op = self._INVOKE_ACTION_OPERATION(self, entity, action, kwargs)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+        grid = hszinc.Grid()
+        grid.metadata['id'] = self._obj_to_ref(entity)
+        grid.metadata['action'] = action
+        for arg in kwargs.keys():
+            grid.column[arg] = {}
+        grid.append(kwargs)
+
+        return self._post_grid('invokeAction', grid callback)
 
     # Protected methods/properties
 
@@ -313,6 +361,20 @@ class HaystackSession(object):
         op.done_sig.connect(callback)
         op.go()
         return op
+
+    def _obj_to_ref(self, obj):
+        """
+        Convert an arbitrary object referring to an entity to an entity
+        reference.
+        """
+        if isinstance(obj, hszinc.Ref):
+            return obj
+        if isinstance(obj, string_types):
+            return hszinc.Ref(obj)
+        if hasattr(obj, 'id'):
+            return obj.id
+        raise NotImplementedError('Don\'t know how to get the ID from a %s' \
+                % obj.__class__.__name__)
 
     # Private methods/properties
 
