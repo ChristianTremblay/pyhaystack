@@ -68,13 +68,6 @@ class HaystackSession(object):
 
     # Public methods/properties
 
-    @property
-    def grid_format(self):
-        """
-        Return the grid format being used for this Haystack instance.
-        """
-        return self._grid_format
-
     def authenticate(self, callback=None):
         """
         Authenticate with the Project Haystack server.  If an authentication
@@ -272,13 +265,22 @@ class HaystackSession(object):
 
     # Protected methods/properties
 
-    def _get(self, url, callback, **kwargs):
+    def _get(self, uri, callback, **kwargs):
         """
         Perform a raw HTTP GET operation.  This is a convenience wrapper around
         the HTTP client class that allows pre/post processing of the request by
         the session instance.
         """
-        return self._client._get(url, callback, **kwargs)
+        return self._client._get(uri, callback, **kwargs)
+
+    def _get_grid(self, uri, callback, **kwargs):
+        """
+        Perform a HTTP GET of a grid.
+        """
+        op = self._GET_GRID_OPERATION(self, uri, **kwargs)
+        op.done_sig.connect(callback)
+        op.go()
+        return op
 
     def _post(self, url, callback, body, body_type=None, body_size=None,
             headers=None, **kwargs):
@@ -289,6 +291,17 @@ class HaystackSession(object):
         """
         return self._client._post(self, url, callback, body, body_type,
                 body_size, headers, **kwargs)
+
+    def _post_grid(self, uri, grid, callback, post_format=None, **kwargs):
+        """
+        Perform a HTTP POST of a grid.
+        """
+        if post_format is None:
+            post_format=self._grid_format
+        op = self._POST_GRID_OPERATION(self, uri, **kwargs)
+        op.done_sig.connect(callback)
+        op.go()
+        return op
 
     # Private methods/properties
 
