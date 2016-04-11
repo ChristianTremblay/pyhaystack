@@ -73,7 +73,7 @@ class HaystackOperation(object):
         """
         Return true if the operation is complete.
         """
-        return self.state == 'done'
+        return self._state_machine.is_finished()
 
     @property
     def result(self):
