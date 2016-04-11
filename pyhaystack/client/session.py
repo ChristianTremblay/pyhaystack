@@ -273,11 +273,14 @@ class HaystackSession(object):
         """
         return self._client._get(uri, callback, **kwargs)
 
-    def _get_grid(self, uri, callback, **kwargs):
+    def _get_grid(self, uri, callback, expect_format=None, **kwargs):
         """
         Perform a HTTP GET of a grid.
         """
-        op = self._GET_GRID_OPERATION(self, uri, **kwargs)
+        if expect_format is None:
+            expect_format=self._grid_format
+        op = self._GET_GRID_OPERATION(self, uri,
+                expect_format=expect_format, **kwargs)
         op.done_sig.connect(callback)
         op.go()
         return op
@@ -292,13 +295,17 @@ class HaystackSession(object):
         return self._client._post(self, url, callback, body, body_type,
                 body_size, headers, **kwargs)
 
-    def _post_grid(self, uri, grid, callback, post_format=None, **kwargs):
+    def _post_grid(self, uri, grid, callback, post_format=None,
+            expect_format=None, **kwargs):
         """
         Perform a HTTP POST of a grid.
         """
+        if expect_format is None:
+            expect_format=self._grid_format
         if post_format is None:
             post_format=self._grid_format
-        op = self._POST_GRID_OPERATION(self, uri, **kwargs)
+        op = self._POST_GRID_OPERATION(self, uri, expect_format=expect_format,
+                post_format=post_format, **kwargs)
         op.done_sig.connect(callback)
         op.go()
         return op
