@@ -12,7 +12,7 @@ import weakref
 from six import string_types
 
 from .http import sync, exceptions
-from .ops import grid
+from .ops import grid as grid_ops
 
 class HaystackSession(object):
     """
@@ -36,6 +36,10 @@ class HaystackSession(object):
     The base class takes some arguments that control the default behaviour of
     the object.
     """
+
+    # Operation references
+    _GET_GRID_OPERATION = grid_ops.GetGridOperation
+    _POST_GRID_OPERATION = grid_ops.PostGridOperation
 
     def __init__(self, uri, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None, log=None):
@@ -61,7 +65,7 @@ class HaystackSession(object):
         self._grid_format = grid_format
 
         # Create the HTTP client object
-        self._client = http_client(url=url, **http_args)
+        self._client = http_client(uri=uri, **http_args)
 
         # Current in-progress authentication operation, if any.
         self._auth_op = None
@@ -117,7 +121,7 @@ class HaystackSession(object):
         op.go()
         return op
 
-    def formats(sel, callback=None):
+    def formats(self, callback=None):
         """
         Retrieve the grid formats supported by this Project Haystack server.
         """
@@ -251,7 +255,7 @@ class HaystackSession(object):
         op.go()
         return op
 
-    def invoke_action(self, entity, action, **kwargs):
+    def invoke_action(self, entity, action, callback=None, **kwargs):
         """
         entity is either the ID of the entity, or an instance of the entity to
         invoke the named action on.  Keyword arguments give any additional
@@ -304,8 +308,8 @@ class HaystackSession(object):
             expect_format=self._grid_format
         if post_format is None:
             post_format=self._grid_format
-        op = self._POST_GRID_OPERATION(self, uri, expect_format=expect_format,
-                post_format=post_format, **kwargs)
+        op = self._POST_GRID_OPERATION(self, uri, grid,
+                expect_format=expect_format, post_format=post_format, **kwargs)
         op.done_sig.connect(callback)
         op.go()
         return op
