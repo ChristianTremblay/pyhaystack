@@ -19,7 +19,7 @@ class HTTPClient(object):
 
     PROTO_RE    = re.compile(r'^[a-z]+://')
 
-    def __init__(self, url=None, params=None, headers=None, cookies=None,
+    def __init__(self, uri=None, params=None, headers=None, cookies=None,
             auth=None, timeout=None, proxies=None, tls_verify=None,
             tls_cert=None):
         """
@@ -27,7 +27,7 @@ class HTTPClient(object):
         These parameters are made accessible as properties to be modified at
         will by the caller as needed.
 
-        :param url:     Base URL for all requests.  If given, this string will
+        :param uri:     Base URI for all requests.  If given, this string will
                         be pre-pended to all requests passed through this
                         client.
         :param params:  A dictionary of key-value pairs to be passed as URI
@@ -53,7 +53,7 @@ class HTTPClient(object):
 
         # Stash these defaults for later.  These can be modified at any time
         # by the caller.
-        self.url = url
+        self.uri = uri
         self.params = params
         self.headers = headers
         self.cookies = cookies
@@ -63,7 +63,7 @@ class HTTPClient(object):
         self.tls_verify = tls_verify
         self.tls_cert = tls_cert
 
-    def request(self, method, url, callback, body=None, params=None,
+    def request(self, method, uri, callback, body=None, params=None,
             headers=None, cookies=None, auth=None, timeout=None, proxies=None,
             tls_verify=None, tls_cert=None, exclude_params=None,
             exclude_headers=None, exclude_cookies=None, exclude_proxies=None):
@@ -73,8 +73,8 @@ class HTTPClient(object):
         parameters exclude_... serve to allow selective removal of defaults.
 
         :param method:  The HTTP method to request.
-        :param url:     URL for this request.  If this is a relative URL, it
-                        will be relative to the URL given by the 'url'
+        :param uri:     URL for this request.  If this is a relative URL, it
+                        will be relative to the URL given by the 'uri'
                         attribute.
         :param callback:
                         A callback function that will be presented with the
@@ -117,13 +117,13 @@ class HTTPClient(object):
                         of proxy names to be excluded.
         """
         # Is this an absolute URL?
-        if not self.PROTO_RE.match(url):
+        if not self.PROTO_RE.match(uri):
             # Do we have a base URL?
-            if self.url is None:
-                raise ValueError('url must be absolute or base '\
-                        'set in url attribute')
+            if self.uri is None:
+                raise ValueError('uri must be absolute or base '\
+                        'set in uri attribute')
             # Prepend our base URL
-            url = urllib.basejoin(self.url, url)
+            uri = urllib.basejoin(self.uri, uri)
 
         def _merge(given, defaults, exclude):
             if exclude is True:
@@ -153,7 +153,7 @@ class HTTPClient(object):
 
         if tls_verify is None:
             tls_verify = self.tls_verify
-            if (tls_verify is None) and url.startswith('https://'):
+            if (tls_verify is None) and uri.startswith('https://'):
                 # If we're dealing with a https:// URL, turn on verification
                 # by default for user safety.
                 tls_verify = True
@@ -167,22 +167,22 @@ class HTTPClient(object):
 
         # Tack query string onto URL
         if query_str:
-            url += u'?' + query_str
+            uri += u'?' + query_str
 
         # Perform the actual request.
-        self._request(method, url, callback, body,
+        self._request(method, uri, callback, body,
                 headers, cookies, auth, timeout, proxies,
                 tls_verify, tls_cert)
 
-    def get(self, url, callback, **kwargs):
+    def get(self, uri, callback, **kwargs):
         """
         Convenience function: perform a HTTP GET operation.  Arguments are the
         same as for request.
         """
         kwargs.pop('body',None)
-        self.request('GET', url, callback, **kwargs)
+        self.request('GET', uri, callback, **kwargs)
 
-    def post(self, url, callback, body, body_type=None, body_size=None,
+    def post(self, uri, callback, body, body_type=None, body_size=None,
             headers=None, **kwargs):
         """
         Convenience function: perform a HTTP POST operation.  Arguments are the
@@ -206,10 +206,10 @@ class HTTPClient(object):
         if body_type is not None:
             headers['Content-Type'] = body_type
 
-        self.request('POST', url, callback, body=body,
+        self.request('POST', uri, callback, body=body,
                 headers=headers, **kwargs)
 
-    def _request(self, method, url, callback, body,
+    def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
             tls_verify, tls_cert):
         """

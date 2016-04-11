@@ -17,7 +17,7 @@ class SyncHttpClient(HTTPClient):
         self._session = requests.session()
         super(SyncHttpClient, self).__init__(**kwargs)
 
-    def _request(self, method, url, callback, body,
+    def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
             tls_verify, tls_cert):
 
@@ -37,7 +37,7 @@ class SyncHttpClient(HTTPClient):
         try:
             try:
                 response = self._session.request(
-                        method=method, url=url, data=body, headers=headers,
+                        method=method, uri=uri, data=body, headers=headers,
                         cookies=cookies, auth=auth, timeout=timeout,
                         proxies=proxies, verify=tls_verify, cert=tls_cert)
                 response.raise_for_status()
