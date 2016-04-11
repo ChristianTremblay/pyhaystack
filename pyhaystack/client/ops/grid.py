@@ -21,7 +21,7 @@ class BaseGridOperation(state.HaystackOperation):
 
     def __init__(self, session, uri, args=None,
             expect_format=hszinc.MODE_ZINC, multi_grid=False,
-            raw_response=False):
+            raw_response=False, retries=2):
         """
         Initialise a request for the grid with the given URI and arguments.
 
@@ -37,9 +37,11 @@ class BaseGridOperation(state.HaystackOperation):
         :param raw_response: Boolean indicating if we should try to parse the
                              result.  If True, then we should just pass back the
                              raw HTTPResponse object.
+        :param retries: Number of retries permitted in case of failure.
         """
 
         super(BaseGridOperation, self).__init__()
+        self._retries = retries
         self._session = session
         self._uri = uri
         self._args = args
@@ -69,10 +71,13 @@ class BaseGridOperation(state.HaystackOperation):
                     ('submit_done',     'submit',           'waiting'),
                     ('submit_failed',   'submit',           'done'),
                     ('response_ok',     'waiting',          'done'),
-                    ('exception',       '*',                'done'),
+                    ('exception',       '*',                'failed'),
+                    ('retry',           'failed',           'init'),
+                    ('abort',           'failed',           'done'),
                 ], callbacks={
                     'onenterauth_attempt':  self._do_auth_attempt,
                     'onentersubmit':        self._do_submit,
+                    'onenterfailed':        self._do_fail_retry,
                     'onenterdone':          self._do_done,
                 })
 
@@ -167,6 +172,16 @@ class BaseGridOperation(state.HaystackOperation):
         except: # Catch all exceptions for the caller.
             self._state_machine.exception(result=AsynchronousException())
 
+    def _do_fail_retry(self, event):
+        """
+        Determine whether we retry or fail outright.
+        """
+        if self._retries > 0:
+            self._retries -= 1
+            self._state_machine.retry()
+        else:
+            self._state_machine.abort(result=event.result)
+
     def _do_done(self, event):
         """
         Return the result from the state machine.
@@ -180,7 +195,7 @@ class GetGridOperation(BaseGridOperation):
     """
 
     def __init__(self, session, uri, args=None, multi_grid=False,
-            raw_response=False):
+            raw_response=False, retries=2):
         """
         Initialise a GET request for the grid with the given URI and arguments.
 
@@ -194,7 +209,7 @@ class GetGridOperation(BaseGridOperation):
                            return a single grid.
         """
         super(GetGridOperation, self).__init__(session, uri, args,
-                multi_grid, raw_response)
+                multi_grid, raw_response, retries)
 
     def _do_submit(self, event):
         """
@@ -216,7 +231,7 @@ class PostGridOperation(BaseGridOperation):
 
     def __init__(self, session, uri, grid, args=None,
             post_format=hszinc.MODE_ZINC, raw_response=False,
-            multi_grid=False):
+            multi_grid=False, retries=2):
         """
         Initialise a POST request for the grid with the given grid,
         URI and arguments.
@@ -234,7 +249,7 @@ class PostGridOperation(BaseGridOperation):
         """
 
         super(PostGridOperation, self).__init__(session, uri, args,
-                multi_grid, raw_response)
+                multi_grid, raw_response, retries)
 
         # Convert the grids to their native format
         self._body = hszinc.dump(grid, mode=post_format)
