@@ -12,7 +12,7 @@ import fysom
 import shlex
 from ...util import state
 from ...exception import HaystackError
-
+from ...util.asyncexc import AsynchronousException
 
 class BaseGridOperation(state.HaystackOperation):
     """
