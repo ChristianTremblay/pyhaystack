@@ -19,7 +19,8 @@ class BaseGridOperation(state.HaystackOperation):
     A base class for GET and POST operations involving grids.
     """
 
-    def __init__(self, session, uri, args=None, multi_grid=False,
+    def __init__(self, session, uri, args=None,
+            expect_format=hszinc.MODE_ZINC, multi_grid=False,
             raw_response=False):
         """
         Initialise a request for the grid with the given URI and arguments.
@@ -27,6 +28,7 @@ class BaseGridOperation(state.HaystackOperation):
         :param session: Haystack HTTP session object.
         :param uri: Possibly partial URI relative to the server base address
                     to perform a query.  No arguments shall be given here.
+        :param expect_format: Request that the grid be sent in the given format.
         :param args: Dictionary of key-value pairs to be given as arguments.
         :param multi_grid: Boolean indicating if we are to expect multiple
                            grids or not.  If True, then the operation will
@@ -41,8 +43,19 @@ class BaseGridOperation(state.HaystackOperation):
         self._session = session
         self._uri = uri
         self._args = args
-        self._multi_grid = multi_grid
+        self._expect_format = expect_format
         self._raw_response = raw_response
+        self._headers = {}
+
+        if not raw_response:
+            if expect_format == hszinc.MODE_ZINC:
+                self._headers['Accept'] = 'text/zinc'
+            elif expect_format == hszinc.MODE_JSON:
+                self._headers['Accept'] = 'application/json'
+            elif expect_format is not None:
+                raise ValueError(
+                        'expect_format must be one onf hszinc.MODE_ZINC '\
+                        'or hszinc.MODE_JSON')
 
         self._state_machine = fysom.Fysom(
                 initial='init', final='done',
@@ -187,9 +200,10 @@ class GetGridOperation(BaseGridOperation):
         """
         Submit the GET request to the haystack server.
         """
+
         try:
             self._session._get(self._uri, params=self._args,
-                    callback=self._on_response)
+                    headers=self._headers, callback=self._on_response)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -236,6 +250,6 @@ class PostGridOperation(BaseGridOperation):
         try:
             self._session._post(self._uri, body=self._body,
                     body_type=self._content_type, params=self._args,
-                    callback=self._on_response)
+                    headers=self._headers, callback=self._on_response)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
