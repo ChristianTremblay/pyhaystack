@@ -148,7 +148,7 @@ class HaystackSession(object):
 
             if len(ids) == 1:
                 # Reading a single entity
-                return self._get_grid('read', callback, params={'id': ids[0]})
+                return self._get_grid('read', callback, args={'id': ids[0]})
             else:
                 # Reading several entities
                 grid = hszinc.Grid()
@@ -156,11 +156,11 @@ class HaystackSession(object):
                 grid.extend([{'id': r} for r in ids])
                 return self._post_grid('read', grid, callback)
         else:
-            params = {'filter': filter_expr}
+            args = {'filter': filter_expr}
             if limit is not None:
-                params['limit'] = int(limit)
+                args['limit'] = int(limit)
 
-            return self._get_grid('read', callback, params=params)
+            return self._get_grid('read', callback, args=args)
 
     def nav(self, nav_id=None, callback=None):
         """
@@ -168,7 +168,7 @@ class HaystackSession(object):
         operation allows servers to expose the database in a human-friendly
         tree (or graph) that can be explored.
         """
-        return self._get_grid('nav', callback, params={'nav_id': nav_id})
+        return self._get_grid('nav', callback, args={'nav_id': nav_id})
 
     def watch_sub(self, points, watch_id=None, watch_dis=None,
             lease=None, callback=None):
@@ -237,7 +237,7 @@ class HaystackSession(object):
         write status of the point is retrieved.  Otherwise, a write is
         performed to the nominated point.
         """
-        params = {
+        args = {
                 'id': self._obj_to_ref(point),
         }
         if level is None:
@@ -246,15 +246,15 @@ class HaystackSession(object):
                         'If level is None, val, who and duration must '\
                         'be None too.')
         else:
-            params.update({
+            args.update({
                     'level': level,
                     'val': val,
             })
             if who is not None:
-                params['who'] = who
+                args['who'] = who
             if duration is not None:
-                params['duration'] = duration
-        return self._get_grid('pointWrite', callback, params=params)
+                args['duration'] = duration
+        return self._get_grid('pointWrite', callback, args=args)
 
     def his_read(self, point, rng, callback=None):
         """
@@ -274,7 +274,7 @@ class HaystackSession(object):
             # Better be valid!
             str_rng = rng
 
-        return self._get_grid('hisRead', callback, params={
+        return self._get_grid('hisRead', callback, args={
             'id': self._obj_to_ref(point),
             'range': str_rng,
         })
