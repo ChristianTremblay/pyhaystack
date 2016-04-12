@@ -99,7 +99,7 @@ class BaseGridOperation(state.HaystackOperation):
         Tell the session object to log in, then call us back.
         """
         try:
-            auth_op = self._session.authenticate(callback=self._on_authenticate)
+            self._session.authenticate(callback=self._on_authenticate)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
