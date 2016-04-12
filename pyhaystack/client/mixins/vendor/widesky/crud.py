@@ -30,7 +30,7 @@ class CRUDOpsMixin(object):
 
         :param entities: The entities to be inserted.
         """
-        return self._crud_op('create', entities, callback)
+        return self._crud_op('createRec', entities, callback)
 
     def update(self, entities, callback=None):
         """
@@ -45,7 +45,7 @@ class CRUDOpsMixin(object):
 
         :param entities: The entities to be updated.
         """
-        return self._crud_op('update', entities, callback)
+        return self._crud_op('updateRec', entities, callback)
 
     def delete(self, ids=None, filter_expr=None, callback=None):
         """
@@ -72,16 +72,17 @@ class CRUDOpsMixin(object):
 
             if len(ids) == 1:
                 # Reading a single entity
-                return self._get_grid('delete', callback, args={'id': ids[0]})
+                return self._get_grid('deleteRec', callback,
+                        args={'id': ids[0]})
             else:
                 # Reading several entities
                 grid = hszinc.Grid()
                 grid.column['id'] = {}
                 grid.extend([{'id': r} for r in ids])
-                return self._post_grid('delete', grid, callback)
+                return self._post_grid('deleteRec', grid, callback)
         else:
             args = {'filter': filter_expr}
-            return self._get_grid('delete', callback, args=args)
+            return self._get_grid('deleteRec', callback, args=args)
 
     # Private methods
 
