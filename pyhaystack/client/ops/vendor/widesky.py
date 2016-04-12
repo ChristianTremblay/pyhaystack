@@ -100,7 +100,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
         """
         try:
             if isinstance(response, AsynchronousException):
-                response.reraise
+                response.reraise()
 
             content_type = response.headers.get('Content-Type')
             if content_type is None:
