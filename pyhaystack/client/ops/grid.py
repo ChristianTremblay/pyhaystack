@@ -194,8 +194,7 @@ class GetGridOperation(BaseGridOperation):
     A state machine that performs a GET operation then reads back a ZINC grid.
     """
 
-    def __init__(self, session, uri, args=None, multi_grid=False,
-            raw_response=False, retries=2):
+    def __init__(self, session, uri, args=None, multi_grid=False, **kwargs):
         """
         Initialise a GET request for the grid with the given URI and arguments.
 
@@ -208,8 +207,9 @@ class GetGridOperation(BaseGridOperation):
                            _always_ return a list, otherwise, it will _always_
                            return a single grid.
         """
-        super(GetGridOperation, self).__init__(session, uri, args,
-                multi_grid, raw_response, retries)
+        super(GetGridOperation, self).__init__(
+                session=session, uri=uri, args=args,
+                multi_grid=multi_grid, **kwargs)
 
     def _do_submit(self, event):
         """
@@ -230,8 +230,7 @@ class PostGridOperation(BaseGridOperation):
     """
 
     def __init__(self, session, uri, grid, args=None,
-            post_format=hszinc.MODE_ZINC, raw_response=False,
-            multi_grid=False, retries=2):
+            post_format=hszinc.MODE_ZINC, **kwargs):
         """
         Initialise a POST request for the grid with the given grid,
         URI and arguments.
@@ -242,14 +241,10 @@ class PostGridOperation(BaseGridOperation):
         :param grid: Grid (or grids) to be posted to the server.
         :param post_format: What format to post grids in?
         :param args: Dictionary of key-value pairs to be given as arguments.
-        :param multi_grid: Boolean indicating if we are to expect multiple
-                           grids or not.  If true, then the operation will
-                           _always_ return a list, otherwise, it will _always_
-                           return a single grid.
         """
 
-        super(PostGridOperation, self).__init__(session, uri, args,
-                multi_grid, raw_response, retries)
+        super(PostGridOperation, self).__init__(
+                session=session, uri=uri, args=args, **kwargs)
 
         # Convert the grids to their native format
         self._body = hszinc.dump(grid, mode=post_format)
