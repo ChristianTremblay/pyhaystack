@@ -37,7 +37,7 @@ class SyncHttpClient(HTTPClient):
         try:
             try:
                 response = self._session.request(
-                        method=method, uri=uri, data=body, headers=headers,
+                        method=method, url=uri, data=body, headers=headers,
                         cookies=cookies, auth=auth, timeout=timeout,
                         proxies=proxies, verify=tls_verify, cert=tls_cert)
                 response.raise_for_status()
