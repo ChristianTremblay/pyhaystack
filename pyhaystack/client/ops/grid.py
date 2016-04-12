@@ -92,6 +92,7 @@ class BaseGridOperation(state.HaystackOperation):
             else:
                 self._state_machine.auth_not_ok()
         except: # Catch all exceptions to pass to caller.
+            self._log.debug('Authentication check fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_auth_attempt(self, event):
@@ -99,8 +100,7 @@ class BaseGridOperation(state.HaystackOperation):
         Tell the session object to log in, then call us back.
         """
         try:
-            auth_op = self._session.authenticate()
-            auth_op.done_sig.connect(self._on_authenticate)
+            auth_op = self._session.authenticate(callback=self._on_authenticate)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -108,6 +108,7 @@ class BaseGridOperation(state.HaystackOperation):
         """
         Retry the authentication check.
         """
+        self._log.debug('Authenticated, trying again')
         self.go()
 
     def _on_response(self, response):
@@ -170,6 +171,7 @@ class BaseGridOperation(state.HaystackOperation):
             # If we get here, then the request itself succeeded.
             self._state_machine.response_ok(result=decoded)
         except: # Catch all exceptions for the caller.
+            self._log.debug('Parse fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_fail_retry(self, event):
@@ -207,6 +209,7 @@ class GetGridOperation(BaseGridOperation):
                            _always_ return a list, otherwise, it will _always_
                            return a single grid.
         """
+        self._log = session._log.getChild('get_grid.%s' % uri)
         super(GetGridOperation, self).__init__(
                 session=session, uri=uri, args=args,
                 multi_grid=multi_grid, **kwargs)
@@ -220,6 +223,7 @@ class GetGridOperation(BaseGridOperation):
             self._session._get(self._uri, params=self._args,
                     headers=self._headers, callback=self._on_response)
         except: # Catch all exceptions to pass to caller.
+            self._log.debug('Get fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
 
@@ -242,7 +246,7 @@ class PostGridOperation(BaseGridOperation):
         :param post_format: What format to post grids in?
         :param args: Dictionary of key-value pairs to be given as arguments.
         """
-
+        self._log = session._log.getChild('post_grid.%s' % uri)
         super(PostGridOperation, self).__init__(
                 session=session, uri=uri, args=args, **kwargs)
 
@@ -262,4 +266,5 @@ class PostGridOperation(BaseGridOperation):
                     body_type=self._content_type, params=self._args,
                     headers=self._headers, callback=self._on_response)
         except: # Catch all exceptions to pass to caller.
+            self._log.debug('Post fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
