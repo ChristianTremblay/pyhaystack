@@ -5,12 +5,10 @@
 Niagara AX/Niagara 4 operation implementations.
 """
 
-import hszinc
 import fysom
 import re
 
 from ....util import state
-from ....exception import HaystackError
 from ....util.asyncexc import AsynchronousException
 from ...http.auth import BasicAuthenticationCredentials
 
@@ -52,7 +50,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         super(NiagaraAXAuthenticateOperation, self).__init__()
         self._retries = retries
         self._session = session
-        self._cookie = cookie
+        self._cookie = None
         self._auth = BasicAuthenticationCredentials(session._username,
                                                     session._password)
 
@@ -90,7 +88,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         try:
             self._session._get('', self._on_new_session,
                     cookies={}, headers={}, exclude_cookies=True,
-                    exclude_headers=True)
+                    exclude_headers=True, api=False)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -100,7 +98,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         """
         try:
             if isinstance(response, AsynchronousException):
-                response.reraise
+                response.reraise()
 
             self._cookie = response.cookies['niagara_session']
             self._state_machine.do_login()
@@ -121,7 +119,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                     },
                     cookies={'niagara_session': self._cookie},
                     headers={}, exclude_cookies=True,
-                    exclude_headers=True)
+                    exclude_headers=True, api=False)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -131,7 +129,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         """
         try:
             if isinstance(response, AsynchronousException):
-                response.reraise
+                response.reraise()
 
             if self._LOGIN_RE.match(response.body):
                 # No good.
