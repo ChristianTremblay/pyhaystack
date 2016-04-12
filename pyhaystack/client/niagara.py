@@ -6,7 +6,6 @@ NiagaraAX/Niagara4 Client support
 
 from .session import HaystackSession
 from .ops.vendor.niagara import NiagaraAXAuthenticateOperation
-from .http.auth import BasicAuthenticationCredentials
 
 class NiagaraHaystackSession(HaystackSession):
     """
