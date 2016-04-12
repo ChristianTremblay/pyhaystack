@@ -64,7 +64,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
                 initial='init', final='done',
                 events=[
                     # Event             Current State       New State
-                    ('do_login',        'init',             'login'),
+                    ('do_login',        ['init', 'failed'], 'login'),
                     ('login_done',      'login',            'done'),
                     ('exception',       '*',                'failed'),
                     ('retry',           'failed',           'login'),
