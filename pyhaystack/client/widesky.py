@@ -65,10 +65,9 @@ class WideskyHaystackSession(HaystackSession):
                         self._auth_result['access_token'],
                     )
             }
-            self._client.cookies = cookies
         except:
             self._auth_result = None
-            self._client.auth = None
-            self._client.cookies = None
+            self._client.headers = {}
+            self._log.warning('Log-in fails', exc_info=1)
         finally:
             self._auth_op = None
