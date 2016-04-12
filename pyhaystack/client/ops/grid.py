@@ -74,6 +74,7 @@ class BaseGridOperation(state.HaystackOperation):
                     ('retry',           'failed',           'init'),
                     ('abort',           'failed',           'done'),
                 ], callbacks={
+                    'onretry':              self._check_auth,
                     'onenterauth_attempt':  self._do_auth_attempt,
                     'onentersubmit':        self._do_submit,
                     'onenterfailed':        self._do_fail_retry,
@@ -83,6 +84,12 @@ class BaseGridOperation(state.HaystackOperation):
     def go(self):
         """
         Start the request.
+        """
+        self._check_auth()
+
+    def _check_auth(self, *args):
+        """
+        Check authentication.
         """
         # Are we logged in?
         try:
