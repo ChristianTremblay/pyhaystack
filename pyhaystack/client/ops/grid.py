@@ -43,6 +43,7 @@ class BaseGridOperation(state.HaystackOperation):
         super(BaseGridOperation, self).__init__()
         self._retries = retries
         self._session = session
+        self._multi_grid = multi_grid
         self._uri = uri
         self._args = args
         self._expect_format = expect_format
@@ -68,9 +69,7 @@ class BaseGridOperation(state.HaystackOperation):
                     ('auth_ok',         'auth_attempt',     'submit'),
                     ('auth_not_ok',     'auth_attempt',     'done'),
                     ('auth_failed',     'auth_attempt',     'done'),
-                    ('submit_done',     'submit',           'waiting'),
-                    ('submit_failed',   'submit',           'done'),
-                    ('response_ok',     'waiting',          'done'),
+                    ('response_ok',     'submit',           'done'),
                     ('exception',       '*',                'failed'),
                     ('retry',           'failed',           'init'),
                     ('abort',           'failed',           'done'),
@@ -145,11 +144,10 @@ class BaseGridOperation(state.HaystackOperation):
 
             if content_type in ('text/zinc', 'text/plain'):
                 # We have been given a grid in ZINC format.
-                decoded = hszinc.parse(response.content, mode=hszinc.MODE_ZINC)
+                decoded = hszinc.parse(response.body, mode=hszinc.MODE_ZINC)
             elif content_type == 'application/json':
                 # We have been given a grid in JSON format.
-                decoded = [hszinc.parse(response.content,
-                    mode=hszinc.MODE_JSON)]
+                decoded = [hszinc.parse(response.body, mode=hszinc.MODE_JSON)]
             else:
                 # We don't recognise this!
                 raise ValueError('Unrecognised content type %s' % content_type)
