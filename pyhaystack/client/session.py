@@ -337,7 +337,8 @@ class HaystackSession(object):
             expect_format=self._grid_format
         op = self._GET_GRID_OPERATION(self, uri,
                 expect_format=expect_format, **kwargs)
-        op.done_sig.connect(callback)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
@@ -364,7 +365,8 @@ class HaystackSession(object):
             post_format=self._grid_format
         op = self._POST_GRID_OPERATION(self, uri, grid,
                 expect_format=expect_format, post_format=post_format, **kwargs)
-        op.done_sig.connect(callback)
+        if callback is not None:
+            op.done_sig.connect(callback)
         op.go()
         return op
 
