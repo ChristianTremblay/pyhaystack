@@ -58,6 +58,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
             'grant_type': 'password',
         })
         self._session = session
+        self._retries = retries
         self._auth_result = None
 
         self._state_machine = fysom.Fysom(
