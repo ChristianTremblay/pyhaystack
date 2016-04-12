@@ -5,13 +5,11 @@
 VRT WideSky operation implementations.
 """
 
-import hszinc
 import fysom
 import json
 import base64
 
 from ....util import state
-from ....exception import HaystackError
 from ....util.asyncexc import AsynchronousException
 
 class WideskyAuthenticateOperation(state.HaystackOperation):
@@ -58,7 +56,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
             'username': session._username,
             'password': session._password,
             'grant_type': 'password',
-        }
+        })
         self._session = session
         self._auth_result = None
 
