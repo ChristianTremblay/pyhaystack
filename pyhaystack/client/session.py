@@ -327,7 +327,7 @@ class HaystackSession(object):
         """
         if api:
             uri = '%s/%s' % (self._api_dir, uri)
-        return self._client._get(uri, callback, **kwargs)
+        return self._client.get(uri, callback, **kwargs)
 
     def _get_grid(self, uri, callback, expect_format=None, **kwargs):
         """
@@ -350,7 +350,7 @@ class HaystackSession(object):
         """
         if api:
             uri = '%s/%s' % (self._api_dir, uri)
-        return self._client._post(self, uri, callback, body, body_type,
+        return self._client.post(uri, callback, body, body_type,
                 body_size, headers, **kwargs)
 
     def _post_grid(self, uri, grid, callback, post_format=None,
