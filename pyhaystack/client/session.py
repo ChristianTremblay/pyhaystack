@@ -11,7 +11,7 @@ import hszinc
 import weakref
 from six import string_types
 
-from .http import sync, exceptions
+from .http import sync
 from .ops import grid as grid_ops
 
 class HaystackSession(object):
@@ -288,7 +288,7 @@ class HaystackSession(object):
         Pandas Series object.
         """
         grid = hszinc.Grid()
-        grid.metadata['id'] = self._obj_to_ref(entity)
+        grid.metadata['id'] = self._obj_to_ref(point)
         grid.column['ts'] = {}
         grid.column['val'] = {}
 
@@ -315,7 +315,7 @@ class HaystackSession(object):
             grid.column[arg] = {}
         grid.append(kwargs)
 
-        return self._post_grid('invokeAction', grid callback)
+        return self._post_grid('invokeAction', grid, callback)
 
     # Protected methods/properties
 
