@@ -90,7 +90,8 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
         try:
             self._session._post(self._session._auth_dir,
                 self._on_login, body=self._auth_body,
-                    headers=self._auth_headers, exclude_headers=True)
+                    headers=self._auth_headers, exclude_headers=True,
+                    api=False)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
