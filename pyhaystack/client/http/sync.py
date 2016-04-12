@@ -58,4 +58,4 @@ class SyncHttpClient(HTTPClient):
                 dict(response.headers, response.content)))
         except:
             # Catch all exceptions and forward those to the callback function
-            callback(AsynchronousException)
+            callback(AsynchronousException())
