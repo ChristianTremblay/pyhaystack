@@ -29,7 +29,7 @@ class WideskyHaystackSession(HaystackSession):
         :param client_id: Authentication client ID.
         :param client_secret: Authentication client secret.
         """
-        super(WideskyHaystackSesNagarasion, self).__init__(
+        super(WideskyHaystackSession, self).__init__(
                 uri, api_dir, **kwargs)
         self._auth_dir = auth_dir
         self._username = username
