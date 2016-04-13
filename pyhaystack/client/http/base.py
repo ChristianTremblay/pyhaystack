@@ -21,7 +21,7 @@ class HTTPClient(object):
 
     def __init__(self, uri=None, params=None, headers=None, cookies=None,
             auth=None, timeout=None, proxies=None, tls_verify=None,
-            tls_cert=None):
+            tls_cert=None, log=None):
         """
         Instantiate a HTTP client instance with some default parameters.
         These parameters are made accessible as properties to be modified at
@@ -49,6 +49,8 @@ class HTTPClient(object):
         :param tls_cert:
                         For TLS servers, this specifies the certificate used
                         by the client to authenticate itself with the server.
+        :param log:     If not None, then it's a logging object that will be
+                        used for debugging HTTP operations.
         """
 
         # Stash these defaults for later.  These can be modified at any time
@@ -62,6 +64,7 @@ class HTTPClient(object):
         self.proxies = proxies
         self.tls_verify = tls_verify
         self.tls_cert = tls_cert
+        self.log = log
 
     def request(self, method, uri, callback, body=None, params=None,
             headers=None, cookies=None, auth=None, timeout=None, proxies=None,
@@ -170,6 +173,10 @@ class HTTPClient(object):
             uri += u'?' + query_str
 
         # Perform the actual request.
+        if self.log is not None:
+            self.log.debug( 'Performing operation %s of %s, headers: %r, '\
+                            'cookies: %r, body: %r', method, uri, headers,
+                            cookies, body)
         self._request(method, uri, callback, body,
                 headers, cookies, auth, timeout, proxies,
                 tls_verify, tls_cert)
