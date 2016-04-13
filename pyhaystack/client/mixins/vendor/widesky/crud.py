@@ -9,6 +9,7 @@ At present, this has not been adopted by other implementations.
 """
 
 import hszinc
+from six import string_types
 
 class CRUDOpsMixin(object):
     """
