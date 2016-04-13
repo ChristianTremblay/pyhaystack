@@ -66,7 +66,7 @@ class HaystackSession(object):
         self._grid_format = grid_format
 
         # Create the HTTP client object
-        if bool(http_args.get('debug')) and ('log' not in http_args):
+        if bool(http_args.pop('debug',None)) and ('log' not in http_args):
             http_args['log'] = log.getChild('http_client')
         self._client = http_client(uri=uri, **http_args)
         self._api_dir = api_dir
