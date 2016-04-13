@@ -13,6 +13,7 @@ import shlex
 from ...util import state
 from ...exception import HaystackError
 from ...util.asyncexc import AsynchronousException
+from six import string_types
 
 class BaseGridOperation(state.HaystackOperation):
     """
@@ -41,6 +42,13 @@ class BaseGridOperation(state.HaystackOperation):
         """
 
         super(BaseGridOperation, self).__init__()
+        if args is not None:
+            # Convert scalars to strings
+            args = dict([(param, hszinc.dump_scalar(value) \
+                                    if not isinstance(value, string_types) \
+                                    else value)
+                            for param, value in args.items()])
+
         self._retries = retries
         self._session = session
         self._multi_grid = multi_grid
