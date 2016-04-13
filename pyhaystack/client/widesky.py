@@ -7,9 +7,10 @@ VRT Widesky Client support
 from time import time
 from .session import HaystackSession
 from .ops.vendor.widesky import WideskyAuthenticateOperation
-from .mixins.vendor.widesky import crud
+from .mixins.vendor.widesky import crud, multihis
 
-class WideskyHaystackSession(crud.CRUDOpsMixin, HaystackSession):
+class WideskyHaystackSession(crud.CRUDOpsMixin,
+        multihis.MultiHisOpsMixin, HaystackSession):
     """
     The WideskyHaystackSession class implements some base support for
     NiagaraAX and Niagara4 servers.  This is mainly a convenience for
