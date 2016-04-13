@@ -9,7 +9,7 @@ from .session import HaystackSession
 from .ops.vendor.widesky import WideskyAuthenticateOperation
 from .mixins.vendor.widesky import crud
 
-class WideskyHaystackSession(HaystackSession, crud.CRUDOpsMixin):
+class WideskyHaystackSession(crud.CRUDOpsMixin, HaystackSession):
     """
     The WideskyHaystackSession class implements some base support for
     NiagaraAX and Niagara4 servers.  This is mainly a convenience for
