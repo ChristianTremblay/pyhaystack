@@ -9,11 +9,8 @@ on entities.
 import hszinc
 import fysom
 
-import shlex
 from ...util import state
-from ...exception import HaystackError
 from ...util.asyncexc import AsynchronousException
-from six import string_types
 from ..entity.entity import Entity
 
 
