@@ -14,6 +14,7 @@ from six import string_types
 from .http import sync
 from .ops import grid as grid_ops
 from .ops import entity as entity_ops
+from .ops import his as his_ops
 
 class HaystackSession(object):
     """
@@ -43,6 +44,9 @@ class HaystackSession(object):
     _POST_GRID_OPERATION = grid_ops.PostGridOperation
     _GET_ENTITY_OPERATION = entity_ops.GetEntityOperation
     _FIND_ENTITY_OPERATION = entity_ops.FindEntityOperation
+
+    _HIS_READ_SERIES_OPERATION = his_ops.HisReadSeriesOperation
+    _HIS_READ_FRAME_OPERATION = his_ops.HisReadFrameOperation
 
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None, log=None):
@@ -352,6 +356,54 @@ class HaystackSession(object):
         :param callback: Asynchronous result callback.
         """
         op = self._FIND_ENTITY_OPERATION(self, filter_expr, limit)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
+
+    def his_read_series(self, point, rng, tz=None,
+            series_format=None, callback=None):
+        """
+        Read the historical data of the given point and return it as a series.
+
+        :param point: Haystack 'point' entity to read the data from
+        :param rng: Historical read range for the 'point'
+        :param tz: Optional timezone to translate timestamps to
+        :param series_format: Optional desired format for the series
+        """
+        if series_format is None:
+            if his_ops.HAVE_PANDAS:
+                series_format = self._HIS_READ_SERIES_OPERATION.FORMAT_SERIES
+            else:
+                series_format = self._HIS_READ_SERIES_OPERATION.FORMAT_LIST
+
+        op = self._HIS_READ_SERIES_OPERATION(self, point,
+                rng, tz, series_format)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
+
+    def his_read_frame(self, columns, rng, tz=None,
+            frame_format=None, callback=None):
+        """
+        Read the historical data of multiple given points and return
+        them as a data frame.
+
+        :param columns: A list of Haystack 'point' instances or a dict mapping
+                        the column label to the Haystack 'point' instance.
+        :param rng: Historical read range for the 'point'
+        :param tz: Optional timezone to translate timestamps to
+        :param frame_format: Optional desired format for the data frame
+        """
+        if frame_format is None:
+            if his_ops.HAVE_PANDAS:
+                frame_format = self._HIS_READ_FRAME_OPERATION.FORMAT_FRAME
+            else:
+                frame_format = self._HIS_READ_FRAME_OPERATION.FORMAT_LIST
+
+        op = self._HIS_READ_FRAME_OPERATION(self, columns,
+                rng, tz, frame_format)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
