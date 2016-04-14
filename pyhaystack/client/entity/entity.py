@@ -54,6 +54,13 @@ class Entity(object):
                 self._tags[tag] = value
 
     @property
+    def id(self):
+        """
+        Return the fully qualified ID of this entity.
+        """
+        return hszinc.Ref(self._entity_id)
+
+    @property
     def is_dirty(self):
         """
         Returns true if there are modifications pending submission.
