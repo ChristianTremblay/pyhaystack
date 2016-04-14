@@ -118,7 +118,7 @@ class BaseGridOperation(state.HaystackOperation):
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
-    def _on_authenticate(self, **kwargs):
+    def _on_authenticate(self, *args, **kwargs):
         """
         Retry the authentication check.
         """
