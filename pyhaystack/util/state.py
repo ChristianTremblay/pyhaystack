@@ -23,7 +23,7 @@ class HaystackOperation(object):
     A core state machine object.  This implements the basic interface presented
     for all operations in pyhaystack.
     """
-    def __init__(self):
+    def __init__(self, result_deepcopy=True):
         """
         Initialisation.  This should be overridden by subclasses to accept and
         validate the inputs presented for the operation, raising an appropriate
@@ -42,6 +42,7 @@ class HaystackOperation(object):
 
         # Result returned by operation
         self._result = None
+        self._result_deepcopy = result_deepcopy
 
     def go(self):
         """
@@ -87,7 +88,12 @@ class HaystackOperation(object):
         if isinstance(self._result, AsynchronousException):
             self._result.reraise()
 
-        return deepcopy(self._result)
+        if self._result_deepcopy:
+            # Return a deep copy
+            return deepcopy(self._result)
+        else:
+            # Return a shallow copy
+            return self._result.copy()
 
     def _done(self, result):
         """
