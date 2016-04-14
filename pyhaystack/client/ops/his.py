@@ -149,6 +149,7 @@ class HisReadFrameOperation(state.HaystackOperation):
         :param frame_format: What format to present the frame in.
         """
         super(HisReadFrameOperation, self).__init__()
+        self._log = session._log.getChild('his_read_frame')
 
         if frame_format not in (self.FORMAT_LIST, self.FORMAT_DICT,
                 self.FORMAT_FRAME):
@@ -194,9 +195,11 @@ class HisReadFrameOperation(state.HaystackOperation):
     def go(self):
         if hasattr(self._session, 'multi_his_read'):
             # Session object supports multi-his-read
+            self._log.debug('Using multi-his-read support')
             self._state_machine.do_multi_read()
         else:
             # Emulate multi-his-read with separate
+            self._log.debug('No multi-his-read support, emulating')
             self._state_machine.do_single_read()
 
     def _get_ts_rec(self, ts):
@@ -205,6 +208,7 @@ class HisReadFrameOperation(state.HaystackOperation):
         except KeyError:
             rec = {}
             self._data_by_ts[ts] = rec
+            return rec
 
     def _do_multi_read(self, event):
         """
@@ -235,21 +239,24 @@ class HisReadFrameOperation(state.HaystackOperation):
                         rec[col] = val
             self._state_machine.all_read_done()
         except: # Catch all exceptions to pass to caller.
+            self._log.debug('Hit exception', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_single_read(self, event):
         """
         Request the data from the server as multiple single-read requests.
         """
-        for (col_idx, (col, point)) in enumerate(self._columns):
+        for col, point in self._columns:
+            self._log.debug('Column %s point %s', col, point)
             self._session.his_read(point, self._range,
                     lambda operation, **kw : self._on_single_read(operation,
-                        col_idx=col_idx, col=col))
+                        col=col))
 
-    def _on_single_read(self, operation, col_idx, col, **kwargs):
+    def _on_single_read(self, operation, col, **kwargs):
         """
         Handle the multi-valued grid.
         """
+        self._log.debug('Response back for column %s', col)
         try:
             grid = operation.result
 
@@ -264,22 +271,25 @@ class HisReadFrameOperation(state.HaystackOperation):
                     self._tz = ts.tzinfo
 
                 rec = self._get_ts_rec(ts)
-                val = row.get('v%d' % col_idx)
+                val = row.get('val')
                 if (val is not None) or \
                         (self._frame_format != self.FORMAT_FRAME):
                     rec[col] = val
 
             self._todo.discard(col)
+            self._log.debug('Still waiting for: %s', self._todo)
             if not self._todo:
                 # No more to read
                 self._state_machine.all_read_done()
         except: # Catch all exceptions to pass to caller.
+            self._log.debug('Hit exception', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_postprocess(self, event):
         """
         Convert the dict-of-dicts to the desired frame format.
         """
+        self._log.debug('Post-processing')
         try:
             if self._frame_format == self.FORMAT_LIST:
                 def _merge_ts(item):
@@ -295,13 +305,11 @@ class HisReadFrameOperation(state.HaystackOperation):
                 data = self._data_by_ts
             self._state_machine.process_done(result=data)
         except: # Catch all exceptions to pass to caller.
+            self._log.debug('Hit exception', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_done(self, event):
         """
         Return the result from the state machine.
         """
-        # if check so that we don't fire twice in the case of
-        # failures in true asynchronous operation.
-        if not self.is_done:
-            self._done(event.result)
+        self._done(event.result)
