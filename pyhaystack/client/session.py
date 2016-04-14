@@ -42,6 +42,7 @@ class HaystackSession(object):
     _GET_GRID_OPERATION = grid_ops.GetGridOperation
     _POST_GRID_OPERATION = grid_ops.PostGridOperation
     _GET_ENTITY_OPERATION = entity_ops.GetEntityOperation
+    _FIND_ENTITY_OPERATION = entity_ops.FindEntityOperation
 
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None, log=None):
@@ -324,19 +325,33 @@ class HaystackSession(object):
 
         return self._post_grid('invokeAction', grid, callback)
 
-    def get_entities(self, ids, refresh_all=False, callback=None):
+    def get_entity(self, ids, refresh=False, callback=None):
         """
         Retrieve instances of entities, possibly refreshing them.
 
         :param ids: A single entity ID, or a list of entity IDs.
-        :param refresh_all: Do we refresh the tags on those entities?
+        :param refresh: Do we refresh the tags on those entities?
         :param callback: Asynchronous result callback.
         """
         if isinstance(ids, string_types) or isinstance(ids, hszinc.Ref):
             # Make sure we always pass a list.
             ids = [ids]
 
-        op = self._GET_ENTITY_OPERATION(self, ids, refresh_all)
+        op = self._GET_ENTITY_OPERATION(self, ids, refresh)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
+
+    def find_entity(self, filter_expr, limit=None, callback=None):
+        """
+        Retrieve instances of entities that match a filter expression.
+
+        :param filter_expr: The filter expression to search for.
+        :param limit: Optional limit to number of entities retrieved.
+        :param callback: Asynchronous result callback.
+        """
+        op = self._FIND_ENTITY_OPERATION(self, filter_expr, limit)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
