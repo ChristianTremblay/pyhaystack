@@ -43,7 +43,7 @@ class SyncHttpClient(HTTPClient):
                 response.raise_for_status()
             except requests.exceptions.HTTPError as e:
                 raise HTTPStatusError(e.message, e.response.status_code, \
-                dict(e.response.headers), e.response.content)
+                        dict(e.response.headers), e.response.content)
             except requests.exceptions.Timeout as e:
                 raise HTTPTimeoutError(e.strerror)
             except requests.exceptions.TooManyRedirects as e:
