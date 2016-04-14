@@ -53,6 +53,19 @@ class Entity(object):
             else:
                 self._tags[tag] = value
 
+        if hasattr(self._session, '_check_entity_type') \
+                and (not self._session._check_entity_type(self)):
+            self._invalidate()
+
+    def _invalidate(self):
+        """
+        Mark this instance of the entity as invalid, ensure it does not exist
+        in cache.
+        """
+        if self._session._entities.get(self._entity_id) is self:
+            self._session._entities.pop(self._entity_id, None)
+        self.__dict__['_valid'] = False
+
     @property
     def id(self):
         """
@@ -73,6 +86,8 @@ class Entity(object):
         """
         Commit any to-be-sent updates for this entity.
         """
+        if not self._valid:
+            raise StaleEntityInstanceError()
         if not self._mutable:
             raise NotImplementedError('Server does not support updates')
         raise NotImplementedError('TODO: implement CRUD ops')
@@ -81,6 +96,8 @@ class Entity(object):
         """
         Delete the entity.
         """
+        if not self._valid:
+            raise StaleEntityInstanceError()
         if not self._mutable:
             raise NotImplementedError('Server does not support updates')
         raise NotImplementedError('TODO: implement CRUD ops')
@@ -89,6 +106,8 @@ class Entity(object):
         """
         Revert the named attribute changes, or all changes.
         """
+        if not self._valid:
+            raise StaleEntityInstanceError()
         if not self._mutable:
             # Nothing to do
             return
@@ -109,6 +128,9 @@ class Entity(object):
             return self.__dict__[attr]
         except KeyError:
             pass
+
+        if not self._valid:
+            raise StaleEntityInstanceError()
 
         # Handling of naming collisions, we shall allow tag names to be
         # prefixed with the string "tag_".  The "tag_" prefix will be stripped.
@@ -143,6 +165,9 @@ class Entity(object):
         else:
             tag = attr
 
+        if not self._valid:
+            raise StaleEntityInstanceError()
+
         if self._mutable and (tag in self._tags):
             if value is not hszinc.REMOVE:
                 self._tag_updates[tag] = value
@@ -169,3 +194,11 @@ class Entity(object):
             return
 
         super(Entity, self).__delattr__(attr)
+
+
+class StaleEntityInstanceError(Exception):
+    """
+    Exception thrown when an entity instance is "stale", that is, the
+    entity class type no longer matches the tag set present in the entity.
+    """
+    pass
