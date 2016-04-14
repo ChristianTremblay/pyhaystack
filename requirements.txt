@@ -5,3 +5,5 @@ parsimonious
 iso8601
 pytz
 hszinc
+fysom
+signalslot

@@ -41,14 +41,14 @@ class SyncHttpClient(HTTPClient):
                         cookies=cookies, auth=auth, timeout=timeout,
                         proxies=proxies, verify=tls_verify, cert=tls_cert)
                 response.raise_for_status()
-            except requests.exceptions.HTTPError, e:
-                raise HTTPStatusError(e.message, e.response.status_code,
-                        dict(e.response.headers), e.response.content)
-            except requests.exceptions.Timeout, e:
+            except requests.exceptions.HTTPError as e:
+                raise HTTPStatusError(e.message, e.response.status_code, \
+                dict(e.response.headers), e.response.content)
+            except requests.exceptions.Timeout as e:
                 raise HTTPTimeoutError(e.strerror)
-            except requests.exceptions.TooManyRedirects, e:
+            except requests.exceptions.TooManyRedirects as e:
                 raise HTTPRedirectError(e.message)
-            except requests.exceptions.ConnectionError, e:
+            except requests.exceptions.ConnectionError as e:
                 raise HTTPConnectionError(e.strerror, e.errno)
             except requests.exceptions.RequestException:
                 # TODO: handle this with a more specific exception
