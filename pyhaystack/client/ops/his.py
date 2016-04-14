@@ -11,7 +11,6 @@ import fysom
 import pytz
 
 from functools import partial
-from copy import deepcopy
 from datetime import tzinfo
 from six import string_types
 from ...util import state
@@ -31,7 +30,7 @@ def _resolve_tz(tz):
     """
     if (tz is None) or isinstance(tz, tzinfo):
         return tz
-    if isinstance(tz, string_names):
+    if isinstance(tz, string_types):
         if '/' in tz:
             # Olson database name
             return pytz.timezone(tz)
@@ -65,7 +64,7 @@ class HisReadSeriesOperation(state.HaystackOperation):
                 self.FORMAT_SERIES):
             raise ValueError('Unrecognsied series_format %s' % series_format)
 
-        if (series_format == FORMAT_SERIES) and (not HAVE_PANDAS):
+        if (series_format == self.FORMAT_SERIES) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
 
         self._session = session
@@ -93,7 +92,7 @@ class HisReadSeriesOperation(state.HaystackOperation):
         """
         Request the data from the server.
         """
-        self._session.his_read(point=self._point, rng=self._rng,
+        self._session.his_read(point=self._point, rng=self._range,
                 callback=self._on_read)
 
     def _on_read(self, operation, **kwargs):
@@ -148,7 +147,7 @@ class HisReadFrameOperation(state.HaystackOperation):
         :param columns: IDs of historical point objects to read.
         :param rng: Range to read from 'point'
         :param tz: Timezone to translate timezones to.  May be None.
-        :param series_format: What format to present the series in.
+        :param frame_format: What format to present the frame in.
         """
         super(HisReadFrameOperation, self).__init__()
 
@@ -156,7 +155,7 @@ class HisReadFrameOperation(state.HaystackOperation):
                 self.FORMAT_FRAME):
             raise ValueError('Unrecognsied frame_format %s' % frame_format)
 
-        if (series_format == FORMAT_FRAME) and (not HAVE_PANDAS):
+        if (frame_format == self.FORMAT_FRAME) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
 
         # Convert the columns to a list of tuples.
@@ -196,10 +195,10 @@ class HisReadFrameOperation(state.HaystackOperation):
     def go(self):
         if hasattr(self._session, 'multi_his_read'):
             # Session object supports multi-his-read
-            self._state_machine.multi_read()
+            self._state_machine.do_multi_read()
         else:
             # Emulate multi-his-read with separate
-            self._state_machine.single_read()
+            self._state_machine.do_single_read()
 
     def _get_ts_rec(self, ts):
         try:
@@ -213,7 +212,7 @@ class HisReadFrameOperation(state.HaystackOperation):
         Request the data from the server as a single multi-read request.
         """
         self._session.multi_his_read(points=[c[1] for c in self._columns],
-                rng=self._rng, callback=self._on_multi_read)
+                rng=self._range, callback=self._on_multi_read)
 
     def _on_multi_read(self, operation, **kwargs):
         """
@@ -244,7 +243,7 @@ class HisReadFrameOperation(state.HaystackOperation):
         Request the data from the server as multiple single-read requests.
         """
         for (col_idx, (col, point)) in enumerate(self._columns):
-            self._session.his_read(point, self._rng,
+            self._session.his_read(point, self._range,
                     partial(self._on_single_read,
                         col_idx=col_idx, col=col))
 
