@@ -10,7 +10,6 @@ import hszinc
 import fysom
 import pytz
 
-from functools import partial
 from datetime import tzinfo
 from six import string_types
 from ...util import state
@@ -244,7 +243,7 @@ class HisReadFrameOperation(state.HaystackOperation):
         """
         for (col_idx, (col, point)) in enumerate(self._columns):
             self._session.his_read(point, self._range,
-                    partial(self._on_single_read,
+                    lambda operation, **kw : self._on_single_read(operation,
                         col_idx=col_idx, col=col))
 
     def _on_single_read(self, operation, col_idx, col, **kwargs):
