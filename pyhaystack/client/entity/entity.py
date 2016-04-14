@@ -26,17 +26,22 @@ class Entity(object):
         :param entity_id: The entity's fully qualified ID.
         """
 
-        self._session = session
-        self._entity_id = entity_id
-        self._tags = {}
-
-        # Does the session support updates?
-        self._mutable = hasattr(session, 'update') \
+        attrs = {
+            '_session': session,
+            '_entity_id': entity_id,
+            '_tags': {},
+            # Does the session support updates?
+            '_mutable': hasattr(session, 'update') \
                 and hasattr(session, 'delete')
-        if self._mutable:
-            self._tag_updates = {}
-            self._tag_deletions = set()
-            self._update_pending = False
+        }
+
+        if attrs['_mutable']:
+            attrs.update({
+                '_tag_updates': {},
+                '_tag_deletions': set(),
+                '_update_pending': False,
+            })
+        self.__dict__.update(attrs)
 
     def _update_tags(self, tags):
         """
