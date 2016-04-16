@@ -6,7 +6,15 @@ convenient and to aid portability of pyhaystack.
 """
 
 import re
-import urllib
+try:
+    from urllib.parse import quote_plus
+except ImportError:
+    from urllib import quote_plus
+
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urllib import basejoin as urljoin
 
 from .auth import AuthenticationCredentials
 
@@ -126,7 +134,7 @@ class HTTPClient(object):
                 raise ValueError('uri must be absolute or base '\
                         'set in uri attribute')
             # Prepend our base URL
-            uri = urllib.basejoin(self.uri, uri)
+            uri = urljoin(self.uri, uri)
 
         def _merge(given, defaults, exclude):
             if exclude is True:
@@ -164,7 +172,7 @@ class HTTPClient(object):
 
         # Convert parameters to a query string
         query_str = u'&'.join([
-            '%s=%s' % (key, urllib.quote_plus(value))
+            '%s=%s' % (key, quote_plus(value))
             for key, value in params.items()
         ])
 
