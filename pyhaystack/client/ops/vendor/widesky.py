@@ -5,6 +5,7 @@
 VRT WideSky operation implementations.
 """
 
+import hszinc
 import fysom
 import json
 import base64
@@ -12,6 +13,7 @@ import shlex
 
 from ....util import state
 from ....util.asyncexc import AsynchronousException
+from ..entity import EntityRetrieveOperation
 
 class WideskyAuthenticateOperation(state.HaystackOperation):
     """
@@ -154,3 +156,48 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
         Return the result from the state machine.
         """
         self._done(event.result)
+
+
+class CreateEntityOperation(EntityRetrieveOperation):
+    """
+    Operation for creating entity instances.
+    """
+
+    def __init__(self, session, entities, single):
+        """
+        :param session: Haystack HTTP session object.
+        :param entities: A list of entities to create.
+        """
+
+        super(CreateEntityOperation, self).__init__(session, single)
+        self._new_entities = entities
+        self._state_machine = fysom.Fysom(
+                initial='init', final='done',
+                events=[
+                    # Event             Current State       New State
+                    ('send_create',     'init',             'create'),
+                    ('read_done',       'create',           'done'),
+                    ('exception',       '*',                'done'),
+                ], callbacks={
+                    'onenterdone':          self._do_done,
+                })
+
+    def go(self):
+        """
+        Start the request, preprocess and submit create request.
+        """
+        self._state_machine.send_create()
+        # Ensure IDs are basenames.
+        def _preprocess_entity(e):
+            if not isinstance(e, dict):
+                raise TypeError('%r is not a dict' % e)
+            e = e.copy()
+            e_id = e.pop('id')
+            if isinstance(e, hszinc.Ref):
+                e_id = e_id.name
+            if '.' in e_id:
+                e_id = e_id.split('.')[-1]
+            e['id'] = hszinc.Ref(e_id)
+            return e
+        entities = list(map(_preprocess_entity, self._new_entities))
+        self._session.create(entities, callback=self._on_read)

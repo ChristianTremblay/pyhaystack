@@ -33,6 +33,25 @@ class CRUDOpsMixin(object):
         """
         return self._crud_op('createRec', entities, callback)
 
+    def create_entity(self, entities, single=None, callback=None):
+        """
+        Create the entities listed, and return high-level entity instances for
+        them.  This is a high-level convenience around the above `create`
+        method.
+        """
+        if isinstance(entities, dict):
+            entities = [entities]
+            if single is None:
+                single = True
+        else:
+            single = bool(single)
+
+        op = self._CREATE_ENTITY_OPERATION(self, entities, single)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
+
     def update(self, entities, callback=None):
         """
         Update the entities listed.  If given a dict, we are creating a

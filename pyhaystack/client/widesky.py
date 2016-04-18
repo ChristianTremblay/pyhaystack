@@ -6,7 +6,8 @@ VRT Widesky Client support
 
 from time import time
 from .session import HaystackSession
-from .ops.vendor.widesky import WideskyAuthenticateOperation
+from .ops.vendor.widesky import WideskyAuthenticateOperation, \
+        CreateEntityOperation
 from .mixins.vendor.widesky import crud, multihis
 
 class WideskyHaystackSession(crud.CRUDOpsMixin,
@@ -19,6 +20,7 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
     """
 
     _AUTH_OPERATION = WideskyAuthenticateOperation
+    _CREATE_ENTITY_OPERATION = CreateEntityOperation
 
     def __init__(self, uri, username, password,
             client_id, client_secret,
