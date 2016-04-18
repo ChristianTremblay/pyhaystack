@@ -27,6 +27,7 @@ class EntityTagUpdateOperation(HaystackOperation):
         :param session: Haystack HTTP session object.
         """
         super(EntityTagUpdateOperation, self).__init__(result_copy=False)
+        self._log = entity._session._log.getChild('update_tags')
         self._entity = entity
         self._updates = updates
 
@@ -60,11 +61,16 @@ class EntityTagUpdateOperation(HaystackOperation):
             for row in grid:
                 row = row.copy()
                 entity_id = row.pop('id')
-                if entity_id != self._entity.id:
+                if (entity_id is None) or (entity_id.name != \
+                        self._entity.id.name):
                     # Not for us!
+                    self._log.debug('Ignoring row (%s does not match %s) %r',
+                            entity_id, self._entity.id, row)
                     continue
 
                 self._entity._update_tags(row)
+                self._entity.revert()
+                self._log.debug('Processed row %r', row)
             self._state_machine.update_done(result=self._entity)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
