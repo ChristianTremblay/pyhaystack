@@ -151,6 +151,11 @@ class BaseGridOperation(state.HaystackOperation):
 
             # TODO: Unicode characters are supposed to be escaped,
             # but are they?  Inspect content_type_args to make sure.
+            content_encoding = content_type_args.get('charset')
+            if content_encoding is None:
+                body = response.body.decode()
+            else:
+                body = response.body.decode(content_encoding)
 
             # If we're expecting a raw response back, then just hand the
             # request object back and finish here.
@@ -160,10 +165,10 @@ class BaseGridOperation(state.HaystackOperation):
 
             if content_type in ('text/zinc', 'text/plain'):
                 # We have been given a grid in ZINC format.
-                decoded = hszinc.parse(response.body, mode=hszinc.MODE_ZINC)
+                decoded = hszinc.parse(body, mode=hszinc.MODE_ZINC)
             elif content_type == 'application/json':
                 # We have been given a grid in JSON format.
-                decoded = [hszinc.parse(response.body, mode=hszinc.MODE_JSON)]
+                decoded = [hszinc.parse(body, mode=hszinc.MODE_JSON)]
             else:
                 # We don't recognise this!
                 raise ValueError('Unrecognised content type %s' % content_type)
