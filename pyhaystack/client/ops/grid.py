@@ -11,7 +11,7 @@ import fysom
 
 import shlex
 from ...util import state
-from ...exception import HaystackError
+from ...exception import HaystackError, AuthenticationProblem
 from ...util.asyncexc import AsynchronousException
 from six import string_types
 
@@ -75,7 +75,7 @@ class BaseGridOperation(state.HaystackOperation):
                     ('auth_ok',         'init',             'submit'),
                     ('auth_not_ok',     'init',             'auth_attempt'),
                     ('auth_ok',         'auth_attempt',     'submit'),
-                    ('auth_not_ok',     'auth_attempt',     'done'),
+                    ('auth_not_ok',     'auth_attempt',     'auth_failed'),
                     ('auth_failed',     'auth_attempt',     'done'),
                     ('response_ok',     'submit',           'done'),
                     ('exception',       '*',                'failed'),
@@ -84,6 +84,7 @@ class BaseGridOperation(state.HaystackOperation):
                 ], callbacks={
                     'onretry':              self._check_auth,
                     'onenterauth_attempt':  self._do_auth_attempt,
+                    'onenterauth_failed':   self._do_auth_failed,
                     'onentersubmit':        self._do_submit,
                     'onenterfailed':        self._do_fail_retry,
                     'onenterdone':          self._do_done,
@@ -196,6 +197,15 @@ class BaseGridOperation(state.HaystackOperation):
             self._state_machine.retry()
         else:
             self._state_machine.abort(result=event.result)
+
+    def _do_auth_failed(self, event):
+        """
+        Raise and capture an authentication failure.
+        """
+        try:
+            raise AuthenticationProblem()
+        except:
+            self._state_machine.exception(result=AsynchronousException())
 
     def _do_done(self, event):
         """
