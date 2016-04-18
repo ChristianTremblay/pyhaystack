@@ -12,11 +12,14 @@ class SiteMixin(object):
     A mix-in used for entities that carry the 'site' marker tag.
     """
 
-    def find_entity(self, filter_expr, limit=None, callback=None):
+    def find_entity(self, filter_expr=None, limit=None, callback=None):
         """
         Retrieve the entities that are linked to this site.
         This is a convenience around the session find_entity method.
         """
-        return self._session.find_entity(
-                '(%s) and (siteRef==%s)' % (filter_expr, \
-                        hszinc.dump_scalar(self.id)), limit, callback)
+        site_ref = hszinc.dump_scalar(self.id)
+        if filter_expr is None:
+            filter_expr = 'siteRef==%s' % site_ref
+        else:
+            filter_expr = '(siteRef==%s) and (%s)' % (site_ref, filter_expr)
+        return self._session.find_entity(filter_expr, limit, callback)

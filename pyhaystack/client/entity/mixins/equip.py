@@ -19,11 +19,14 @@ class EquipMixin(object):
         return self._session.get_entity([self.tags['siteRef'].name],
                 callback=callback)
 
-    def find_entity(self, filter_expr, limit=None, callback=None):
+    def find_entity(self, filter_expr=None, limit=None, callback=None):
         """
         Retrieve the entities that are linked to this equip.
         This is a convenience around the session find_entity method.
         """
-        return self._session.find_entity(
-                '(%s) and (equipRef==%s)' % (filter_expr, \
-                        hszinc.dump_scalar(self.id)), limit, callback)
+        equip_ref = hszinc.dump_scalar(self.id)
+        if filter_expr is None:
+            filter_expr = 'equipRef==%s' % equip_ref
+        else:
+            filter_expr = '(equipRef==%s) and (%s)' % (equip_ref, filter_expr)
+        return self._session.find_entity(filter_expr, limit, callback)
