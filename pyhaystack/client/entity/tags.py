@@ -57,7 +57,8 @@ class BaseEntityTags(object):
         """
         stale = set(self._tags.keys())
         for tag, value in tags.items():
-            if value is hszinc.REMOVE:
+            # The "absence" of tags is not obvious
+            if (value is hszinc.REMOVE) or (value is None):
                 continue
             else:
                 self._tags[tag] = value
