@@ -107,7 +107,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
 
     def _do_login(self, event):
         try:
-            self._session._get('login/', self._on_login,
+            self._session._post('login/', self._on_login,
                     params={
                         'token':'',
                         'scheme':'cookieDigest',
@@ -117,6 +117,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                         'accept':'application/json; charset=utf-8',
                         'Accept-Encoding': 'gzip'
                     },
+                    auth=self._auth,
                     cookies={'niagara_session': self._cookie},
                     headers={}, exclude_cookies=True,
                     exclude_headers=True, api=False)
