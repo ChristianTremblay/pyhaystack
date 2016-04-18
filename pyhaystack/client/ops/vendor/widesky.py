@@ -8,6 +8,7 @@ VRT WideSky operation implementations.
 import fysom
 import json
 import base64
+import shlex
 
 from ....util import state
 from ....util.asyncexc import AsynchronousException
@@ -49,7 +50,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
         self._auth_headers = {
                 'Authorization': 'Basic %s' % base64.b64encode(
                     ':'.join([session._client_id,
-                        session._client_secret]).encode()),
+                        session._client_secret]).encode()).decode(),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
         }
@@ -108,15 +109,28 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
             if content_type is None:
                 raise ValueError('No content-type given in reply')
 
+            # Is content encoding shoehorned in there?
             if ';' in content_type:
-                content_type = content_type.split(';',1)[0].strip()
+                (content_type, content_type_args) = content_type.split(';',1)
+                content_type = content_type.strip()
+                content_type_args = dict([tuple(kv.split('=',1)) for kv in 
+                        shlex.split(content_type_args)])
+            else:
+                content_type_args = {}
 
+            content_type = content_type.strip()
             if content_type != 'application/json':
                 raise ValueError('Invalid content type received: %s' % \
                         content_type)
 
+            content_encoding = content_type_args.get('charset')
+            if content_encoding is None:
+                body = response.body.decode()
+            else:
+                body = response.body.decode(content_encoding)
+
             # Decode JSON reply
-            reply = json.loads(response.body)
+            reply = json.loads(body)
             for key in ('token_type', 'access_token', 'expires_in'):
                 if key not in reply:
                     raise ValueError('Missing %s in reply :%s' % (key, reply))
