@@ -7,7 +7,7 @@ Tagging Model Interface for Project Haystack
 
 import hszinc
 from ..model import TaggingModel
-from ..mixins import tz, site
+from ..mixins import tz, site, equip
 
 class HaystackTaggingModel(TaggingModel):
     """
@@ -33,5 +33,10 @@ class HaystackTaggingModel(TaggingModel):
             # This is a site
             types.append(site.SiteMixin)
             names.append('Site')
+
+        if 'equip' in tags:
+            # This is a site
+            types.append(equip.EquipMixin)
+            names.append('Equip')
 
         return ('%sEntity' % ''.join(sorted(names)), types)
