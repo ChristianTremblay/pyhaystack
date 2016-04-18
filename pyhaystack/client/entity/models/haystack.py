@@ -42,7 +42,7 @@ class HaystackTaggingModel(TaggingModel):
             # This is a site
             types.append(equip.EquipMixin)
             names.append('Equip')
-        else:
+        elif 'equipRef' in tags:
             # This links to an equip
             types.append(equip.EquipRefMixin)
             names.append('EquipRef')
