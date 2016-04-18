@@ -115,7 +115,8 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                         'content-type':'application/x-niagara-login-support',
                         'Referer':self._session._client.uri+'login/',
                         'accept':'application/json; charset=utf-8',
-                        'Accept-Encoding': 'gzip'
+                        'Accept-Encoding': 'gzip',
+                        'cookiePostfix': self._cookie,
                     },
                     auth=self._auth,
                     cookies={'niagara_session': self._cookie},
