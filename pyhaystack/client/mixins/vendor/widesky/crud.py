@@ -102,7 +102,7 @@ class CRUDOpsMixin(object):
 
         # Construct a list of columns
         all_columns = set()
-        map(all_columns.update, [e.keys() for e in entities])
+        list(map(all_columns.update, [e.keys() for e in entities]))
         # We'll put 'id' first sort the others.
         all_columns.discard('id')
         all_columns = ['id'] + sorted(all_columns)
