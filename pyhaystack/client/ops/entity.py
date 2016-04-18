@@ -111,7 +111,8 @@ class GetEntityOperation(EntityRetrieveOperation):
         """
 
         super(GetEntityOperation, self).__init__(session, single)
-        self._entity_ids = set(entity_ids)
+        self._entity_ids = set(map(lambda r : r.name \
+                if isinstance(r, hszinc.Ref) else r, entity_ids))
         self._todo = self._entity_ids.copy()
         self._refresh_all = refresh_all
 
@@ -157,7 +158,14 @@ class GetEntityOperation(EntityRetrieveOperation):
                         callback=self._on_read)
             else:
                 # Nothing needed to read.
-                self._state_machine.read_done(result=self._entities)
+                if self._single:
+                    try:
+                        result = list(self._entities.values())[0]
+                    except IndexError:
+                        raise NameError('No matching entity found')
+                else:
+                    result = self._entities
+                self._state_machine.read_done(result=result)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 

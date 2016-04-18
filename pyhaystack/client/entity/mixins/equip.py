@@ -16,7 +16,7 @@ class EquipMixin(object):
         """
         Retrieve an instance of the site this 'equip' entity belongs to.
         """
-        return self._session.get_entity(self.tags['siteRef'].name,
+        return self._session.get_entity(self.tags['siteRef'],
                 callback=callback, single=True)
 
     def find_entity(self, filter_expr=None, limit=None,
