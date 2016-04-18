@@ -15,6 +15,7 @@ from .http import sync
 from .ops import grid as grid_ops
 from .ops import entity as entity_ops
 from .ops import his as his_ops
+from .entity.models.haystack import HaystackTaggingModel
 
 class HaystackSession(object):
     """
@@ -49,7 +50,8 @@ class HaystackSession(object):
     _HIS_READ_FRAME_OPERATION = his_ops.HisReadFrameOperation
 
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
-                http_client=sync.SyncHttpClient, http_args=None, log=None):
+                http_client=sync.SyncHttpClient, http_args=None,
+                tagging_model=HaystackTaggingModel, log=None):
         """
         Initialise a base Project Haystack session handler.
 
@@ -58,6 +60,7 @@ class HaystackSession(object):
         :param grid_format: What format to use for grids in GET/POST requests?
         :param http_client: HTTP client class to use.
         :param http_args: Optional HTTP client arguments to configure.
+        :param tagging_model: Entity Tagging model in use.
         :param log: Logging object for reporting messages.
         """
         if log is None:
@@ -83,6 +86,9 @@ class HaystackSession(object):
 
         # Entity references, stored as weakrefs
         self._entities = weakref.WeakValueDictionary()
+
+        # Tagging model in use
+        self._tagging_model = tagging_model(self)
 
     # Public methods/properties
 

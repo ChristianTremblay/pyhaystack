@@ -44,16 +44,18 @@ class EntityRetrieveOperation(state.HaystackOperation):
                 entity_id = row.pop('id').name  # Should be a Ref
                 try:
                     entity = self._entities[entity_id]
+                    entity._update_tags(row)
                 except KeyError:
                     try:
                         entity = self._session._entities[entity_id]
+                        entity._update_tags(row)
                     except KeyError:
-                        entity = Entity(self._session, entity_id)
+                        entity = self._session._tagging_model.create_entity(
+                                entity_id, row)
 
                 # Stash/update entity references.
                 self._session._entities[entity_id] = entity
                 self._entities[entity_id] = entity
-                entity._update_tags(row)
             self._state_machine.read_done(result=self._entities)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
