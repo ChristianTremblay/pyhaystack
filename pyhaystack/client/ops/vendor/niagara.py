@@ -86,7 +86,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         Request the log-in cookie.
         """
         try:
-            self._session._get('', self._on_new_session,
+            self._session._get('login', self._on_new_session,
                     cookies={}, headers={}, exclude_cookies=True,
                     exclude_headers=True, api=False)
         except: # Catch all exceptions to pass to caller.
@@ -107,7 +107,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
 
     def _do_login(self, event):
         try:
-            self._session._post('login/', self._on_login,
+            self._session._post('login', self._on_login,
                     params={
                         'token':'',
                         'scheme':'cookieDigest',
