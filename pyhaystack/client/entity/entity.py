@@ -59,6 +59,12 @@ class Entity(object):
         """
         return self._tags
 
+    def __repr__(self):
+        """
+        Return a string representation of the entity.
+        """
+        return '<%s: %s>' % (self.id, self.tags)
+
     def _update_tags(self, tags):
         """
         Update the value of given tags.

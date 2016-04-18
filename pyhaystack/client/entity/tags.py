@@ -28,6 +28,22 @@ class BaseEntityTags(object):
         self._entity = weakref.ref(entity)
         self._tags = {}
 
+    def __repr__(self):
+        """
+        Dump a string representation of the tags.
+        """
+        def _dump_tag(ti):
+            (t, v) = ti
+            if v is hszinc.MARKER:
+                return t
+            elif v is hszinc.REMOVE:
+                return 'R(%s)' % t
+            else:
+                return '%s=%r' % (t, v)
+        tags = list(map(_dump_tag, self.items()))
+        tags.sort()
+        return '{%s}' % ', '.join(tags)
+
     def __iter__(self):
         """
         Iterate over the tags present.
