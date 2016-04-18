@@ -46,6 +46,13 @@ class Entity(object):
         return Ref(self._entity_id)
 
     @property
+    def dis(self):
+        """
+        Return the description field of the entity.
+        """
+        return self._tags['dis']
+
+    @property
     def tags(self):
         """
         Return the tags of this entity.
