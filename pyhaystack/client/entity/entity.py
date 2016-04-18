@@ -5,6 +5,7 @@
 High-level Entity interface.
 """
 
+from hszinc import Ref
 from .tags import ReadOnlyEntityTags, MutableEntityTags
 
 class Entity(object):
@@ -26,10 +27,14 @@ class Entity(object):
         :param entity_id: The entity's fully qualified ID.
         """
 
+        self._session = session
+        self._entity_id = entity_id
+
         if hasattr(session, 'update'):
-            tags = MutableEntityTags(session, entity_id)
+            tags = MutableEntityTags(self)
         else:
-            tags = ReadOnlyEntityTags(session, entity_id)
+            tags = ReadOnlyEntityTags(self)
+
         self._tags = tags
         self._valid = True
 
@@ -38,7 +43,7 @@ class Entity(object):
         """
         Return the fully qualified ID of this entity.
         """
-        return self._tags.id
+        return Ref(self._entity_id)
 
     @property
     def tags(self):
@@ -52,8 +57,8 @@ class Entity(object):
         Update the value of given tags.
         """
         self._tags._update_tags(tags)
-        if hasattr(self._tags._session, '_check_entity_type') \
-                and (not self._tags._session._check_entity_type(self)):
+        if hasattr(self._session, '_check_entity_type') \
+                and (not self._session._check_entity_type(self)):
             self._invalidate()
 
     def _invalidate(self):

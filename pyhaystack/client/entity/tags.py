@@ -8,13 +8,16 @@ to access and store tags of an entity.
 
 import hszinc
 import collections
+import weakref
+from ...util.asyncexc import AsynchronousException
+from .ops.crud import EntityTagUpdateOperation
 
 class BaseEntityTags(object):
     """
     A base class for storing entity tags.
     """
 
-    def __init__(self, session, entity_id):
+    def __init__(self, entity):
         """
         Initialise a new high-level entity tag storage object.
 
@@ -22,16 +25,8 @@ class BaseEntityTags(object):
         :param entity_id: The entity's fully qualified ID.
         """
 
-        self._session = session
-        self._entity_id = entity_id
+        self._entity = weakref.ref(entity)
         self._tags = {}
-
-    @property
-    def id(self):
-        """
-        Return the fully qualified ID of this entity.
-        """
-        return hszinc.Ref(self._entity_id)
 
     def __iter__(self):
         """
@@ -72,8 +67,11 @@ class BaseMutableEntityTags(BaseEntityTags):
     """
     A base class for entity tags that supports modifications to the tag set.
     """
-    def __init__(self, session, entity_id):
-        super(BaseMutableEntityTags, self).__init__(session, entity_id)
+
+    _ENTITY_TAG_UPDATE_OPERATION = EntityTagUpdateOperation
+
+    def __init__(self, entity):
+        super(BaseMutableEntityTags, self).__init__(entity)
         self._tag_updates = {}
         self._tag_deletions = set()
 
@@ -88,7 +86,17 @@ class BaseMutableEntityTags(BaseEntityTags):
         """
         Commit any to-be-sent updates for this entity.
         """
-        raise NotImplementedError('TODO: implement CRUD ops')
+        entity = self._entity()
+        updates = self._tag_updates.copy()
+        updates['id'] = entity.id
+        for tag in self._tag_deletions:
+            updates[tag] = hszinc.REMOVE
+
+        op = self._ENTITY_TAG_UPDATE_OPERATION(entity, updates)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
 
     def delete(self, callback=None):
         """
