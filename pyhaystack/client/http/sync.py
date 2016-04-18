@@ -42,7 +42,7 @@ class SyncHttpClient(HTTPClient):
                         proxies=proxies, verify=tls_verify, cert=tls_cert)
                 response.raise_for_status()
             except requests.exceptions.HTTPError as e:
-                raise HTTPStatusError(e.message, e.response.status_code, \
+                raise HTTPStatusError(e.args[0], e.response.status_code, \
                         dict(e.response.headers), e.response.content)
             except requests.exceptions.Timeout as e:
                 raise HTTPTimeoutError(e.strerror)
