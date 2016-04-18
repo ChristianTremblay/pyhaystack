@@ -63,7 +63,8 @@ class SyncHttpClient(HTTPClient):
                 raise HTTPBaseError(e.message)
 
             callback(HTTPResponse(response.status_code,
-                dict(response.headers), response.content))
+                dict(response.headers), response.content,
+                dict(response.cookies)))
         except:
             # Catch all exceptions and forward those to the callback function
             callback(AsynchronousException())

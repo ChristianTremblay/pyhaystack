@@ -240,7 +240,8 @@ class HTTPResponse(object):
     """
     A class that represents the raw response from a HTTP request.
     """
-    def __init__(self, status_code, headers, body):
+    def __init__(self, status_code, headers, body, cookies=None):
         self.status_code = status_code
         self.headers = headers
         self.body = body
+        self.cookies = cookies
