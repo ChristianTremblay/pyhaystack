@@ -19,16 +19,19 @@ class EntityRetrieveOperation(state.HaystackOperation):
     Base class for retrieving entity instances.
     """
 
-    def __init__(self, session):
+    def __init__(self, session, single):
         """
         Initialise a request for the named IDs.
 
         :param session: Haystack HTTP session object.
         """
+        single = bool(single)
 
-        super(EntityRetrieveOperation, self).__init__(result_deepcopy=False)
+        super(EntityRetrieveOperation, self).__init__(
+                result_deepcopy=False, result_copy=not single)
         self._session = session
         self._entities = {}
+        self._single = single
 
     def _on_read(self, operation, **kwargs):
         """
@@ -56,7 +59,15 @@ class EntityRetrieveOperation(state.HaystackOperation):
                 # Stash/update entity references.
                 self._session._entities[entity_id] = entity
                 self._entities[entity_id] = entity
-            self._state_machine.read_done(result=self._entities)
+
+            if self._single:
+                try:
+                    result = list(self._entities.values())[0]
+                except IndexError:
+                    raise NameError('No matching entity found')
+            else:
+                result = self._entities
+            self._state_machine.read_done(result=result)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -90,7 +101,7 @@ class GetEntityOperation(EntityRetrieveOperation):
     - Return the stored entities.               # State: done
     """
 
-    def __init__(self, session, entity_ids, refresh_all):
+    def __init__(self, session, entity_ids, refresh_all, single):
         """
         Initialise a request for the named IDs.
 
@@ -99,7 +110,7 @@ class GetEntityOperation(EntityRetrieveOperation):
         :param refresh_all: Refresh all entities, ignore existing content.
         """
 
-        super(GetEntityOperation, self).__init__(session)
+        super(GetEntityOperation, self).__init__(session, single)
         self._entity_ids = set(entity_ids)
         self._todo = self._entity_ids.copy()
         self._refresh_all = refresh_all
@@ -166,7 +177,7 @@ class FindEntityOperation(EntityRetrieveOperation):
     - Return the stored entities.               # State: done
     """
 
-    def __init__(self, session, filter_expr, limit):
+    def __init__(self, session, filter_expr, limit, single):
         """
         Initialise a request for the named IDs.
 
@@ -175,7 +186,7 @@ class FindEntityOperation(EntityRetrieveOperation):
         :param limit: Maximum number of entities to fetch.
         """
 
-        super(FindEntityOperation, self).__init__(session)
+        super(FindEntityOperation, self).__init__(session, single)
         self._filter_expr = filter_expr
         self._limit = limit
 

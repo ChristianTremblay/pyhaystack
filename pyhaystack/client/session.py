@@ -335,33 +335,41 @@ class HaystackSession(object):
 
         return self._post_grid('invokeAction', grid, callback)
 
-    def get_entity(self, ids, refresh=False, callback=None):
+    def get_entity(self, ids, refresh=False, single=None, callback=None):
         """
         Retrieve instances of entities, possibly refreshing them.
 
         :param ids: A single entity ID, or a list of entity IDs.
         :param refresh: Do we refresh the tags on those entities?
+        :param single: Are we expecting a single entity?  Defaults to
+                       True if `ids` is not a list.
         :param callback: Asynchronous result callback.
         """
         if isinstance(ids, string_types) or isinstance(ids, hszinc.Ref):
             # Make sure we always pass a list.
             ids = [ids]
+            if single is None:
+                single = True
+        elif single is None:
+            single = False
 
-        op = self._GET_ENTITY_OPERATION(self, ids, refresh)
+        op = self._GET_ENTITY_OPERATION(self, ids, refresh, single)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
         return op
 
-    def find_entity(self, filter_expr, limit=None, callback=None):
+    def find_entity(self, filter_expr, limit=None, single=False, callback=None):
         """
         Retrieve instances of entities that match a filter expression.
 
         :param filter_expr: The filter expression to search for.
         :param limit: Optional limit to number of entities retrieved.
+        :param single: Are we expecting a single entity?  Defaults to
+                       True if `ids` is not a list.
         :param callback: Asynchronous result callback.
         """
-        op = self._FIND_ENTITY_OPERATION(self, filter_expr, limit)
+        op = self._FIND_ENTITY_OPERATION(self, filter_expr, limit, single)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
