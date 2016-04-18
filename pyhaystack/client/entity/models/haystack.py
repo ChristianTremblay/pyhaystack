@@ -33,10 +33,18 @@ class HaystackTaggingModel(TaggingModel):
             # This is a site
             types.append(site.SiteMixin)
             names.append('Site')
+        elif 'siteRef' in tags:
+            # This links to a site
+            types.append(site.SiteRefMixin)
+            names.append('SiteRef')
 
         if 'equip' in tags:
             # This is a site
             types.append(equip.EquipMixin)
             names.append('Equip')
+        else:
+            # This links to an equip
+            types.append(equip.EquipRefMixin)
+            names.append('EquipRef')
 
         return ('%sEntity' % ''.join(sorted(names)), types)

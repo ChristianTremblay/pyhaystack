@@ -12,13 +12,6 @@ class EquipMixin(object):
     A mix-in used for entities that carry the 'equip' marker tag.
     """
 
-    def get_site(self, callback=None):
-        """
-        Retrieve an instance of the site this 'equip' entity belongs to.
-        """
-        return self._session.get_entity(self.tags['siteRef'],
-                callback=callback, single=True)
-
     def find_entity(self, filter_expr=None, limit=None,
             single=False, callback=None):
         """
@@ -31,3 +24,16 @@ class EquipMixin(object):
         else:
             filter_expr = '(equipRef==%s) and (%s)' % (equip_ref, filter_expr)
         return self._session.find_entity(filter_expr, limit, single, callback)
+
+
+class EquipRefMixin(object):
+    """
+    A mix-in used for entities that carry an 'equipRef' reference tag.
+    """
+
+    def get_equip(self, callback=None):
+        """
+        Retrieve an instance of the equip this entity is linked to.
+        """
+        return self._session.get_entity(self.tags['equipRef'],
+                callback=callback, single=True)

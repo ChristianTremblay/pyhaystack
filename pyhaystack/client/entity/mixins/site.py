@@ -24,3 +24,16 @@ class SiteMixin(object):
         else:
             filter_expr = '(siteRef==%s) and (%s)' % (site_ref, filter_expr)
         return self._session.find_entity(filter_expr, limit, single, callback)
+
+
+class SiteRefMixin(object):
+    """
+    A mix-in used for entities that carry a 'siteRef' reference tag.
+    """
+
+    def get_site(self, callback=None):
+        """
+        Retrieve an instance of the site this entity is linked to.
+        """
+        return self._session.get_entity(self.tags['siteRef'],
+                callback=callback, single=True)
