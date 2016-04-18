@@ -62,6 +62,10 @@ class SyncHttpClient(HTTPClient):
                 # TODO: handle this with a more specific exception
                 raise HTTPBaseError(e.message)
 
+            if self.log is not None:
+                self.log.debug('Response received: Code %d, Headers %r, '\
+                        'Cookies: %r, Body: %r', response.status_code,
+                        response.headers, response.cookies, response.content)
             callback(HTTPResponse(response.status_code,
                 dict(response.headers), response.content,
                 dict(response.cookies)))
