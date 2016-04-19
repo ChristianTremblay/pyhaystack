@@ -185,9 +185,10 @@ class HTTPClient(object):
             self.log.debug( 'Performing operation %s of %s, headers: %r, '\
                             'cookies: %r, body: %r', method, uri, headers,
                             cookies, body)
-        self._request(method, uri, callback, body = body,
-                headers = headers, cookies = cookies, auth = auth, timeout = timeout, proxies = proxies,
-                tls_verify = tls_verify, tls_cert = tls_cert)
+        self._request(method=method, uri=uri, callback=callback, body=body,
+                headers=headers, cookies=cookies, auth=auth,
+                timeout=timeout, proxies=proxies, tls_verify=tls_verify,
+                tls_cert=tls_cert)
 
     def get(self, uri, callback, **kwargs):
         """
