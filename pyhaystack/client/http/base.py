@@ -5,6 +5,7 @@ consistent interface to make processing and handling of requests more
 convenient and to aid portability of pyhaystack.
 """
 
+import shlex
 import re
 try:
     from urllib.parse import quote_plus
@@ -242,9 +243,58 @@ class HTTPResponse(object):
     """
     A class that represents the raw response from a HTTP request.
     """
-    def __init__(self, status_code, headers, body, cookies=None, text=''):
+    def __init__(self, status_code, headers, body, cookies=None):
         self.status_code = status_code
         self.headers = headers
         self.body = body
-        self.text = text
         self.cookies = cookies
+        self._content_type = None
+        self._content_type_args = None
+        self._text = None
+
+    @property
+    def content_type(self):
+        """
+        Return the content type of the body.
+        """
+        if self._content_type is None:
+            self._parse_content_type()
+        return self._content_type
+
+    @property
+    def content_type_args(self):
+        """
+        Return the content type arguments of the body.
+        """
+        if self._content_type_args is None:
+            self._parse_content_type()
+        return self._content_type_args.copy()
+
+    @property
+    def text(self):
+        """
+        Attempt to decode the raw body into text based on the encoding given.
+        """
+        if self._text is None:
+            content_encoding = self.content_type_args.get('charset')
+            if content_encoding is None:
+                self._text = self.body.decode()
+            else:
+                self._text = self.body.decode(content_encoding)
+        return self._text
+
+    def _parse_content_type(self):
+        # Handle both cases
+        content_type = self.headers.get('Content-Type', \
+                self.headers.get('content-type'))
+
+        # Is content encoding shoehorned in there?
+        if ';' in content_type:
+            (content_type, content_type_args) = content_type.split(';',1)
+            content_type = content_type.strip()
+            content_type_args = dict([tuple(kv.split('=',1)) for kv in
+                    shlex.split(content_type_args)])
+        else:
+            content_type_args = {}
+        self._content_type = content_type
+        self._content_type_args = content_type_args

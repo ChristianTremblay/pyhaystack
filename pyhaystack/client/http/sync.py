@@ -68,8 +68,7 @@ class SyncHttpClient(HTTPClient):
 
             result = HTTPResponse(response.status_code,
                 dict(response.headers), response.content,
-                dict(response.cookies), response.text
-                )
+                dict(response.cookies))
         except:
             # Catch all exceptions and forward those to the callback function
             result = AsynchronousException()
