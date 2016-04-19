@@ -135,34 +135,15 @@ class BaseGridOperation(state.HaystackOperation):
             if isinstance(response, AsynchronousException):
                 response.reraise()
 
-            # What format grid did we get back?
-            #print('grid', response.headers)
-            content_type = response.headers.get('content-type')
-            if content_type is None:
-                raise ValueError('Content-Type header missing in reply')
-
-            # Is content encoding shoehorned in there?
-            if ';' in content_type:
-                (content_type, content_type_args) = content_type.split(';',1)
-                content_type = content_type.strip()
-                content_type_args = dict([tuple(kv.split('=',1)) for kv in
-                        shlex.split(content_type_args)])
-            else:
-                content_type_args = {}
-
-            # TODO: Unicode characters are supposed to be escaped,
-            # but are they?  Inspect content_type_args to make sure.
-            content_encoding = content_type_args.get('charset')
-            if content_encoding is None:
-                body = response.body.decode()
-            else:
-                body = response.body.decode(content_encoding)
-
             # If we're expecting a raw response back, then just hand the
             # request object back and finish here.
             if self._raw_response:
                 self._state_machine.response_ok(result=response)
                 return
+
+            # What format grid did we get back?
+            content_type = response.content_type
+            body = response.text
 
             if content_type in ('text/zinc', 'text/plain'):
                 # We have been given a grid in ZINC format.
