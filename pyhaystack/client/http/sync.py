@@ -41,10 +41,7 @@ class SyncHttpClient(HTTPClient):
                         method=method, url=uri, data=body, headers=headers,
                         cookies=cookies, auth=auth, timeout=timeout,
                         proxies=proxies, verify=tls_verify, cert=tls_cert)
-                #print('Response : %s' % response.text)
-                # Can't use raise_for_status as error 404 may be sent
-                # by the Jace even if login succeeded
-                #response.raise_for_status()
+                response.raise_for_status()
 
                 callback(HTTPResponse(response.status_code,
                                       dict(response.headers),
@@ -53,11 +50,9 @@ class SyncHttpClient(HTTPClient):
                                       response.text
                                       )
                                       )
-            # Error 404 cannot be trusted... may be OK
-            #except requests.exceptions.HTTPError as e:
-            #    print('http error')
-            #    raise HTTPStatusError(e.message, e.response.status_code, \
-            #            dict(e.response.headers), e.response.content)
+            except requests.exceptions.HTTPError as e:
+                raise HTTPStatusError(e.message, e.response.status_code, \
+                        dict(e.response.headers), e.response.content)
             except requests.exceptions.Timeout as e:
                 raise HTTPTimeoutError(e.strerror)
             except requests.exceptions.TooManyRedirects as e:
