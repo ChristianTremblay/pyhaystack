@@ -314,7 +314,7 @@ class HaystackSession(object):
         if hasattr(timestamp_records, 'to_dict'):
             timestamp_records = timestamp_records.to_dict()
 
-        timestamp_records = timestamp_records.items()
+        timestamp_records = list(timestamp_records.items())
         timestamp_records.sort(key=lambda rec : rec[0])
         for (ts, val) in timestamp_records:
             grid.append({'ts': ts, 'val': val})
