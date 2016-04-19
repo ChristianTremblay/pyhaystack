@@ -11,6 +11,7 @@ import re
 from ....util import state
 from ....util.asyncexc import AsynchronousException
 from ...http.auth import BasicAuthenticationCredentials
+from ...http.exceptions import HTTPStatusError
 
 class NiagaraAXAuthenticateOperation(state.HaystackOperation):
     """
@@ -98,7 +99,14 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         """
         try:
             if isinstance(response, AsynchronousException):
-                response.reraise()
+                try:
+                    response.reraise()
+                except HTTPStatusError as e:
+                    if e.status == 404:
+                        pass
+                    else:
+                        raise
+
             self._cookie = response.cookies
             self._state_machine.do_login()
         except: # Catch all exceptions to pass to caller.
@@ -130,7 +138,13 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         """
         try:
             if isinstance(response, AsynchronousException):
-                response.reraise()
+                try:
+                    response.reraise()
+                except HTTPStatusError as e:
+                    if e.status == 404:
+                        pass
+                    else:
+                        raise
 
             if self._LOGIN_RE.match(response.text):
                 # No good.
