@@ -37,11 +37,22 @@ class SyncHttpClient(HTTPClient):
 
         try:
             try:
-                response = self._session.request(
-                        method=method, url=uri, data=body, headers=headers,
-                        cookies=cookies, auth=auth, timeout=timeout,
-                        proxies=proxies, verify=tls_verify, cert=tls_cert)
-                response.raise_for_status()
+                try:
+                    response = self._session.request(
+                            method=method, url=uri, data=body,
+                            headers=headers, cookies=cookies,
+                            auth=auth, timeout=timeout,
+                            proxies=proxies, verify=tls_verify,
+                            cert=tls_cert)
+                    response.raise_for_status()
+                except:
+                    if self.log is not None:
+                        self.log.debug('Exception in request %s of %s with '\
+                                'body %r, headers %r, cookies %r, auth %r',
+                                method, uri, body, headers, cookies, auth,
+                                exc_info=1)
+                    raise
+
 
                 callback(HTTPResponse(response.status_code,
                                       dict(response.headers),
