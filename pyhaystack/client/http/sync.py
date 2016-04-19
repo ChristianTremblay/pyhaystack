@@ -18,9 +18,9 @@ class SyncHttpClient(HTTPClient):
         self._session = requests.Session()
         super(SyncHttpClient, self).__init__(**kwargs)
 
-    def _request(self, method, uri, callback, body = None,
-            headers = None, cookies = None, auth = None, timeout = None, proxies = None,
-            tls_verify = None, tls_cert = None):
+    def _request(self, method, uri, callback, body,
+            headers, cookies, auth, timeout, proxies,
+            tls_verify, tls_cert):
 
         if auth is not None:
             if isinstance(auth, BasicAuthenticationCredentials):
