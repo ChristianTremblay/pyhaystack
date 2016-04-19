@@ -53,14 +53,6 @@ class SyncHttpClient(HTTPClient):
                                 exc_info=1)
                     raise
 
-
-                callback(HTTPResponse(response.status_code,
-                                      dict(response.headers),
-                                      response.content,
-                                      dict(response.cookies),
-                                      response.text
-                                      )
-                                      )
             except requests.exceptions.HTTPError as e:
                 raise HTTPStatusError(e.message, e.response.status_code, \
                         dict(e.response.headers), e.response.content)
@@ -73,6 +65,19 @@ class SyncHttpClient(HTTPClient):
             except requests.exceptions.RequestException:
                 # TODO: handle this with a more specific exception
                 raise HTTPBaseError(e.message)
+
+            result = HTTPResponse(response.status_code,
+                dict(response.headers), response.content,
+                dict(response.cookies), response.text
+                )
         except:
             # Catch all exceptions and forward those to the callback function
-            callback(AsynchronousException())
+            result = AsynchronousException()
+
+        try:
+            callback(result)
+        except: # pragma: no cover
+            # This should not happen!
+            if self.log:
+                self.log.exception('Failure in callback with result: %r',
+                        result)
