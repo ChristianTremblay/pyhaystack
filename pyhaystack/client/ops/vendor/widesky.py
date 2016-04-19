@@ -21,7 +21,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
     a M2M variant of OAuth2.0 to authenticate users.
     """
 
-    def __init__(self, session, retries=2):
+    def __init__(self, session, retries=0):
         """
         Attempt to log in to the VRT WideSky server.  The procedure is as
         follows:
