@@ -144,9 +144,10 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                     else:
                         raise
 
-            if self._LOGIN_RE.match(response.text):
-                # No good.
-                raise IOError('Login failed')
+            else:
+                if self._LOGIN_RE.match(response.text):
+                    # No good.
+                    raise IOError('Login failed')
 
             self._state_machine.login_done(result=(self._auth, self._cookies))
         except: # Catch all exceptions to pass to caller.
