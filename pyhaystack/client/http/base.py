@@ -77,7 +77,7 @@ class HTTPClient(object):
     def request(self, method, uri, callback, body=None, params=None,
             headers=None, cookies=None, auth=None, timeout=None, proxies=None,
             tls_verify=None, tls_cert=None, exclude_params=None,
-            exclude_headers=None, exclude_cookies=None, exclude_proxies=None):
+            exclude_headers=None, exclude_cookies=True, exclude_proxies=True):
         """
         Perform a request with this client.  Most parameters here exist to either
         add to or override the defaults given by the client attributes.  The
@@ -127,6 +127,7 @@ class HTTPClient(object):
                         the proxies given.  Otherwise, this is an iterable
                         of proxy names to be excluded.
         """
+        print('http : request')
         # Is this an absolute URL?
         if not self.PROTO_RE.match(uri):
             # Do we have a base URL?
@@ -150,13 +151,18 @@ class HTTPClient(object):
             return result
 
         # Merge our parameters, headers and cookies together
+        print('merge params')
         params = _merge(params, self.params, exclude_params)
+        print('merge headers')
         headers = _merge(headers, self.headers, exclude_headers)
+        print('merge cookies')
         cookies = _merge(cookies, self.cookies, exclude_cookies)
+        print('merge proxies')
         proxies = _merge(proxies, self.proxies, exclude_proxies)
         auth = auth or self.auth or None
         timeout = timeout or self.timeout or None
-
+        
+        print(auth, type(auth))
         if not ((auth is None) or isinstance(auth, AuthenticationCredentials)):
             raise TypeError('%s is not a subclass of the '\
                     'AuthenticationCredentials class.' \
@@ -185,9 +191,10 @@ class HTTPClient(object):
             self.log.debug( 'Performing operation %s of %s, headers: %r, '\
                             'cookies: %r, body: %r', method, uri, headers,
                             cookies, body)
-        self._request(method, uri, callback, body,
-                headers, cookies, auth, timeout, proxies,
-                tls_verify, tls_cert)
+        print('base http request', method, uri, auth)
+        self._request(method, uri, callback, body = body,
+                headers = headers, cookies = cookies, auth = auth, timeout = timeout, proxies = proxies,
+                tls_verify = tls_verify, tls_cert = tls_cert)
 
     def get(self, uri, callback, **kwargs):
         """
@@ -197,7 +204,7 @@ class HTTPClient(object):
         kwargs.pop('body',None)
         self.request('GET', uri, callback, **kwargs)
 
-    def post(self, uri, callback, body, body_type=None, body_size=None,
+    def post(self, uri, callback, body = None, body_type=None, body_size=None,
             headers=None, **kwargs):
         """
         Convenience function: perform a HTTP POST operation.  Arguments are the
@@ -209,8 +216,10 @@ class HTTPClient(object):
         :param body_size:   Length of the body to be sent.  If None, the length
                             is autodetected.  Set to False to avoid this.
         """
-        if body_size is None:
-            body_size = len(body)
+        print('http client : post')
+        if body:
+            if body_size is None:
+                body_size = len(body)
 
         if headers is None:
             headers = {}
@@ -220,9 +229,8 @@ class HTTPClient(object):
 
         if body_type is not None:
             headers['Content-Type'] = body_type
-
-        self.request('POST', uri, callback, body=body,
-                headers=headers, **kwargs)
+        print('base http post', uri, headers)
+        self.request('POST', uri, callback, **kwargs)
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
@@ -240,8 +248,9 @@ class HTTPResponse(object):
     """
     A class that represents the raw response from a HTTP request.
     """
-    def __init__(self, status_code, headers, body, cookies=None):
+    def __init__(self, status_code, headers, body, cookies=None, text=''):
         self.status_code = status_code
         self.headers = headers
         self.body = body
+        self.text = text
         self.cookies = cookies

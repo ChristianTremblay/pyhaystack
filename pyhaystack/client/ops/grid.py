@@ -136,7 +136,8 @@ class BaseGridOperation(state.HaystackOperation):
                 response.reraise()
 
             # What format grid did we get back?
-            content_type = response.headers.get('Content-Type')
+            #print('grid', response.headers)
+            content_type = response.headers.get('content-type')
             if content_type is None:
                 raise ValueError('Content-Type header missing in reply')
 
@@ -165,10 +166,10 @@ class BaseGridOperation(state.HaystackOperation):
 
             if content_type in ('text/zinc', 'text/plain'):
                 # We have been given a grid in ZINC format.
-                decoded = hszinc.parse(body, mode=hszinc.MODE_ZINC)
+                decoded = hszinc.parse(response.text, mode=hszinc.MODE_ZINC)
             elif content_type == 'application/json':
                 # We have been given a grid in JSON format.
-                decoded = [hszinc.parse(body, mode=hszinc.MODE_JSON)]
+                decoded = [hszinc.parse(response.text, mode=hszinc.MODE_JSON)]
             else:
                 # We don't recognise this!
                 raise ValueError('Unrecognised content type %s' % content_type)

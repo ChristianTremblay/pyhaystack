@@ -24,6 +24,7 @@ from six import reraise
 class AsynchronousException(object):
     def __init__(self):
         self._exc_info = exc_info()
+        print(self._exc_info)
 
     def reraise(self):
         reraise(*self._exc_info)

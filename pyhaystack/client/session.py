@@ -482,7 +482,7 @@ class HaystackSession(object):
         op.go()
         return op
 
-    def _post(self, uri, callback, body, body_type=None, body_size=None,
+    def _post(self, uri, callback, body = None, body_type=None, body_size=None,
             headers=None, api=True, **kwargs):
         """
         Perform a raw HTTP POST operation.  This is a convenience wrapper around
@@ -491,8 +491,8 @@ class HaystackSession(object):
         """
         if api:
             uri = '%s/%s' % (self._api_dir, uri)
-        return self._client.post(uri, callback, body, body_type,
-                body_size, headers, **kwargs)
+        print('session : doing post')
+        return self._client.post(uri, callback, **kwargs)
 
     def _post_grid(self, uri, grid, callback, post_format=None,
             expect_format=None, **kwargs):

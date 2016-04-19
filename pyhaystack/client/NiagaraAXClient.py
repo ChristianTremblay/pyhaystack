@@ -68,6 +68,7 @@ class Connect(hc.Connect):
                             }
             # Authentication post request
             try:
+                print('POST',self.loginURL, self.headers,(self.USERNAME, self.PASSWORD))
                 req = self.s.post(self.loginURL, params=self.headers,auth=(self.USERNAME, self.PASSWORD))
                 #If word 'login' is in the response page, consider login failed...
                 if re.search(re.compile('login', re.IGNORECASE), req.text):

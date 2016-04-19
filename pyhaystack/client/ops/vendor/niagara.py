@@ -28,7 +28,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
 
     _LOGIN_RE = re.compile('login', re.IGNORECASE)
 
-    def __init__(self, session, retries=2):
+    def __init__(self, session, retries=0):
         """
         Attempt to log in to the Niagara AX server.
 
@@ -90,23 +90,26 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                     cookies={}, headers={}, exclude_cookies=True,
                     exclude_headers=True, api=False)
         except: # Catch all exceptions to pass to caller.
+            print('do new session exception')
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_new_session(self, response):
         """
         Retrieve the log-in cookie.
         """
+        print('entering on new session')
         try:
             if isinstance(response, AsynchronousException):
                 response.reraise()
-
-            self._cookie = response.cookies['niagara_session']
+            self._cookie = response.cookies
             self._state_machine.do_login()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_login(self, event):
+        print('entering do login')
         try:
+            print('trying post')
             self._session._post('login', self._on_login,
                     params={
                         'token':'',
@@ -114,30 +117,33 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                         'absPathBase':'/',
                         'content-type':'application/x-niagara-login-support',
                         'Referer':self._session._client.uri+'login/',
-                        'accept':'application/json; charset=utf-8',
-                        'Accept-Encoding': 'gzip',
-                        'cookiePostfix': self._cookie,
+                        'accept':'text/zinc; charset=utf-8',
+                        'cookiePostfix' : self._cookie['niagara_session']
                     },
-                    auth=self._auth,
-                    cookies={'niagara_session': self._cookie},
-                    headers={}, exclude_cookies=True,
-                    exclude_headers=True, api=False)
+                    headers={},
+                    exclude_cookies = True,
+                    exclude_proxies = True,
+                    api=False,
+                    auth = self._auth)
+            print('post created and sent')
         except: # Catch all exceptions to pass to caller.
+            print('do login exception')
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_login(self, response):
         """
         See if the login succeeded.
         """
+        print('on login entered')
         try:
             if isinstance(response, AsynchronousException):
                 response.reraise()
 
-            if self._LOGIN_RE.match(response.body):
+            if self._LOGIN_RE.match(response.text):
                 # No good.
                 raise IOError('Login failed')
 
-            self._state_machine.login_done(result=(self._cookie, self._auth))
+            self._state_machine.login_done(result=(self._auth, self._cookie))
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
