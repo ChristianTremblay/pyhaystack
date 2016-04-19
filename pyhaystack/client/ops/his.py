@@ -313,3 +313,214 @@ class HisReadFrameOperation(state.HaystackOperation):
         Return the result from the state machine.
         """
         self._done(event.result)
+
+
+class HisWriteSeriesOperation(state.HaystackOperation):
+    """
+    Write the series data to a 'point' entity.
+    """
+
+    def __init__(self, session, point, series, tz):
+        """
+        Write the series data to the point.
+
+        :param session: Haystack HTTP session object.
+        :param point: ID of historical 'point' object to write.
+        :param series: Series data to be written to the point.
+        :param tz: If not None, a datetime.tzinfo instance for this write.
+        """
+        super(HisWriteSeriesOperation, self).__init__()
+
+        # We've either been given an Entity instance or a string/reference
+        # giving the name of an entity.
+        if isinstance(point, string_types) or isinstance(point, hszinc.Ref):
+            # We have the name of an entity, we'll need to fetch it.
+            self._entity_id = point
+            self._point = None
+        else:
+            # We have an entity.
+            self._point = point
+            self._entity_id = point.id
+
+        self._session = session
+        self._series = series
+        self._tz = tz
+
+        self._state_machine = fysom.Fysom(
+                initial='init', final='done',
+                events=[
+                    # Event             Current State       New State
+                    ('have_tz',         'init',             'write'),
+                    ('have_point',      'init',             'get_point_tz'),
+                    ('need_point',      'init',             'get_point'),
+                    ('have_point',      'get_point',        'get_point_tz'),
+                    ('have_tz',         'get_point_tz',     'write'),
+                    ('need_equip',      'get_point_tz',     'get_equip'),
+                    ('have_equip',      'get_equip',        'get_equip_tz'),
+                    ('have_tz',         'get_equip_tz',     'write'),
+                    ('need_site',       'get_equip_tz',     'get_site'),
+                    ('have_site',       'get_site',         'get_site_tz'),
+                    ('have_tz',         'get_site_tz',      'write'),
+                    ('write_done',      'write',            'done'),
+                    ('exception',       '*',                'done'),
+                ], callbacks={
+                    'onenterget_point':     self._do_get_point,
+                    'onenterget_point_tz':  self._do_get_point_tz,
+                    'onenterget_equip':     self._do_get_equip,
+                    'onenterget_equip_tz':  self._do_get_equip_tz,
+                    'onenterget_site':      self._do_get_site,
+                    'onenterget_site_tz':   self._do_get_site_tz,
+                    'onenterwrite':         self._do_write,
+                    'onenterdone':          self._do_done,
+                })
+
+    def go(self):
+        if self._tz is not None: # Do we have a timezone?
+            # We do!
+            self._state_machine.have_tz()
+        elif self._point is not None: # Nope, do we have the point?
+            # We do!
+            self._state_machine.have_point()
+        else:
+            # We need to fetch the point to get its timezone.
+            self._state_machine.need_point()
+
+    def _do_get_point(self, event):
+        """
+        Retrieve the point entity.
+        """
+        self._session.get_entity(self._entity_id, single=True,
+                callback=self._got_point)
+
+    def _got_point(self, operation, **kwargs):
+        """
+        Process the return value from get_entity
+        """
+        try:
+            self._point = operation.result
+            self._state_machine.have_point()
+        except:
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_get_point_tz(self, event):
+        """
+        See if the point has a timezone?
+        """
+        if hasattr(self._point, 'tz') and isinstance(self._point.tz, tzinfo):
+            # We have our timezone.
+            self._tz = self._point.tz
+            self._state_machine.have_tz()
+        else:
+            # Nope, look at the equip then.
+            self._state_machine.need_equip()
+
+    def _do_get_equip(self, event):
+        """
+        Retrieve the equip entity.
+        """
+        self._point.get_equip(callback=self._got_equip)
+
+    def _got_equip(self, operation, **kwargs):
+        """
+        Process the return value from get_entity
+        """
+        try:
+            equip = operation.result
+            self._state_machine.have_equip(equip=equip)
+        except:
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_get_equip_tz(self, event):
+        """
+        See if the equip has a timezone?
+        """
+        equip = event.equip
+        if hasattr(equip, 'tz') and isinstance(equip.tz, tzinfo):
+            # We have our timezone.
+            self._tz = equip.tz
+            self._state_machine.have_tz()
+        else:
+            # Nope, look at the site then.
+            self._state_machine.need_site()
+
+    def _do_get_site(self, event):
+        """
+        Retrieve the site entity.
+        """
+        self._point.get_site(callback=self._got_site)
+
+    def _got_site(self, operation, **kwargs):
+        """
+        Process the return value from get_entity
+        """
+        try:
+            site = operation.result
+            self._state_machine.have_site(site=site)
+        except:
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_get_site_tz(self, event):
+        """
+        See if the site has a timezone?
+        """
+        site = event.site
+        if hasattr(site, 'tz') and isinstance(site.tz, tzinfo):
+            # We have our timezone.
+            self._tz = site.tz
+            self._state_machine.have_tz()
+        else:
+            try:
+                # Nope, no idea then.
+                raise ValueError('No timezone specified for operation, '\
+                        'point, equip or site.')
+            except:
+                self._state_machine.exception(result=AsynchronousException())
+
+    def _do_write(self, event):
+        """
+        Push the data to the server.
+        """
+        try:
+            # Process the timestamp records into an appropriate format.
+            if hasattr(self._series, 'to_dict'):
+                records = self._series.to_dict()
+            elif not isinstance(self._series, dict):
+                records = dict(self._series)
+            else:
+                records = self._series
+
+            # Time-shift the records.
+            if hasattr(self._tz, 'localize'):
+                localise = lambda ts : self._tz.localize(ts) \
+                        if ts.tzinfo is None else ts.astimezone(self._tz)
+            else:
+                localise = lambda ts : ts.replace(tzinfo=self._tz) \
+                        if ts.tzinfo is None else ts.astimezone(self._tz)
+            records = dict([(localise(ts), val) \
+                    for ts, val in records.items()])
+
+            # Write the data
+            self._session.his_write(point=self._entity_id,
+                    timestamp_records=records, callback=self._on_write)
+        except:
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _on_write(self, operation, **kwargs):
+        """
+        Handle the write error, if any.
+        """
+        try:
+            # See if the write succeeded.
+            grid = operation.result
+            if not isinstance(grid, hszinc.Grid):
+                raise TypeError('Unexpected result: %r' % grid)
+            # Move to the done state.
+            self._state_machine.write_done(result=None)
+        except: # Catch all exceptions to pass to caller.
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_done(self, event):
+        """
+        Return the result from the state machine.
+        """
+        self._done(event.result)

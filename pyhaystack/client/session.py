@@ -48,6 +48,7 @@ class HaystackSession(object):
 
     _HIS_READ_SERIES_OPERATION = his_ops.HisReadSeriesOperation
     _HIS_READ_FRAME_OPERATION = his_ops.HisReadFrameOperation
+    _HIS_WRITE_SERIES_OPERATION = his_ops.HisWriteSeriesOperation
 
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None,
@@ -393,6 +394,20 @@ class HaystackSession(object):
 
         op = self._HIS_READ_SERIES_OPERATION(self, point,
                 rng, tz, series_format)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
+
+    def his_write_series(self, point, series, tz=None, callback=None):
+        """
+        Write the historical data of the given point.
+
+        :param point: Haystack 'point' entity to read the data from
+        :param series: Historical series data to write
+        :param tz: Optional timezone to translate timestamps to
+        """
+        op = self._HIS_WRITE_SERIES_OPERATION(self, point, series, tz)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
