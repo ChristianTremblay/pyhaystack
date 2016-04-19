@@ -51,7 +51,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         super(NiagaraAXAuthenticateOperation, self).__init__()
         self._retries = retries
         self._session = session
-        self._cookie = None
+        self._cookies = {}
         self._auth = BasicAuthenticationCredentials(session._username,
                                                     session._password)
 
@@ -107,7 +107,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                     else:
                         raise
 
-            self._cookie = response.cookies
+            self._cookies = response.cookies.copy()
             self._state_machine.do_login()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
@@ -122,13 +122,11 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                         'content-type':'application/x-niagara-login-support',
                         'Referer':self._session._client.uri+'login/',
                         'accept':'text/zinc; charset=utf-8',
-                        'cookiePostfix' : self._cookie['niagara_session']
+                        'cookiePostfix' : self._cookies['niagara_session'],
                     },
-                    headers={},
-                    exclude_cookies = True,
-                    exclude_proxies = True,
-                    api=False,
-                    auth = self._auth)
+                    headers={}, cookies=self._cookies,
+                    exclude_cookies=True, exclude_proxies=True,
+                    api=False, auth=self._auth)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -150,7 +148,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                 # No good.
                 raise IOError('Login failed')
 
-            self._state_machine.login_done(result=(self._auth, self._cookie))
+            self._state_machine.login_done(result=(self._auth, self._cookies))
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
