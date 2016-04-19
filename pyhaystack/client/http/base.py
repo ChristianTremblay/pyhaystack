@@ -198,7 +198,7 @@ class HTTPClient(object):
         kwargs.pop('body',None)
         self.request('GET', uri, callback, **kwargs)
 
-    def post(self, uri, callback, body = None, body_type=None, body_size=None,
+    def post(self, uri, callback, body=None, body_type=None, body_size=None,
             headers=None, **kwargs):
         """
         Convenience function: perform a HTTP POST operation.  Arguments are the
@@ -210,19 +210,21 @@ class HTTPClient(object):
         :param body_size:   Length of the body to be sent.  If None, the length
                             is autodetected.  Set to False to avoid this.
         """
-        if body:
-            if body_size is None:
-                body_size = len(body)
-
         if headers is None:
             headers = {}
 
-        if body_size is not False:
-            headers['Content-Length'] = body_size
+        if body is not None:
+            if body_size is None:
+                body_size = len(body)
 
-        if body_type is not None:
-            headers['Content-Type'] = body_type
-        self.request('POST', uri, callback, **kwargs)
+            if body_size is not False:
+                headers['Content-Length'] = body_size
+
+            if body_type is not None:
+                headers['Content-Type'] = body_type
+
+        self.request(method='POST', uri=uri, callback=callback, body=body,
+                headers=headers, **kwargs)
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
