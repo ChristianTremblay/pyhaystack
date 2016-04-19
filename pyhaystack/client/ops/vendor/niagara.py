@@ -90,14 +90,12 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                     cookies={}, headers={}, exclude_cookies=True,
                     exclude_headers=True, api=False)
         except: # Catch all exceptions to pass to caller.
-            print('do new session exception')
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_new_session(self, response):
         """
         Retrieve the log-in cookie.
         """
-        print('entering on new session')
         try:
             if isinstance(response, AsynchronousException):
                 response.reraise()
@@ -107,9 +105,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_login(self, event):
-        print('entering do login')
         try:
-            print('trying post')
             self._session._post('login', self._on_login,
                     params={
                         'token':'',
@@ -125,16 +121,13 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                     exclude_proxies = True,
                     api=False,
                     auth = self._auth)
-            print('post created and sent')
         except: # Catch all exceptions to pass to caller.
-            print('do login exception')
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_login(self, response):
         """
         See if the login succeeded.
         """
-        print('on login entered')
         try:
             if isinstance(response, AsynchronousException):
                 response.reraise()

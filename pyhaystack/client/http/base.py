@@ -127,7 +127,6 @@ class HTTPClient(object):
                         the proxies given.  Otherwise, this is an iterable
                         of proxy names to be excluded.
         """
-        print('http : request')
         # Is this an absolute URL?
         if not self.PROTO_RE.match(uri):
             # Do we have a base URL?
@@ -151,18 +150,13 @@ class HTTPClient(object):
             return result
 
         # Merge our parameters, headers and cookies together
-        print('merge params')
         params = _merge(params, self.params, exclude_params)
-        print('merge headers')
         headers = _merge(headers, self.headers, exclude_headers)
-        print('merge cookies')
         cookies = _merge(cookies, self.cookies, exclude_cookies)
-        print('merge proxies')
         proxies = _merge(proxies, self.proxies, exclude_proxies)
         auth = auth or self.auth or None
         timeout = timeout or self.timeout or None
         
-        print(auth, type(auth))
         if not ((auth is None) or isinstance(auth, AuthenticationCredentials)):
             raise TypeError('%s is not a subclass of the '\
                     'AuthenticationCredentials class.' \
@@ -191,7 +185,6 @@ class HTTPClient(object):
             self.log.debug( 'Performing operation %s of %s, headers: %r, '\
                             'cookies: %r, body: %r', method, uri, headers,
                             cookies, body)
-        print('base http request', method, uri, auth)
         self._request(method, uri, callback, body = body,
                 headers = headers, cookies = cookies, auth = auth, timeout = timeout, proxies = proxies,
                 tls_verify = tls_verify, tls_cert = tls_cert)
@@ -216,7 +209,6 @@ class HTTPClient(object):
         :param body_size:   Length of the body to be sent.  If None, the length
                             is autodetected.  Set to False to avoid this.
         """
-        print('http client : post')
         if body:
             if body_size is None:
                 body_size = len(body)
@@ -229,7 +221,6 @@ class HTTPClient(object):
 
         if body_type is not None:
             headers['Content-Type'] = body_type
-        print('base http post', uri, headers)
         self.request('POST', uri, callback, **kwargs)
 
     def _request(self, method, uri, callback, body,

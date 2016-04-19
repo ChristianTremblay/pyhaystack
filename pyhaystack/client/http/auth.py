@@ -3,15 +3,15 @@
 Base HTTP client authentication classes.  These classes simply act as
 containers for authentication methods defined in the HTTP spec.
 """
-import copy
+#import copy
 
 class AuthenticationCredentials(object):
     """
     A base class to represent authentication credentials.
     """
-    @property
-    def copy(self):
-        return copy.deepcopy(self)
+#    @property
+#    def copy(self):
+#        return copy.deepcopy(self)
 
 
 class UserPasswordAuthenticationCredentials(AuthenticationCredentials):

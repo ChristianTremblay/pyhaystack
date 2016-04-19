@@ -491,7 +491,6 @@ class HaystackSession(object):
         """
         if api:
             uri = '%s/%s' % (self._api_dir, uri)
-        print('session : doing post')
         return self._client.post(uri, callback, **kwargs)
 
     def _post_grid(self, uri, grid, callback, post_format=None,
