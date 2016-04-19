@@ -156,7 +156,7 @@ class HTTPClient(object):
         proxies = _merge(proxies, self.proxies, exclude_proxies)
         auth = auth or self.auth or None
         timeout = timeout or self.timeout or None
-        
+
         if not ((auth is None) or isinstance(auth, AuthenticationCredentials)):
             raise TypeError('%s is not a subclass of the '\
                     'AuthenticationCredentials class.' \

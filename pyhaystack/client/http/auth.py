@@ -20,7 +20,7 @@ class UserPasswordAuthenticationCredentials(AuthenticationCredentials):
     """
     def __init__(self, username, password):
         self.username = username
-        self.password = password        
+        self.password = password
 
 
 class BasicAuthenticationCredentials(UserPasswordAuthenticationCredentials):

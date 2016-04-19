@@ -49,7 +49,7 @@ def hconnect(address,user,password,proj):
     session = sky.Connect(address,user,password,proj,Zinc=False)
     return session
     pass
-    
+
 
 def main():
     pr = cProfile.Profile()
@@ -87,7 +87,7 @@ def main():
             user,
             password,
             proj,
-        )       
+        )
 
         if watchInterval:
             time.sleep(watchInterval)

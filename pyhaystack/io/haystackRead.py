@@ -128,7 +128,7 @@ class HReadAllResult():
 
     def getData(self):
         return self._jsonResult[:]
-        
+
     def __iter__(self):
         for ids in self._listOfId:
             yield ids

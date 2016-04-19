@@ -23,10 +23,10 @@ class SyncHttpClient(HTTPClient):
             tls_verify = None, tls_cert = None):
 
         if auth is not None:
-            if isinstance(auth, BasicAuthenticationCredentials):               
+            if isinstance(auth, BasicAuthenticationCredentials):
                 auth = requests.auth.HTTPBasicAuth(
                         auth.username, auth.password)
-            elif isinstance(auth, DigestAuthenticationCredentials):             
+            elif isinstance(auth, DigestAuthenticationCredentials):
                 auth = requests.auth.HTTPDigestAuth(
                         auth.username, auth.password)
             else:
@@ -46,9 +46,9 @@ class SyncHttpClient(HTTPClient):
                 # by the Jace even if login succeeded
                 #response.raise_for_status()
 
-                callback(HTTPResponse(response.status_code, 
-                                      dict(response.headers), 
-                                      response.content, 
+                callback(HTTPResponse(response.status_code,
+                                      dict(response.headers),
+                                      response.content,
                                       dict(response.cookies),
                                       response.text
                                       )

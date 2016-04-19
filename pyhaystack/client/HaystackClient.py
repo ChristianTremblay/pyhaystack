@@ -197,7 +197,7 @@ class Connect(RequestsMixin, HszincMixin, HistoriesMixin):
             return found.get(point_ids[0])
         else:
             return found
-            
+
     def disconnect(self):
         """
         Used to disconnect from server

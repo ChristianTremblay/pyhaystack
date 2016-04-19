@@ -145,7 +145,7 @@ class BaseGridOperation(state.HaystackOperation):
             if ';' in content_type:
                 (content_type, content_type_args) = content_type.split(';',1)
                 content_type = content_type.strip()
-                content_type_args = dict([tuple(kv.split('=',1)) for kv in 
+                content_type_args = dict([tuple(kv.split('=',1)) for kv in
                         shlex.split(content_type_args)])
             else:
                 content_type_args = {}

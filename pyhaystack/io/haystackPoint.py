@@ -202,9 +202,9 @@ class HaystackPoint(object):
         Otherwise, the parameter is taken as a raw range.
         """
         if isinstance(rng, slice):
-            # Correction needed as the request was build : 
+            # Correction needed as the request was build :
             # &range=<member+%27start%27+of+%27slice%27+objects>%2C<member+%27stop%27+of+%27slice%27+objects>
-            start, stop, step = rng.indices(len(self)) 
+            start, stop, step = rng.indices(len(self))
             return self.his_read(start=start, end=stop)
         return self.his_read(rng=rng)
 
@@ -215,14 +215,14 @@ class HaystackPoint(object):
         writes.  For bulk inserts, see `his_write`.
         """
         return self.his_write({'ts': ts, 'val': value})
-        
+
     @property
     def value(self):
         if isBool(self.curVal):
             return self.curVal
-        elif isinstance(self.curVal, hszinc.Quantity): 
+        elif isinstance(self.curVal, hszinc.Quantity):
             return float(self.curVal)
         else:
             raise ValueError("Don't know what to return")
-            
-        
+
+
