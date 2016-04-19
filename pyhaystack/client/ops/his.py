@@ -344,7 +344,7 @@ class HisWriteSeriesOperation(state.HaystackOperation):
 
         self._session = session
         self._series = series
-        self._tz = tz
+        self._tz = _resolve_tz(tz)
 
         self._state_machine = fysom.Fysom(
                 initial='init', final='done',
@@ -517,6 +517,173 @@ class HisWriteSeriesOperation(state.HaystackOperation):
             # Move to the done state.
             self._state_machine.write_done(result=None)
         except: # Catch all exceptions to pass to caller.
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_done(self, event):
+        """
+        Return the result from the state machine.
+        """
+        self._done(event.result)
+
+
+class HisWriteFrameOperation(state.HaystackOperation):
+    """
+    Write the series data to several 'point' entities.
+    """
+
+    def __init__(self, session, columns, frame, tz):
+        """
+        Write the series data.
+
+        :param session: Haystack HTTP session object.
+        :param columns: IDs of historical point objects to read.
+        :param frame: Range to read from 'point'
+        :param tz: Timezone to translate timezones to.
+        """
+        super(HisWriteFrameOperation, self).__init__()
+        self._log = session._log.getChild('his_write_frame')
+
+        tz = _resolve_tz(tz)
+        if tz is None:
+            tz = pytz.utc
+
+        if hasattr(tz, 'localize'):
+            localise = lambda ts : tz.localize(ts) \
+                    if ts.tzinfo is None else ts.astimezone(self._tz)
+        else:
+            localise = lambda ts : ts.replace(tzinfo=tz) \
+                    if ts.tzinfo is None else ts.astimezone(tz)
+
+        # Convert frame to list of records.
+        if HAVE_PANDAS:
+            # Convert Pandas frame to dict of dicts form.
+            if isinstance(frame, DataFrame):
+                raw_frame = frame.to_dict(orient='dict')
+                frame = {}
+                for col, col_data in raw_frame.items():
+                    for ts, val in col_data.items():
+                        try:
+                            frame_rec = frame[ts]
+                        except KeyError:
+                            frame_rec = {}
+                            frame[ts] = frame_rec
+                        frame[col] = val
+
+        # Convert dict of dicts to records, de-referencing column names.
+        if isinstance(frame, dict):
+            if columns is None:
+                def _to_rec(item):
+                    (ts, raw_record) = item
+                    record = raw_record.copy()
+                    record['ts'] = ts
+                    return record
+            else:
+                def _to_rec(item):
+                    (ts, raw_record) = item
+                    record = {}
+                    for col, val in raw_record.items():
+                        entity = column[col]
+                        if hasattr(entity, 'id'):
+                            entity = entity.id
+                        if isinstance(entity, hszinc.Ref):
+                            entity = entity.name
+                        record[entity] = val
+
+                    record['ts'] = ts
+                    return record
+            frame = list(map(_to_rec, list(frame.items())))
+
+        # Localise all timestamps, extract columns:
+        columns = set()
+        def _localise_rec(r):
+            r['ts'] = localise(r['ts'])
+            columns.update(set(r.keys()) - set(['ts']))
+            return r
+        frame = list(map(_localise_rec, frame))
+
+        self._session = session
+        self._frame = frame
+        self._columns = columns
+        self._todo = columns.copy()
+        self._tz = _resolve_tz(tz)
+
+        self._state_machine = fysom.Fysom(
+                initial='init', final='done',
+                events=[
+                    # Event             Current State       New State
+                    ('do_multi_write',  'init',             'multi_write'),
+                    ('all_write_done',  'multi_write',      'done'),
+                    ('do_single_write', 'init',             'single_write'),
+                    ('all_write_done',  'single_write',     'done'),
+                    ('exception',       '*',                'done'),
+                ], callbacks={
+                    'onentermulti_write':   self._do_multi_write,
+                    'onentersingle_write':  self._do_single_write,
+                    'onenterdone':          self._do_done,
+                })
+
+    def go(self):
+        if hasattr(self._session, 'multi_his_write'):
+            # Session object supports multi-his-write
+            self._log.debug('Using multi-his-write support')
+            self._state_machine.do_multi_write()
+        else:
+            # Emulate multi-his-write with separate
+            self._log.debug('No multi-his-write support, emulating')
+            self._state_machine.do_single_write()
+
+    def _do_multi_write(self, event):
+        """
+        Request the data from the server as a single multi-read request.
+        """
+        self._session.multi_his_write(self._frame,
+                callback=self._on_multi_write)
+
+    def _on_multi_write(self, operation, **kwargs):
+        """
+        Handle the multi-valued grid.
+        """
+        try:
+            grid = operation.result
+            if not isinstance(grid, hszinc.Grid):
+                raise ValueError('Unexpected result %r' % grid)
+            self._state_machine.all_write_done()
+        except: # Catch all exceptions to pass to caller.
+            self._log.debug('Hit exception', exc_info=1)
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_single_write(self, event):
+        """
+        Submit the data in single write requests.
+        """
+        for point in self._columns:
+            self._log.debug('Point %s', point)
+
+            # Extract a series for this column
+            series = dict([(r['ts'], r[point]) for r in \
+                    filter(lambda r : r.get(point) is not None, self._frame)])
+
+            self._session.his_write_series(point, series,
+                    callback=lambda operation, **kw : \
+                            self._on_single_write(operation, point=point))
+
+    def _on_single_write(self, operation, point, **kwargs):
+        """
+        Handle the single write.
+        """
+        self._log.debug('Response back for point %s', point)
+        try:
+            res = operation.result
+            if res is not None:
+                raise ValueError('Unexpected result %r' % res)
+
+            self._todo.discard(point)
+            self._log.debug('Still waiting for: %s', self._todo)
+            if not self._todo:
+                # No more to read
+                self._state_machine.all_write_done(result=None)
+        except: # Catch all exceptions to pass to caller.
+            self._log.debug('Hit exception', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_done(self, event):

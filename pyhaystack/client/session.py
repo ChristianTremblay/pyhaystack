@@ -49,6 +49,7 @@ class HaystackSession(object):
     _HIS_READ_SERIES_OPERATION = his_ops.HisReadSeriesOperation
     _HIS_READ_FRAME_OPERATION = his_ops.HisReadFrameOperation
     _HIS_WRITE_SERIES_OPERATION = his_ops.HisWriteSeriesOperation
+    _HIS_WRITE_FRAME_OPERATION = his_ops.HisWriteFrameOperation
 
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None,
@@ -433,6 +434,24 @@ class HaystackSession(object):
 
         op = self._HIS_READ_FRAME_OPERATION(self, columns,
                 rng, tz, frame_format)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
+
+    def his_write_frame(self, frame, columns=None, tz=None, callback=None):
+        """
+        Write the historical data of multiple given points.
+
+        :param frame: Data frame to write to.  Columns either list explicit
+                        entity IDs or column aliases which are mapped in the
+                        columns parameter.
+        :param columns: If frame does not list explicit IDs, this should be a
+                        dict mapping the column names to either entity IDs or
+                        entity instances.
+        :param tz: Reference timestamp to use for writing, default is UTC.
+        """
+        op = self._HIS_WRITE_FRAME_OPERATION(self, columns, frame, tz)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
