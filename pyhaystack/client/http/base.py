@@ -78,7 +78,7 @@ class HTTPClient(object):
     def request(self, method, uri, callback, body=None, params=None,
             headers=None, cookies=None, auth=None, timeout=None, proxies=None,
             tls_verify=None, tls_cert=None, exclude_params=None,
-            exclude_headers=None, exclude_cookies=True, exclude_proxies=True):
+            exclude_headers=None, exclude_cookies=None, exclude_proxies=None):
         """
         Perform a request with this client.  Most parameters here exist to either
         add to or override the defaults given by the client attributes.  The
@@ -148,6 +148,10 @@ class HTTPClient(object):
 
             if given is not None:
                 result.update(given)
+
+            if self.log is not None:
+                self.log.debug('Merging %r with %r, exclude %s -> %r',
+                        given, defaults, exclude, result)
             return result
 
         # Merge our parameters, headers and cookies together
