@@ -108,7 +108,7 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
             # TODO: Is this really how they send it, or is it JSON?
             # Can someone dump a sanitised version as a comment?  Seems weird
             # to have to manually parse like this.
-            for line in response.body.split('\n'):
+            for line in response.text.split('\n'):
                 key, value = line.split(':')
                 login_params[key] = value
 
@@ -150,7 +150,7 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
                 response.reraise()
 
             # Locate the cookie in the response.
-            cookie_match = self._COOKIE_RE.match(response.body)
+            cookie_match = self._COOKIE_RE.match(response.text)
             if not cookie_match:
                 raise IOError('No cookie in response, log-in failed.')
 
