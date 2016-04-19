@@ -107,32 +107,15 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
             if isinstance(response, AsynchronousException):
                 response.reraise()
 
-            content_type = response.headers.get('Content-Type')
+            content_type = response.content_type
             if content_type is None:
                 raise ValueError('No content-type given in reply')
-
-            # Is content encoding shoehorned in there?
-            if ';' in content_type:
-                (content_type, content_type_args) = content_type.split(';',1)
-                content_type = content_type.strip()
-                content_type_args = dict([tuple(kv.split('=',1)) for kv in
-                        shlex.split(content_type_args)])
-            else:
-                content_type_args = {}
-
-            content_type = content_type.strip()
             if content_type != 'application/json':
                 raise ValueError('Invalid content type received: %s' % \
                         content_type)
 
-            content_encoding = content_type_args.get('charset')
-            if content_encoding is None:
-                body = response.body.decode()
-            else:
-                body = response.body.decode(content_encoding)
-
             # Decode JSON reply
-            reply = json.loads(body)
+            reply = json.loads(response.text)
             for key in ('token_type', 'access_token', 'expires_in'):
                 if key not in reply:
                     raise ValueError('Missing %s in reply :%s' % (key, reply))
