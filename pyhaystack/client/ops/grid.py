@@ -166,10 +166,10 @@ class BaseGridOperation(state.HaystackOperation):
 
             if content_type in ('text/zinc', 'text/plain'):
                 # We have been given a grid in ZINC format.
-                decoded = hszinc.parse(response.text, mode=hszinc.MODE_ZINC)
+                decoded = hszinc.parse(body, mode=hszinc.MODE_ZINC)
             elif content_type == 'application/json':
                 # We have been given a grid in JSON format.
-                decoded = [hszinc.parse(response.text, mode=hszinc.MODE_JSON)]
+                decoded = [hszinc.parse(body, mode=hszinc.MODE_JSON)]
             else:
                 # We don't recognise this!
                 raise ValueError('Unrecognised content type %s' % content_type)
