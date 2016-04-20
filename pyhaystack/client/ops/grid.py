@@ -235,6 +235,25 @@ class GetGridOperation(BaseGridOperation):
         except: # Catch all exceptions to pass to caller.
             self._log.debug('Get fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
+            
+    def __repr__(self):
+        """
+        For sync usage, we want to see a result on Notebook
+        """
+        res = self.result
+        string = ''
+        if len(res) == 1:
+            for name, value in sorted(res[0].items()):
+                string += ''.join(('%s : %s\n' % (name, value)))
+            return string
+        elif len(res) > 1:
+            i = 0
+            for key, value in res:
+                string += ''.join('%s : %s\n' % (res[i].get(key),res[i].get(value)))
+                i += 1
+        else:
+            string = 'empty'
+        return string
 
 
 class PostGridOperation(BaseGridOperation):
