@@ -114,12 +114,6 @@ class BaseMutableEntityTags(BaseEntityTags):
         op.go()
         return op
 
-    def delete(self, callback=None):
-        """
-        Delete the entity.
-        """
-        raise NotImplementedError('TODO: implement CRUD ops')
-
     def revert(self, tags=None):
         """
         Revert the named attribute changes, or all changes.
