@@ -78,6 +78,13 @@ class HaystackOperation(object):
         return self._state_machine.is_finished()
 
     @property
+    def is_failed(self):
+        """
+        Return true if the result is an Exception.
+        """
+        return isinstance(self._result, AsynchronousException)
+
+    @property
     def result(self):
         """
         Return the result of the operation or raise its exception.
@@ -86,7 +93,7 @@ class HaystackOperation(object):
         if not self.is_done:
             raise NotReadyError()
 
-        if isinstance(self._result, AsynchronousException):
+        if self.is_failed:
             self._result.reraise()
 
         if not self._result_copy:
@@ -98,6 +105,17 @@ class HaystackOperation(object):
         else:
             # Return a shallow copy
             return self._result.copy()
+
+    def __repr__(self):
+        """
+        Return a representation of this object's state.
+        """
+        if self.is_failed:
+            return '<%s failed>' % self.__class__.__name__
+        elif self.is_done:
+            return '<%s done: %s>' % (self.__class__.__name__, self._result)
+        else:
+            return '<%s %s>' % (self.__class__.__name__, self.state)
 
     def _done(self, result):
         """
