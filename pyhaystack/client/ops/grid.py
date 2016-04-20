@@ -250,7 +250,7 @@ class GetGridOperation(BaseGridOperation):
             i = 0
             try:
                 for each in res:
-                    string += ''.join('%s : %s\n' % (each['id'], each['curVal']))
+                    string += ''.join('%s : %s\n' % (str(each['id']).split(' ')[0], each['curVal']))
             except KeyError:
                 for key, value in res:
                     string += ''.join('%s : %s\n' % (res[i].get(key),res[i].get(value)))
