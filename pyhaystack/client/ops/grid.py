@@ -248,9 +248,13 @@ class GetGridOperation(BaseGridOperation):
             return string
         elif len(res) > 1:
             i = 0
-            for key, value in res:
-                string += ''.join('%s : %s\n' % (res[i].get(key),res[i].get(value)))
-                i += 1
+            try:
+                for each in res:
+                    string += ''.join('%s : %s\n' % (each['id'], each['curVal']))
+            except KeyError:
+                for key, value in res:
+                    string += ''.join('%s : %s\n' % (res[i].get(key),res[i].get(value)))
+                    i += 1
         else:
             string = 'empty'
         return string
