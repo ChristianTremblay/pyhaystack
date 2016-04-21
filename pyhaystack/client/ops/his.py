@@ -9,6 +9,7 @@ some alternate representations of the historical data.
 import hszinc
 import fysom
 import pytz
+from copy import deepcopy
 
 from datetime import tzinfo
 from six import string_types
@@ -558,6 +559,7 @@ class HisWriteFrameOperation(state.HaystackOperation):
         if HAVE_PANDAS:
             # Convert Pandas frame to dict of dicts form.
             if isinstance(frame, DataFrame):
+                self._log.debug('Convert from Pandas DataFrame')
                 raw_frame = frame.to_dict(orient='dict')
                 frame = {}
                 for col, col_data in raw_frame.items():
@@ -592,6 +594,22 @@ class HisWriteFrameOperation(state.HaystackOperation):
                     record['ts'] = ts
                     return record
             frame = list(map(_to_rec, list(frame.items())))
+        elif columns is not None:
+            # Columns are aliased.  De-alias the column names.
+            frame = deepcopy(frame)
+            for row in frame:
+                ts = row.pop('ts')
+                raw = row.copy()
+                row.clear()
+                row['ts'] = ts
+                for column, point in columns.items():
+                    try:
+                        value = raw.pop(column)
+                    except KeyError:
+                        self._log.debug('At %s missing column %s (for %s): %s',
+                                ts, column, point, raw)
+                        continue
+                    row[session._obj_to_ref(point).name] = value
 
         # Localise all timestamps, extract columns:
         columns = set()
