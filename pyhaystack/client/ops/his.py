@@ -266,6 +266,7 @@ class HisReadFrameOperation(state.HaystackOperation):
             else:
                 conv_ts = lambda ts : ts.astimezone(self._tz)
 
+            self._log.debug('%d records for %s: %s', len(grid), col, grid)
             for row in grid:
                 ts = conv_ts(row['ts'])
                 if self._tz is None:
@@ -550,7 +551,7 @@ class HisWriteFrameOperation(state.HaystackOperation):
 
         if hasattr(tz, 'localize'):
             localise = lambda ts : tz.localize(ts) \
-                    if ts.tzinfo is None else ts.astimezone(self._tz)
+                    if ts.tzinfo is None else ts.astimezone(tz)
         else:
             localise = lambda ts : ts.replace(tzinfo=tz) \
                     if ts.tzinfo is None else ts.astimezone(tz)
@@ -584,7 +585,7 @@ class HisWriteFrameOperation(state.HaystackOperation):
                     (ts, raw_record) = item
                     record = {}
                     for col, val in raw_record.items():
-                        entity = column[col]
+                        entity = columns[col]
                         if hasattr(entity, 'id'):
                             entity = entity.id
                         if isinstance(entity, hszinc.Ref):
