@@ -68,8 +68,8 @@ class EntityTagUpdateOperation(HaystackOperation):
                             entity_id, self._entity.id, row)
                     continue
 
-                self._entity._update_tags(row)
-                self._entity.revert()
+                self._entity.tags._update_tags(row)
+                self._entity.tags.revert()
                 self._log.debug('Processed row %r', row)
             self._state_machine.update_done(result=self._entity)
         except: # Catch all exceptions to pass to caller.
