@@ -1,3 +1,8 @@
+pyhaystack (0.71.1.8.2-3) unstable; urgency=low
+  * Further fixes.
+  * Clean up now dead and non-functional legacy client.
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 28 Apr 2016 14:25:00 +1000
+
 pyhaystack (0.71.1.8.2-2) unstable; urgency=low
 
   * Additional fixes and improvements.
