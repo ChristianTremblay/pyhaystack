@@ -9,6 +9,10 @@ python:
 bundler_args: "--retry 3"
 install:
 - pip install pip --upgrade
+- pip install six
+- pip install parsimonious
+- pip install pytz
+- pip install iso8601
 - pip install hszinc
 - pip install -r requirements.txt
 - pip install coveralls
