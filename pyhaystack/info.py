@@ -14,3 +14,4 @@ __author__ = 'Christian Tremblay, Stuart J. Longland, @sudo-Whateverman, Igor'
 __author_email__ = 'christian.tremblay@servisys.com'
 __version__ = '0.72'
 __license__ = 'LGPL'
+__copyright__ = "Christian Tremblay / SERVISYS inc. | Stuart J. Longland / VRT | 2016"
