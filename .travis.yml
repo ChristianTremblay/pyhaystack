@@ -20,5 +20,6 @@ install:
 - pip install pytest-cov
 script:
 #- nosetests --with-coverage --cover-package=pyhaystack -v
+- python setup.py install
 - py.test --cov=pyhaystack tests/
 after_success: coveralls
