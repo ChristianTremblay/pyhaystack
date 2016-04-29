@@ -11,7 +11,6 @@ import fysom
 
 from ...util import state
 from ...util.asyncexc import AsynchronousException
-from ..entity.entity import Entity
 
 
 class EntityRetrieveOperation(state.HaystackOperation):
