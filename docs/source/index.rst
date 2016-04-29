@@ -7,12 +7,18 @@ Welcome to pyhaystack's documentation!
 ======================================
 .. include:: README.rst
 
-Table of contents
+How to use it
 ==================
 .. toctree::
    :maxdepth: 2
 
+  connect
+  site
+  tags
 
+Modules documentation
+=====================
+.. include:: pyhaystack.rst
 
 Indices and tables
 ==================

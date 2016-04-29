@@ -14,23 +14,6 @@ Subpackages
 Submodules
 ----------
 
-pyhaystack.exception module
----------------------------
-
-.. automodule:: pyhaystack.exception
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyhaystack.info module
-----------------------
-
-.. automodule:: pyhaystack.info
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Module contents
 ---------------
 
