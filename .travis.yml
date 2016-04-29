@@ -8,13 +8,11 @@ python:
 #- "nightly" # currently points to 3.6-dev
 bundler_args: "--retry 3"
 install:
-- pip install six
-- pip install pytz
-- pip install parsimonious
-- pip install iso8601
 - pip install -r requirements.txt
 - pip install coveralls
-- pip install nose
+- pip install pytest
+- pip install pytest-cov
 script:
-- nosetests --with-coverage --cover-package=pyhaystack -v
+#- nosetests --with-coverage --cover-package=pyhaystack -v
+- py.test --cov=pyhaystack tests/
 after_success: coveralls
