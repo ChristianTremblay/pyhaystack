@@ -4,7 +4,7 @@ Setup file for pyhaystack
 """
 import pyhaystack.info as info
 
-from distutils.core import setup
+from setuptools import setup
 
 import re
 import os
