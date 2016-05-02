@@ -15,6 +15,7 @@ How to use it
   connect
   site
   tags
+  his
 
 Modules documentation
 =====================
