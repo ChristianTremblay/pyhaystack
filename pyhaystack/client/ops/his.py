@@ -62,7 +62,7 @@ class HisReadSeriesOperation(state.HaystackOperation):
 
         if series_format not in (self.FORMAT_LIST, self.FORMAT_DICT,
                 self.FORMAT_SERIES):
-            raise ValueError('Unrecognsied series_format %s' % series_format)
+            raise ValueError('Unrecognised series_format %s' % series_format)
 
         if (series_format == self.FORMAT_SERIES) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
@@ -116,9 +116,12 @@ class HisReadSeriesOperation(state.HaystackOperation):
             elif self._series_format == self.FORMAT_SERIES:
                 # Split into index and data.
                 (index, data) = zip(*data)
-                data = Series(data=data, index=index)
+                #ser = Series(data=data[0].value, index=index)
+                meta_serie = MetaSeries(data=data[0].value, index=index)
+                meta_serie.add_meta('units', data[0].unit)
+                meta_serie.add_meta('point', self._point)
 
-            self._state_machine.read_done(result=data)
+            self._state_machine.read_done(result=meta_serie)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -154,7 +157,7 @@ class HisReadFrameOperation(state.HaystackOperation):
 
         if frame_format not in (self.FORMAT_LIST, self.FORMAT_DICT,
                 self.FORMAT_FRAME):
-            raise ValueError('Unrecognsied frame_format %s' % frame_format)
+            raise ValueError('Unrecognised frame_format %s' % frame_format)
 
         if (frame_format == self.FORMAT_FRAME) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
@@ -301,10 +304,10 @@ class HisReadFrameOperation(state.HaystackOperation):
                 data = list(map(_merge_ts, list(self._data_by_ts.items())))
             elif self._frame_format == self.FORMAT_FRAME:
                 index = list(self._data_by_ts.keys())
-                values = list(self._data_by_ts.values())
+                values = list(self._data_by_ts.values().value)
                 data = DataFrame(index=index, data=values)
             else:
-                data = self._data_by_ts
+                data = self._data_by_ts.value
             self._state_machine.process_done(result=data)
         except: # Catch all exceptions to pass to caller.
             self._log.debug('Hit exception', exc_info=1)
@@ -710,3 +713,13 @@ class HisWriteFrameOperation(state.HaystackOperation):
         Return the result from the state machine.
         """
         self._done(event.result)
+        
+class MetaSeries(Series):
+    meta = {}
+    @property
+    def _constructor(self):
+        return MetaSeries
+ 
+    def add_meta(self, key, value):
+        self.meta[key] = value
+    

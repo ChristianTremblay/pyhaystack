@@ -11,7 +11,8 @@ Histories can be retrive as a zinc grid, Pandas series or Pandas Dataframe.
 
 Range
 +++++
-rng (range) can be one of the following (ref : his_read_)
+rng (range) can be one of the following 
+[ref : his_read_]
 
 * "today"
 * "yesterday"
@@ -22,6 +23,7 @@ rng (range) can be one of the following (ref : his_read_)
 
 Zinc Date and time format
 +++++++++++++++++++++++++
+[ref : http://project-haystack.org/doc/Zinc]
 
 * <date>        := YYYY-MM-DD
 * <time>        := hh:mm:ss.FFFFFFFFF
