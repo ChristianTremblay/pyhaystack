@@ -116,9 +116,15 @@ class HisReadSeriesOperation(state.HaystackOperation):
             elif self._series_format == self.FORMAT_SERIES:
                 # Split into index and data.
                 (index, data) = zip(*data)
+                if isinstance(data[0], hszinc.Quantity):
+                    values = data[0].value
+                    units = data[0].unit
+                else:
+                    values = data[0]
+                    units = ''
                 #ser = Series(data=data[0].value, index=index)
-                meta_serie = MetaSeries(data=data[0].value, index=index)
-                meta_serie.add_meta('units', data[0].unit)
+                meta_serie = MetaSeries(data=values, index=index)
+                meta_serie.add_meta('units', units)
                 meta_serie.add_meta('point', self._point)
 
             self._state_machine.read_done(result=meta_serie)
@@ -263,6 +269,8 @@ class HisReadFrameOperation(state.HaystackOperation):
         self._log.debug('Response back for column %s', col)
         try:
             grid = operation.result
+            #print(grid)
+            #print('===========')
 
             if self._tz is None:
                 conv_ts = lambda ts : ts
@@ -302,12 +310,33 @@ class HisReadFrameOperation(state.HaystackOperation):
                     rec['ts'] = item[0]
                     return rec
                 data = list(map(_merge_ts, list(self._data_by_ts.items())))
+                #print(data)
             elif self._frame_format == self.FORMAT_FRAME:
-                index = list(self._data_by_ts.keys())
-                values = list(self._data_by_ts.values().value)
-                data = DataFrame(index=index, data=values)
+                # Build from dict
+                data = MetaDataFrame.from_dict(self._data_by_ts, orient='index')
+                def convert_quantity(val):
+                    """
+                    If value is Quantity, convert to value
+                    """
+                    if isinstance(val,hszinc.Quantity):
+                        return val.value
+                    else:
+                        return val
+                def get_units(serie):
+                    first_element = serie.dropna()[0]
+                    if isinstance(first_element, hszinc.Quantity):
+                        return first_element.unit
+                    else:
+                        return ''
+                for name, serie in data.iteritems():
+                    """
+                    Convert Quantity and put unit in metadata
+                    """
+                    data.add_meta(name,get_units(serie))
+                    data[name] = data[name].apply(convert_quantity)
+                    
             else:
-                data = self._data_by_ts.value
+                data = self._data_by_ts
             self._state_machine.process_done(result=data)
         except: # Catch all exceptions to pass to caller.
             self._log.debug('Hit exception', exc_info=1)
@@ -715,10 +744,31 @@ class HisWriteFrameOperation(state.HaystackOperation):
         self._done(event.result)
         
 class MetaSeries(Series):
+    """
+    Custom Pandas Serie with meta data
+    """
     meta = {}
     @property
     def _constructor(self):
         return MetaSeries
+ 
+    def add_meta(self, key, value):
+        self.meta[key] = value
+        
+class MetaDataFrame(DataFrame):
+    """
+    Custom Pandas Dataframe with meta data
+    Made from MetaSeries
+    """
+    meta = {}
+    def __init__(self, *args, **kw):
+        super(MetaDataFrame, self).__init__(*args, **kw)
+ 
+    @property
+    def _constructor(self):
+        return MetaDataFrame
+ 
+    _constructor_sliced = MetaSeries
  
     def add_meta(self, key, value):
         self.meta[key] = value
