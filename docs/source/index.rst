@@ -16,6 +16,7 @@ How to use it
   site
   tags
   his
+  VRT_SERVISYS
 
 Modules documentation
 =====================
