@@ -532,6 +532,11 @@ class HisWriteSeriesOperation(state.HaystackOperation):
             else:
                 records = self._series
 
+            if not bool(records):
+                # No data, skip writing this series.
+                self._state_machine.write_done(result=None)
+                return
+
             # Time-shift the records.
             if hasattr(self._tz, 'localize'):
                 localise = lambda ts : self._tz.localize(ts) \
