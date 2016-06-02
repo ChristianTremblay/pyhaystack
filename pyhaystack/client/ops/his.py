@@ -679,6 +679,7 @@ class HisWriteFrameOperation(state.HaystackOperation):
                     ('do_multi_write',  'init',             'multi_write'),
                     ('all_write_done',  'multi_write',      'done'),
                     ('do_single_write', 'init',             'single_write'),
+                    ('no_data',         'init',             'done'),
                     ('all_write_done',  'single_write',     'done'),
                     ('exception',       '*',                'done'),
                 ], callbacks={
@@ -688,7 +689,10 @@ class HisWriteFrameOperation(state.HaystackOperation):
                 })
 
     def go(self):
-        if hasattr(self._session, 'multi_his_write'):
+        if not bool(self._columns):
+            self._log.debug('No data to write')
+            self._state_machine.no_data(result=None)
+        elif hasattr(self._session, 'multi_his_write'):
             # Session object supports multi-his-write
             self._log.debug('Using multi-his-write support')
             self._state_machine.do_multi_write()
