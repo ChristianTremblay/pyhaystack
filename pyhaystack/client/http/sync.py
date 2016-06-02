@@ -38,6 +38,7 @@ class SyncHttpClient(HTTPClient):
         try:
             try:
                 try:
+                    print('request response')
                     response = self._session.request(
                             method=method, url=uri, data=body,
                             headers=headers, cookies=cookies,

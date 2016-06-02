@@ -100,6 +100,7 @@ class HaystackSession(object):
         attempt is in progress, we return it, otherwise we instantiate a new
         one.
         """
+        print('authenticate')
         if self._auth_op is not None:
             auth_op = self._auth_op()
         else:

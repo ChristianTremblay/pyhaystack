@@ -45,6 +45,7 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
         """
 
         super(SkysparkAuthenticateOperation, self).__init__()
+        print('init ops vendor skyspark')
         self._retries = retries
         self._session = session
         self._cookie = None
@@ -53,8 +54,10 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
         self._username = None
         self._user_salt = None
         self._digest = None
-        self._login_uri = '%s/auth/%s/api' % \
-                (session._client.uri, session._project)
+        self._login_uri = '%s/auth/%s/api?%s' % \
+                (session._client.uri, session._project, session._username)
+        self._salt_uri = '%s/auth/%s/api?%s' % \
+                        (session._client.uri, session._project, session._username)
 
         self._state_machine = fysom.Fysom(
                 initial='init', final='done',
@@ -88,11 +91,13 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
         Request the log-in parameters.
         """
         try:
-            self._session._get(self._login_uri,
+            print('do new session', self._session)
+            self._session._get(self._salt_uri,
                     callback=self._on_new_session,
-                    args={'username': self._session._username},
+                    
                     cookies={}, headers={}, exclude_cookies=True,
                     exclude_headers=True, api=False)
+                    #args={'username': self._session._username},
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -108,6 +113,12 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
             # TODO: Is this really how they send it, or is it JSON?
             # Can someone dump a sanitised version as a comment?  Seems weird
             # to have to manually parse like this.
+            # RESPONSE :     
+            #username:username
+            #userSalt:/U7IWO9C+0DpsOhQm2x8b5gtSov0wDy1pNW8S6frD+s=
+            #realm:demo
+            #nonce:97029b7e8037ae40e8932b2094148423
+            #onAuthEnabled:false
             for line in response.text.split('\n'):
                 key, value = line.split(':')
                 login_params[key] = value
@@ -115,7 +126,7 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
             self._username = login_params['username']
             self._user_salt = login_params['userSalt']
             self._nonce = login_params['nonce']
-
+            #self._cookies = response.cookies.copy()
             self._state_machine.do_login()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
@@ -123,19 +134,25 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
     def _do_login(self, event):
         try:
             # Compute log-in body
-            mac = hmac.new(key=self._session.password,
-                    msg="%s:%s" % (self._username, self._user_salt),
+#            mac = hmac.new(key=self._session._password.encode('UTF-8'),
+#                    msg=("%s:%s" % (self._username, self._user_salt)).encode('UTF-8'),
+#                    digestmod=hashlib.sha1)
+#            digest = hashlib.sha1()
+#            digest_string = '%s:%s' % (base64.b64encode(mac.digest()),(self._nonce))
+#            digest.update(digest_string.encode('UTF-8'))
+            mac = hmac.new(key=bytearray(self._session._password.encode('UTF-8')),
+                    msg=("%s:%s" % (self._username, self._user_salt)).encode('UTF-8'),
                     digestmod=hashlib.sha1)
+            
             digest = hashlib.sha1()
-            digest.update('%s:%s' % (base64.b64encode(mac.digest()),
-                        self._nonce))
-
+            digest_string = ('%s:%s' % (mac.digest(),self._nonce)).encode('UTF-8')
+            digest.update(base64.b64encode(digest_string))
             # Post
             self._session._post(self._login_uri,
                     callback=self._on_login,
-                    body='nonce: %s\ndigest: %s' % \
-                            (self._nonce, digest.encode('base64')),
-                    body_type='text/plain',
+                    body='nonce:%s\ndigest:%s' % \
+                            (self._nonce, digest.hexdigest()),
+                    body_type='text/plain; charset=utf-8',
                     headers={}, exclude_cookies=True,
                     exclude_headers=True, api=False)
         except: # Catch all exceptions to pass to caller.
