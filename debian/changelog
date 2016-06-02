@@ -1,3 +1,11 @@
+pyhaystack (0.71.1.8.2-6) unstable; urgency=low
+  * Fix to handle empty series when writing frames.
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 02 Jun 2016 16:19:00 +1000
+
+pyhaystack (0.71.1.8.2-5) unstable; urgency=low
+  * Re-build using latest sources
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 12 May 2016 12:34:02 +1000
+
 pyhaystack (0.71.1.8.2-4) unstable; urgency=low
   * Throw out unused mixins that drag in pandas library unnecessarily.
  -- Stuart Longland <stuartl@vrt.com.au>  Fri, 29 Apr 2016 06:02:27 +1000
