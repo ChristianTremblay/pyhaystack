@@ -25,7 +25,7 @@ class SkysparkHaystackSession(HaystackSession):
         :param project: Skyspark project name
         """
         super(SkysparkHaystackSession, self).__init__(uri,
-                'auth/%s/api' % project, **kwargs)
+                'api/%s' % project, **kwargs)
         self._project = project
         self._username = username
         self._password = password
@@ -48,7 +48,6 @@ class SkysparkHaystackSession(HaystackSession):
         attribute on the base class.
         """
         try:
-            print('on_authenticate_done')
             cookies = operation.result
             self._authenticated = True
             self._client.cookies = cookies
