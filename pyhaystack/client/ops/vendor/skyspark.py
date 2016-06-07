@@ -10,6 +10,7 @@ import hmac
 import base64
 import hashlib
 import re
+from six import binary_type
 
 from ....util import state
 from ....util.asyncexc import AsynchronousException
@@ -172,11 +173,11 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
         self._done(event.result)
         
 def get_digest_info(param):    
-    message = bytes("%s:%s" % (param['username'], param['userSalt']), encoding = 'UTF-8')
-    password_buf = bytes(param['password'], encoding = 'UTF-8') 
+    message = binary_type("%s:%s" % (param['username'], param['userSalt']), encoding = 'UTF-8')
+    password_buf = binary_type(param['password'], encoding = 'UTF-8') 
     hmac_final = base64.b64encode(hmac.new(key=password_buf, msg=message, digestmod=hashlib.sha1).digest())
     
-    digest_msg = bytes('%s:%s' % (hmac_final.decode('utf-8'), param['nonce']), encoding = 'UTF-8')
+    digest_msg = binary_type('%s:%s' % (hmac_final.decode('utf-8'), param['nonce']), encoding = 'UTF-8')
     digest = hashlib.sha1()
     digest.update(digest_msg)
     digest_final = base64.b64encode((digest.digest()))
