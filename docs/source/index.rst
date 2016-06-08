@@ -15,6 +15,8 @@ How to use it
   connect
   site
   tags
+  his
+  VRT_SERVISYS
 
 Modules documentation
 =====================
