@@ -10,7 +10,6 @@ import hmac
 import base64
 import hashlib
 import re
-from six import binary_type
 
 from ....util import state
 from ....util.asyncexc import AsynchronousException
@@ -173,11 +172,11 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
         self._done(event.result)
         
 def get_digest_info(param):    
-    message = binary_type("%s:%s" % (param['username'], param['userSalt']))
-    password_buf = binary_type(param['password']) 
+    message = binary_encoding("%s:%s" % (param['username'], param['userSalt']))
+    password_buf = binary_encoding(param['password']) 
     hmac_final = base64.b64encode(hmac.new(key=password_buf, msg=message, digestmod=hashlib.sha1).digest())
     
-    digest_msg = binary_type('%s:%s' % (hmac_final.decode('utf-8'), param['nonce']))
+    digest_msg = binary_encoding('%s:%s' % (hmac_final.decode('utf-8'), param['nonce']))
     digest = hashlib.sha1()
     digest.update(digest_msg)
     digest_final = base64.b64encode((digest.digest()))
@@ -186,3 +185,12 @@ def get_digest_info(param):
          'digest' : digest_final.decode('utf-8'),
          'nonce' : param['nonce']}
     return res
+    
+def binary_encoding(string, encoding = 'utf-8'):
+    """
+    This helper function will allow compatibility with Python 2 and 3
+    """
+    try:
+        return bytes(string, encoding)
+    except TypeError: # We are in Python 2
+        return str(string)
