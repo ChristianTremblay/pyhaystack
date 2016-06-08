@@ -62,14 +62,14 @@ class HisReadSeriesOperation(state.HaystackOperation):
 
         if series_format not in (self.FORMAT_LIST, self.FORMAT_DICT,
                 self.FORMAT_SERIES):
-            raise ValueError('Unrecognsied series_format %s' % series_format)
+            raise ValueError('Unrecognised series_format %s' % series_format)
 
         if (series_format == self.FORMAT_SERIES) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
 
         self._session = session
         self._point = point
-        self._range = rng
+        self._range = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
         self._tz = _resolve_tz(tz)
         self._series_format = series_format
 
@@ -115,10 +115,25 @@ class HisReadSeriesOperation(state.HaystackOperation):
                 data = dict(data)
             elif self._series_format == self.FORMAT_SERIES:
                 # Split into index and data.
-                (index, data) = zip(*data)
-                data = Series(data=data, index=index)
+                try:
+                    (index, data) = zip(*data)
+                    if isinstance(data[0], hszinc.Quantity):
+                        values = [each.value for each in data]
+                        units = data[0].unit
+                    else:
+                        values = data
+                        units = ''
+                except ValueError:
+                    values = []
+                    index = []
+                    units = ''
 
-            self._state_machine.read_done(result=data)
+                #ser = Series(data=data[0].value, index=index)
+                meta_serie = MetaSeries(data=values, index=index)
+                meta_serie.add_meta('units', units)
+                meta_serie.add_meta('point', self._point)
+
+            self._state_machine.read_done(result=meta_serie)
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
@@ -154,7 +169,7 @@ class HisReadFrameOperation(state.HaystackOperation):
 
         if frame_format not in (self.FORMAT_LIST, self.FORMAT_DICT,
                 self.FORMAT_FRAME):
-            raise ValueError('Unrecognsied frame_format %s' % frame_format)
+            raise ValueError('Unrecognised frame_format %s' % frame_format)
 
         if (frame_format == self.FORMAT_FRAME) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
@@ -170,7 +185,7 @@ class HisReadFrameOperation(state.HaystackOperation):
 
         self._session = session
         self._columns = columns
-        self._range = rng
+        self._range = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
         self._tz = _resolve_tz(tz)
         self._frame_format = frame_format
         self._data_by_ts = {}
@@ -260,6 +275,8 @@ class HisReadFrameOperation(state.HaystackOperation):
         self._log.debug('Response back for column %s', col)
         try:
             grid = operation.result
+            #print(grid)
+            #print('===========')
 
             if self._tz is None:
                 conv_ts = lambda ts : ts
@@ -299,10 +316,34 @@ class HisReadFrameOperation(state.HaystackOperation):
                     rec['ts'] = item[0]
                     return rec
                 data = list(map(_merge_ts, list(self._data_by_ts.items())))
+                #print(data)
             elif self._frame_format == self.FORMAT_FRAME:
-                index = list(self._data_by_ts.keys())
-                values = list(self._data_by_ts.values())
-                data = DataFrame(index=index, data=values)
+                # Build from dict
+                data = MetaDataFrame.from_dict(self._data_by_ts, orient='index')
+                def convert_quantity(val):
+                    """
+                    If value is Quantity, convert to value
+                    """
+                    if isinstance(val,hszinc.Quantity):
+                        return val.value
+                    else:
+                        return val
+                def get_units(serie):
+                    try:
+                        first_element = serie.dropna()[0]
+                    except IndexError: # needed for empty results
+                        return ''
+                    if isinstance(first_element, hszinc.Quantity):
+                        return first_element.unit
+                    else:
+                        return ''
+                for name, serie in data.iteritems():
+                    """
+                    Convert Quantity and put unit in metadata
+                    """
+                    data.add_meta(name,get_units(serie))
+                    data[name] = data[name].apply(convert_quantity)
+                    
             else:
                 data = self._data_by_ts
             self._state_machine.process_done(result=data)
@@ -710,3 +751,34 @@ class HisWriteFrameOperation(state.HaystackOperation):
         Return the result from the state machine.
         """
         self._done(event.result)
+        
+class MetaSeries(Series):
+    """
+    Custom Pandas Serie with meta data
+    """
+    meta = {}
+    @property
+    def _constructor(self):
+        return MetaSeries
+ 
+    def add_meta(self, key, value):
+        self.meta[key] = value
+        
+class MetaDataFrame(DataFrame):
+    """
+    Custom Pandas Dataframe with meta data
+    Made from MetaSeries
+    """
+    meta = {}
+    def __init__(self, *args, **kw):
+        super(MetaDataFrame, self).__init__(*args, **kw)
+ 
+    @property
+    def _constructor(self):
+        return MetaDataFrame
+ 
+    _constructor_sliced = MetaSeries
+ 
+    def add_meta(self, key, value):
+        self.meta[key] = value
+    
