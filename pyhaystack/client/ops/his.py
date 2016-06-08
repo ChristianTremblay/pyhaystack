@@ -69,7 +69,7 @@ class HisReadSeriesOperation(state.HaystackOperation):
 
         self._session = session
         self._point = point
-        self._range = rng
+        self._range = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
         self._tz = _resolve_tz(tz)
         self._series_format = series_format
 
@@ -115,13 +115,19 @@ class HisReadSeriesOperation(state.HaystackOperation):
                 data = dict(data)
             elif self._series_format == self.FORMAT_SERIES:
                 # Split into index and data.
-                (index, data) = zip(*data)
-                if isinstance(data[0], hszinc.Quantity):
-                    values = data[0].value
-                    units = data[0].unit
-                else:
-                    values = data[0]
+                try:
+                    (index, data) = zip(*data)
+                    if isinstance(data[0], hszinc.Quantity):
+                        values = data[0].value
+                        units = data[0].unit
+                    else:
+                        values = data[0]
+                        units = ''
+                except ValueError:
+                    values = []
+                    index = []
                     units = ''
+
                 #ser = Series(data=data[0].value, index=index)
                 meta_serie = MetaSeries(data=values, index=index)
                 meta_serie.add_meta('units', units)
@@ -179,7 +185,7 @@ class HisReadFrameOperation(state.HaystackOperation):
 
         self._session = session
         self._columns = columns
-        self._range = rng
+        self._range = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
         self._tz = _resolve_tz(tz)
         self._frame_format = frame_format
         self._data_by_ts = {}
@@ -323,7 +329,10 @@ class HisReadFrameOperation(state.HaystackOperation):
                     else:
                         return val
                 def get_units(serie):
-                    first_element = serie.dropna()[0]
+                    try:
+                        first_element = serie.dropna()[0]
+                    except IndexError: # needed for empty results
+                        return ''
                     if isinstance(first_element, hszinc.Quantity):
                         return first_element.unit
                     else:
