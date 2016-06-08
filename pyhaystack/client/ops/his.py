@@ -118,10 +118,10 @@ class HisReadSeriesOperation(state.HaystackOperation):
                 try:
                     (index, data) = zip(*data)
                     if isinstance(data[0], hszinc.Quantity):
-                        values = data[0].value
+                        values = [each.value for each in data]
                         units = data[0].unit
                     else:
-                        values = data[0]
+                        values = data
                         units = ''
                 except ValueError:
                     values = []
