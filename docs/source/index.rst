@@ -10,7 +10,6 @@ Welcome to pyhaystack's documentation!
 How to use it
 ==================
 .. toctree::
-   :maxdepth: 2
 
   connect
   site

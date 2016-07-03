@@ -6,7 +6,7 @@ For a detailed explanation of tag model, please read this : http://project-hayst
 
 Pyhaystack let you find what you look for via the "find_entity" functions.
 
-LEt see how...
+Let see how...
 
 Finding sensors
 ---------------
