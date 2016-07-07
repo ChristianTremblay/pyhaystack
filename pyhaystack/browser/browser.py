@@ -4,9 +4,10 @@ class Browser(object):
     """
     This class will provide helper function to browse haystack site
     """
+    _session = None
     
     def __init__(self, session):
-        self._session = session
+        Browser._session = session
         self._sites = []
         self.get_site()
         self.get_equip()
@@ -30,7 +31,7 @@ class Browser(object):
             ref = equip.parent.name.split('.')[1]
             self[ref].add_equip(equip)
             
-        
+
     @property
     def sites(self):
         return list([site for site in self._sites])
@@ -94,16 +95,50 @@ class Site(HEntity):
         for each in self._equipments:
             if each.dis == key:
                 return each
+        raise KeyError('Item not found')
         
 class Equipment(HEntity):
     def __init__(self, equip):
+        self.points = []
         super(Equipment, self).__init__(equip)
-        
+        self.add_points()
+    
     @property
     def parent(self):
         return self._tags['siteRef']
         
+    def add_points(self):
+        """
+        Fill equipment with its points
+        """
+        # In Niagara, navName is the real name of the equip. Dis is made from
+        # Site AND Equip name
+        if 'navName' in self.tags:
+            name = self._tags['navName']
+        else:
+            name = self.dis
+        points = Browser._session.find_entity('equipRef==@%s.%s' % (self.parent.name, name)).result
+        for point in points.items():
+            self.points.append(Point(point[1]))
+            
+#    def __getitem__(self, key):
+#        if 'navName' in self.tags:
+#            name = self._tags['navName']
+#        else:
+#            name = self.dis
+
         
+class Point(HEntity):
+    def __init__(self, equip):
+        super(Point, self).__init__(equip)
+    
+    @property
+    def parent(self):
+        return self._tags['equipRef']
+        
+    @property
+    def value(self):
+        return self._tags['curVal']
 
             
     
