@@ -26,6 +26,29 @@ class SiteMixin(object):
         return self._session.find_entity(filter_expr, limit, single, callback)
 
 
+    def __getitem__(self,key):
+        request = self.find_entity(key)
+        return request.result
+      
+    @property
+    def equipments(self):
+        try:
+            return self._list_of_equip
+        except AttributeError:
+            request = self.find_entity('equip')
+            return request.result
+        
+    def _add_equip(self):
+        """
+        Store a local copy of equip for this site
+        To accelerate browser
+        """
+        if not '_list_of_equip' in self.__dict__.keys():
+            self._list_of_equip = []       
+        for equip in self['equip'].items():
+            self._list_of_equip.append(equip[1])
+        
+
 class SiteRefMixin(object):
     """
     A mix-in used for entities that carry a 'siteRef' reference tag.

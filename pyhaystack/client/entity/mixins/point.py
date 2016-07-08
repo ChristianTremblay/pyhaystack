@@ -30,3 +30,8 @@ class HisMixin(object):
         """
         return self._session.his_write_series(point=self, series=series,
                 tz=tz, callback=callback)
+
+class PointMixin(object):    
+    @property            
+    def value(self):
+        return self.tags['curVal']

@@ -24,6 +24,29 @@ class EquipMixin(object):
         else:
             filter_expr = '(equipRef==%s) and (%s)' % (equip_ref, filter_expr)
         return self._session.find_entity(filter_expr, limit, single, callback)
+        
+    def __getitem__(self,key):
+        request = self.find_entity(key)
+        return request.result
+      
+    @property
+    def points(self):
+        try:
+            return self._list_of_points
+        except AttributeError:
+            print('Reading points...')
+            self._add_points()
+            return self._list_of_points
+        
+    def _add_points(self):
+        """
+        Store a local copy of equip for this site
+        To accelerate browser
+        """
+        if not '_list_of_equip' in self.__dict__.keys():
+            self._list_of_points = []       
+        for equip in self['point'].items():
+            self._list_of_points.append(equip[1])
 
 
 class EquipRefMixin(object):

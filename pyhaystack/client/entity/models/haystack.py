@@ -48,6 +48,7 @@ class HaystackTaggingModel(TaggingModel):
             names.append('EquipRef')
 
         if 'point' in tags:
+            types.append(point.PointMixin)
             if 'his' in tags:
                 types.append(point.HisMixin)
                 names.append('His')
