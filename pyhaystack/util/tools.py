@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Tools
-
-@author: CTremblay
-"""
-
 import json
 
 def isfloat(value):
@@ -22,7 +16,7 @@ def isfloat(value):
 
 def isBool(value):
     """
-    Helper function to detect if a value is a float
+    Helper function to detect if a value is boolean
     """
     if value != '':
         if isinstance(value, bool):

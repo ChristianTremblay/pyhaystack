@@ -1,7 +1,7 @@
 #!python
 # -*- coding: utf-8 -*-
 """
-NiagaraAX/Niagara4 Client support
+NiagaraAX Client support
 """
 
 from .session import HaystackSession
@@ -10,7 +10,7 @@ from .ops.vendor.niagara import NiagaraAXAuthenticateOperation
 class NiagaraHaystackSession(HaystackSession):
     """
     The NiagaraHaystackSession class implements some base support for
-    NiagaraAX and Niagara4 servers.  This is mainly a convenience for
+    NiagaraAX. This is mainly a convenience for
     collecting the username and password details.
     """
 

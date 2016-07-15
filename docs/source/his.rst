@@ -1,13 +1,7 @@
 Histories
 ===================
-Histories (trend) are accessible using 
-`his_read_series(self, point, rng, tz=None,series_format=None, callback=None)` function.
-
-::
-
-    session.his_read('S.SERVISYS.Bureau-Christian.ZN~2dT', rng='today').result
-
-Histories can be retrive as a zinc grid, Pandas series or Pandas Dataframe.
+Histories are a really important part of building data. Pyhaystack allows retrieving histories
+as zinc grid, pandas series or pandas Dataframe depending on your needs.
 
 Range
 +++++
@@ -37,7 +31,6 @@ Retrieve simple grid
     session.his_read('S.SERVISYS.Bureau-Christian.ZN~2dT', rng='today').result
 
 
-
 Retrieve a Pandas Series
 ------------------------
 For more details about Pandas : pandas_datastructure_
@@ -47,13 +40,16 @@ For more details about Pandas : pandas_datastructure_
 
 Retrieve a Pandas Dataframe
 ---------------------------
+In the following example, we will retrive all the historical value from 'today' for
+all zone temperature sensors.
+
 ::
 
     znt = session.find_entity(filter_expr='sensor and zone and temp').result
     b = session.his_read_frame(znt, rng= 'today').result
     b
 
-will return a dataframe of all entities history
+We use ``find_entity`` first, then we call ``his_read_frame`` over the result.
 
 .. _his : http://project-haystack.org/tag/his
 

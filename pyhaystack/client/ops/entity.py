@@ -80,25 +80,30 @@ class EntityRetrieveOperation(state.HaystackOperation):
 class GetEntityOperation(EntityRetrieveOperation):
     """
     Operation for retrieving entity instances by ID.  This operation peforms
-    the following steps:
+    the following steps::
+    
+        If refresh_all is False:                  
+        # State: init
+            For each entity_id in entity_ids:
+                If entity_id exists in cache:
+                    Retrieve and store entity from cache.
+                    Add entity_id to list got_ids.
+            For each entity_id in got_ids:
+                Discard entity_id from entity_ids.
+        If entity_ids is not empty:               
+        # State: read
+            Perform a low-level read of the IDs.
+            For each row returned in grid:
+                If entity is not in cache:
+                    Create new Entity instances for each row returned.
+                Else:
+                    Update existing Entity instance with new row data.
+            Add the new entity instances to cache and store.
+        Return the stored entities.                      
+        # State: done
 
-    - If refresh_all is False:                  # State: init
-      - For each entity_id in entity_ids:
-        - If entity_id exists in cache:
-          - Retrieve and store entity from cache.
-          - Add entity_id to list got_ids.
-      - For each entity_id in got_ids:
-        - Discard entity_id from entity_ids.
-    - If entity_ids is not empty:               # State: read
-      - Perform a low-level read of the IDs.
-      - For each row returned in grid:
-        - If entity is not in cache:
-          - Create new Entity instances for each row returned.
-        - Else:
-          - Update existing Entity instance with new row data.
-      - Add the new entity instances to cache and store.
-    - Return the stored entities.               # State: done
     """
+    
 
     def __init__(self, session, entity_ids, refresh_all, single):
         """
@@ -172,16 +177,18 @@ class GetEntityOperation(EntityRetrieveOperation):
 class FindEntityOperation(EntityRetrieveOperation):
     """
     Operation for retrieving entity instances by filter.
-    This operation peforms the following steps:
+    This operation peforms the following steps::
 
-    - Issue a read instruction with the given filter:
-    - For each row returned in grid:
-        - If entity is not in cache:
-          - Create new Entity instances for each row returned.
-        - Else:
-          - Update existing Entity instance with new row data.
-      - Add the new entity instances to cache and store.
-    - Return the stored entities.               # State: done
+        Issue a read instruction with the given filter:
+            For each row returned in grid:
+                If entity is not in cache:
+                    Create new Entity instances for each row returned.
+                Else:
+                    Update existing Entity instance with new row data.
+                Add the new entity instances to cache and store.
+            Return the stored entities. 
+            # State: done              
+            
     """
 
     def __init__(self, session, filter_expr, limit, single):

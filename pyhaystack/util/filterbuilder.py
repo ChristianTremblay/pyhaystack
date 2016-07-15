@@ -6,7 +6,7 @@ operators to trick it into producing the desired values.
 
 Yes, we're hijacking operators to do what they weren't expected to do.
 
-Typical usage:
+Typical usage::
 
         from pyhaystack.util import filterbuilder as fb
 

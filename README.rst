@@ -3,14 +3,18 @@ pyhaystack |build-status| |coverage| |docs| |Gitter|
 
 What is this ?
 --------------
-Pyhaystack is a module that allow python programs to connect to a haystack server [project-haystack.org](http://www.project-haystack.org).
+Pyhaystack is a module that allow python programs to connect to a haystack server 
+using semantic data model for buildings (project-haystack_).
+
+Browse a campus, building, floor... find VAV boxes, AHU units, etc. Then extract history 
+data from them and get the results ready for analysis using pandas or your own database implementation.
 
 Which clients are implemented ?
 -------------------------------
 Actually, connection can be established with :
 
 * NiagaraAX_ by Tridium
-* Widesky_ by VRT
+* Widesky_ by VRT_
 * Skyspark_ by SkyFoundry
 
 Connection to Niagara AX requires the nHaystack_ module by J2 Innovations
@@ -20,6 +24,10 @@ How do I install pyhaystack ?
 ::
 
     pip install pyhaystack
+
+Or you can also git clone the develop branch and use ::
+
+    python setup.py install
 
 What is project-haystack ?
 --------------------------
@@ -34,6 +42,23 @@ As stated in the web site
   energy, HVAC, lighting, and other environmental systems."
 
   -- Project-Haystack
+
+New implementation
+--------------------------
+We've been reworking everything from the early version.
+Now, pyhaystack is more robust and will be ready for asynchronous development.
+
+This new implementation has been mostly supported by VRT_ and Servisys_. We are hoping 
+that more people will join us in our effort to build a well working open-source software
+that will open the door of building data analysis to Python users.
+
+Dependency
+--------------
+Pyhaystack highly depend on hszinc_ which is a special parser for zinc encoded data. 
+Zinc was created for project-haystack_ as a CSV replacement. 
+
+For analysis, we also suggest using Pint_ to deal with units. It will bring a lot of possibilities
+to pyhaystack (ex. unit conversion)
 
 
 .. |build-status| image:: https://travis-ci.org/ChristianTremblay/pyhaystack.svg?branch=master
@@ -56,10 +81,18 @@ As stated in the web site
 
 .. _NiagaraAX : https://www.tridium.com/en/products-services/niagaraax
 
-.. _Widesky : http://www.vrt.com.au/component/energy-efficiency 
+.. _VRT : http://www.vrt.com.au/
+
+.. _Servisys : http://www.servisys.com
+
+.. _Widesky : http://widesky.cloud/ 
 
 .. _nHaystack : https://bitbucket.org/jasondbriggs/nhaystack
 
 .. _project-haystack : http://www.project-haystack.org
 
-..  _Project Haystack : http://www.project-haystack.org
+.. _Project Haystack : http://www.project-haystack.org
+
+.. _Pint : http://pint.readthedocs.io
+
+.. _hszinc : https://github.com/vrtsystems/hszinc

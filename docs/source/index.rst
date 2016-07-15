@@ -10,13 +10,13 @@ Welcome to pyhaystack's documentation!
 How to use it
 ==================
 .. toctree::
-   :maxdepth: 2
 
   connect
   site
   tags
   his
-  VRT_SERVISYS
+  quantity
+  synchronous
 
 Modules documentation
 =====================

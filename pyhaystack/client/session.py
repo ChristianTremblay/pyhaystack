@@ -31,10 +31,11 @@ class HaystackSession(object):
 
     Methods for Haystack operations return an 'Operation' object, which
     may be used in any of two ways:
-    - as a synchronous result placeholder by calling its `wait` method followed
-      by inspection of its `result` attribute.
-    - as an asynchronous call manager by connecting a "slot" (`callable` that
-      takes keyword arguments) to the `done_sig` signal.
+    
+    - as a synchronous result placeholder by calling its `wait` method 
+    followed by inspection of its `result` attribute.
+    - as an asynchronous call manager by connecting a "slot" (`callable` 
+    that takes keyword arguments) to the `done_sig` signal.
 
     The base class takes some arguments that control the default behaviour of
     the object.
