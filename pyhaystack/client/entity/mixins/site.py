@@ -27,16 +27,37 @@ class SiteMixin(object):
 
 
     def __getitem__(self,key):
+        for each in self:
+            if key in each:
+                return each
         request = self.find_entity(key)
         return request.result
-      
+
+    def __iter__(self):
+        """
+        When iterating over a site, we iterate equipments.
+        """
+        for equip in self.equipments:
+            yield equip
+            
     @property
     def equipments(self):
+        """
+        First read will force a request and create local list
+        """
         try:
             return self._list_of_equip
         except AttributeError:
-            request = self.find_entity('equip')
-            return request.result
+            print('Reading equipments...')
+            self._add_equip()
+            return self._list_of_equip
+            
+    def refresh(self):
+        """
+        Re-create local list of equipments
+        """
+        self._list_of_equip = []
+        self._add_equip()
         
     def _add_equip(self):
         """

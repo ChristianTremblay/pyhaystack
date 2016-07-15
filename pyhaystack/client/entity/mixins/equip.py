@@ -26,17 +26,37 @@ class EquipMixin(object):
         return self._session.find_entity(filter_expr, limit, single, callback)
         
     def __getitem__(self,key):
+        """
+        In a navigation context, component of an equipment is a point (tag/entity)
+        """
         request = self.find_entity(key)
         return request.result
+        
+    def __iter__(self):
+        """
+        When iterating over an equipment, we iterate points.
+        """
+        for point in self.points:
+            yield point
       
     @property
     def points(self):
+        """
+        First call will force reading of points and create local list
+        """
         try:
             return self._list_of_points
         except AttributeError:
             print('Reading points...')
             self._add_points()
             return self._list_of_points
+
+    def refresh(self):
+        """
+        Re-create local list of equipments
+        """
+        self._list_of_points = []
+        self._add_points()
         
     def _add_points(self):
         """

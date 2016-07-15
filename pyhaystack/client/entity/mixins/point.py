@@ -34,4 +34,4 @@ class HisMixin(object):
 class PointMixin(object):    
     @property            
     def value(self):
-        return self.tags['curVal']
+        return self._session.read(ids=self).tags['curVal']
