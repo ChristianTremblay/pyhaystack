@@ -14,7 +14,7 @@ Which clients are implemented ?
 Actually, connection can be established with :
 
 * NiagaraAX_ by Tridium
-* Widesky_ by VRT
+* Widesky_ by VRT_
 * Skyspark_ by SkyFoundry
 
 Connection to Niagara AX requires the nHaystack_ module by J2 Innovations
@@ -48,13 +48,18 @@ New implementation
 We've been reworking everything from the early version.
 Now, pyhaystack is more robust and will be ready for asynchronous development.
 
+This new implementation has been mostly supported by VRT_ and Servisys_. We are hoping 
+that more people will join us in our effort to build a well working open-source software
+that will open the door of building data analysis to Python users.
+
 Dependency
 --------------
 Pyhaystack highly depend on hszinc_ which is a special parser for zinc encoded data. 
 Zinc was created for project-haystack_ as a CSV replacement. 
 
 For analysis, we also suggest using Pint_ to deal with units. It will bring a lot of possibilities
-to pyhaystack (ex. unit conversion) 
+to pyhaystack (ex. unit conversion)
+
 
 .. |build-status| image:: https://travis-ci.org/ChristianTremblay/pyhaystack.svg?branch=master
    :target: https://travis-ci.org/ChristianTremblay/pyhaystack
@@ -76,13 +81,17 @@ to pyhaystack (ex. unit conversion)
 
 .. _NiagaraAX : https://www.tridium.com/en/products-services/niagaraax
 
-.. _Widesky : http://www.vrt.com.au/component/energy-efficiency 
+.. _VRT : http://www.vrt.com.au/
+
+.. _Servisys : http://www.servisys.com
+
+.. _Widesky : http://widesky.cloud/ 
 
 .. _nHaystack : https://bitbucket.org/jasondbriggs/nhaystack
 
 .. _project-haystack : http://www.project-haystack.org
 
-..  _Project Haystack : http://www.project-haystack.org
+.. _Project Haystack : http://www.project-haystack.org
 
 .. _Pint : http://pint.readthedocs.io
 

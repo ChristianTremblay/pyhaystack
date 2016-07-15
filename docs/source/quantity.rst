@@ -15,6 +15,9 @@ PintQuantity is an interpretation of value and units as physical quantities with
     
      -- Pint_
 
+It will allow for example, simple unit conversion on the spot.
+
+
 How to configure
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 You choose between Quantities when defining the session.

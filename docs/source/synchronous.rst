@@ -1,4 +1,3 @@
-
 Using pyhaystack in a synchronous way
 =====================================
 
@@ -23,12 +22,9 @@ Let's have a look to the site
     site
 
 
-
-
 .. parsed-literal::
 
     <FindEntityOperation done: {'S.SERVISYS': <@S.SERVISYS: {area=Quantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='SERVISYS', geoAddr='12', geoCity='Bromont', geoCountry='Canada', geoLat=0.0, geoLon=0.0, geoPostalCode='J2L1J5', geoState='Québec', geoStreet='Du Pacifique Est', navName='SERVISYS', navNameFormat='SERVISYS', site, tz='Montreal'}>}>
-
 
 
 This print shows us the ``__repr__()`` function return value as a

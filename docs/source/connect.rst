@@ -37,8 +37,8 @@ Using Skyspark
                                     project = 'my_project'
                                     *pint=True)
  
-Next
-----
+On-Demand connection
+---------------------
 Once the session is initialized, it won't connect until it needs to.
 Pyhaystack will benefit from the asynchronous framework and connect on demand.
 The session will be connected and the request will be sent to the server.
