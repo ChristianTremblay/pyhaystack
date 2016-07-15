@@ -31,10 +31,11 @@ class HaystackSession(object):
 
     Methods for Haystack operations return an 'Operation' object, which
     may be used in any of two ways:
-    - as a synchronous result placeholder by calling its `wait` method followed
-      by inspection of its `result` attribute.
-    - as an asynchronous call manager by connecting a "slot" (`callable` that
-      takes keyword arguments) to the `done_sig` signal.
+    
+    - as a synchronous result placeholder by calling its `wait` method 
+    followed by inspection of its `result` attribute.
+    - as an asynchronous call manager by connecting a "slot" (`callable` 
+    that takes keyword arguments) to the `done_sig` signal.
 
     The base class takes some arguments that control the default behaviour of
     the object.
@@ -53,7 +54,8 @@ class HaystackSession(object):
 
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None,
-                tagging_model=HaystackTaggingModel, log=None):
+                tagging_model=HaystackTaggingModel, log=None,
+                pint=False):
         """
         Initialise a base Project Haystack session handler.
 
@@ -64,6 +66,9 @@ class HaystackSession(object):
         :param http_args: Optional HTTP client arguments to configure.
         :param tagging_model: Entity Tagging model in use.
         :param log: Logging object for reporting messages.
+        :param pint: Configure hszinc to use basic quantity or Pint Quanity
+        
+        See : https://pint.readthedocs.io/ for details about pint
         """
         if log is None:
             log = logging.getLogger('pyhaystack.client.%s' \
@@ -72,6 +77,9 @@ class HaystackSession(object):
 
         if http_args is None:
             http_args = {}
+        
+        #Configure hszinc to use pint or not for Quantity definition
+        self.config_pint(pint)
 
         if grid_format not in (hszinc.MODE_ZINC, hszinc.MODE_JSON):
             raise ValueError('Unrecognised grid format %s' % grid_format)
@@ -536,3 +544,10 @@ class HaystackSession(object):
         """
         raise NotImplementedError('To be implemented in %s' % \
                 self.__class__.__name__)
+
+    def config_pint(self, value=False):
+        if value:
+            self._use_pint = True
+        else:
+            self._use_pint = False
+        hszinc.use_pint(self._use_pint)

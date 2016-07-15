@@ -35,6 +35,11 @@ As stated in the web site
 
   -- Project-Haystack
 
+New implementation
+--------------------------
+We've been reworking everything from the early version.
+Now, pyhaystack is more robust and will be ready for asynchronous development.
+
 
 .. |build-status| image:: https://travis-ci.org/ChristianTremblay/pyhaystack.svg?branch=master
    :target: https://travis-ci.org/ChristianTremblay/pyhaystack

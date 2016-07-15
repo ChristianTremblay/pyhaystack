@@ -1,4 +1,3 @@
-
 Using pyhaystack in a synchronous way
 =====================================
 
@@ -23,12 +22,9 @@ Let's have a look to the site
     site
 
 
-
-
 .. parsed-literal::
 
     <FindEntityOperation done: {'S.SERVISYS': <@S.SERVISYS: {area=Quantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='SERVISYS', geoAddr='12', geoCity='Bromont', geoCountry='Canada', geoLat=0.0, geoLon=0.0, geoPostalCode='J2L1J5', geoState='Québec', geoStreet='Du Pacifique Est', navName='SERVISYS', navNameFormat='SERVISYS', site, tz='Montreal'}>}>
-
 
 
 This print shows us the ``__repr__()`` function return value as a
@@ -168,40 +164,70 @@ site.
       <thead>
         <tr style="text-align: right;">
           <th></th>
+          <th>S.SERVISYS.Corridor.ZN~2dT</th>
           <th>S.SERVISYS.Bureau-Christian.ZN~2dT</th>
+          <th>S.SERVISYS.R~e9ception.ZN~2dT</th>
           <th>S.SERVISYS.Bureau-Matthieu.ZN~2dT</th>
+          <th>S.SERVISYS.Bureau-Patrick.ZN~2dT</th>
+          <th>S.SERVISYS.Bureau-Marc.ZN~2dT</th>
           <th>S.SERVISYS.Salle-Conf~e9rence.ZN~2dT</th>
+          <th>S.SERVISYS.Bureau-Philippe.ZN~2dT</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th>2016-05-02 06:45:00.011000-04:00</th>
-          <td>20.2882 °C</td>
+          <th>2016-06-29 13:15:00.598000-04:00</th>
           <td>NaN</td>
           <td>NaN</td>
-        </tr>
-        <tr>
-          <th>2016-05-02 13:30:00.014000-04:00</th>
           <td>NaN</td>
-          <td>22.365 °C</td>
           <td>NaN</td>
-        </tr>
-        <tr>
-          <th>2016-05-02 00:00:00.015000-04:00</th>
-          <td>21.0617 °C</td>
+          <td>21.7276</td>
+          <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
         </tr>
         <tr>
-          <th>2016-05-02 21:15:00.010000-04:00</th>
-          <td>21.2984 °C</td>
+          <th>2016-06-29 13:15:00.791000-04:00</th>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>21.6487</td>
           <td>NaN</td>
           <td>NaN</td>
         </tr>
         <tr>
-          <th>2016-05-02 18:15:00.072000-04:00</th>
+          <th>2016-06-29 13:15:00.943000-04:00</th>
           <td>NaN</td>
-          <td>22.2423 °C</td>
+          <td>NaN</td>
+          <td>23.3938</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+        </tr>
+        <tr>
+          <th>2016-06-29 13:15:01.158000-04:00</th>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>23.089</td>
+        </tr>
+        <tr>
+          <th>2016-06-29 13:15:01.609000-04:00</th>
+          <td>22.8838</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
+          <td>NaN</td>
           <td>NaN</td>
         </tr>
       </tbody>
@@ -210,206 +236,107 @@ site.
 
 
 
-As you can see, values in the dataframe are "objects". They are in fact
-hszinc.Quantity showing a value and a unit (if any).
+It's also possible to get a serie out of a sensor : 
 
-This mean that we will need to work to be able to make some math with
-those columns sometimes.
+.. code:: python
+
+    room_temp = session.find_entity(filter_expr='sensor and zone and temp').result
+    room_temp_serie = session.his_read_series(room_temp['S.SERVISYS.Corridor.ZN~2dT'], rng= 'today').result
+    room_temp_serie
+
+.. parsed-literal::
+
+    2016-06-29 00:00:01.937000-04:00    23.8063
+    2016-06-29 00:15:01.510000-04:00    23.8011
+    2016-06-29 00:30:01.599000-04:00    23.8020
+    2016-06-29 00:45:01.931000-04:00    23.7959
+    2016-06-29 01:00:03.847000-04:00    23.7961
+    2016-06-29 01:15:01.486000-04:00    23.7956
+    2016-06-29 01:30:01.884000-04:00    23.7946
+    2016-06-29 01:45:01.663000-04:00    23.7944
+    2016-06-29 02:00:01.820000-04:00    23.7932
+    2016-06-29 02:15:01.766000-04:00    23.7929
+    2016-06-29 02:30:01.587000-04:00    23.7854
+    2016-06-29 02:45:01.413000-04:00    23.7606
+    2016-06-29 03:00:02.369000-04:00    23.7487
+    2016-06-29 03:15:01.584000-04:00    23.7490
+    2016-06-29 03:30:02.019000-04:00    23.7488
+    2016-06-29 03:45:01.478000-04:00    23.7474
+    2016-06-29 04:00:01.638000-04:00    23.7467
+    2016-06-29 04:15:01.756000-04:00    23.7450
+    2016-06-29 04:30:01.865000-04:00    23.7450
+    2016-06-29 04:45:01.782000-04:00    23.7254
+    2016-06-29 05:00:01.586000-04:00    23.7142
+    2016-06-29 05:15:01.370000-04:00    23.6986
+    2016-06-29 05:30:01.931000-04:00    23.6977
+    2016-06-29 05:45:01.758000-04:00    23.6969
+    2016-06-29 06:00:01.920000-04:00    23.6954
+    2016-06-29 06:15:01.498000-04:00    23.6922
+    2016-06-29 06:30:01.810000-04:00    23.6946
+    2016-06-29 06:45:00.236000-04:00    23.6898
+    2016-06-29 07:00:01.763000-04:00    23.6569
+    2016-06-29 07:15:01.751000-04:00    23.6571
+    2016-06-29 07:30:01.604000-04:00    23.6137
+    2016-06-29 07:45:01.762000-04:00    23.6046
+    2016-06-29 08:00:02.015000-04:00    22.9552
+    2016-06-29 08:15:01.482000-04:00    22.6888
+    2016-06-29 08:30:01.687000-04:00    22.9885
+    2016-06-29 08:45:00.155000-04:00    23.2589
+    2016-06-29 09:00:02.063000-04:00    23.4131
+    2016-06-29 09:15:01.586000-04:00    22.8142
+    2016-06-29 09:30:01.694000-04:00    22.5519
+    2016-06-29 09:45:01.475000-04:00    22.9732
+    2016-06-29 10:00:01.994000-04:00    23.2174
+    2016-06-29 10:15:01.652000-04:00    23.4262
+    2016-06-29 10:30:01.596000-04:00    23.4417
+    2016-06-29 10:45:01.891000-04:00    22.8423
+    2016-06-29 11:00:01.873000-04:00    22.7915
+    2016-06-29 11:15:01.775000-04:00    23.1458
+    2016-06-29 11:30:01.641000-04:00    23.4154
+    2016-06-29 11:45:01.652000-04:00    23.6271
+    2016-06-29 12:00:02.147000-04:00    22.9879
+    2016-06-29 12:15:01.527000-04:00    22.6588
+    2016-06-29 12:30:01.819000-04:00    22.8726
+    2016-06-29 12:45:01.590000-04:00    23.1938
+    2016-06-29 13:00:01.880000-04:00    23.4289
+    2016-06-29 13:15:01.609000-04:00    22.8838
+    2016-06-29 13:30:00.607000-04:00    22.8446
+    dtype: float64
+
+As seen when we covered Quantities, you can extract metadata from Series and
+get the unit.
+
+.. code:: python
+
+    room_temp_serie.meta['units']
+
+.. parsed-literal::
+
+    <UnitsContainer({'degC': 1.0})>
 
 Describe
 ~~~~~~~~
 
 Describe is a Pandas function that gives you some information about a
-Dataframe.
+Dataframe or a serie.
+
+Here is an example from the room_temp_serie
 
 .. code:: python
 
-    room_temp_sensors_df.describe()
-
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>S.SERVISYS.Bureau-Christian.ZN~2dT</th>
-          <th>S.SERVISYS.Bureau-Matthieu.ZN~2dT</th>
-          <th>S.SERVISYS.Salle-Conf~e9rence.ZN~2dT</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>count</th>
-          <td>90</td>
-          <td>90</td>
-          <td>90</td>
-        </tr>
-        <tr>
-          <th>unique</th>
-          <td>90</td>
-          <td>89</td>
-          <td>89</td>
-        </tr>
-        <tr>
-          <th>top</th>
-          <td>22.2055 °C</td>
-          <td>22.5978 °C</td>
-          <td>21.7325 °C</td>
-        </tr>
-        <tr>
-          <th>freq</th>
-          <td>1</td>
-          <td>2</td>
-          <td>2</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-
-As you can see it works out of the box. But informatioin we get is not
-as helpful as we would want...in fact, it's useless. Let's rework
-that...
-
-Take the first column as a Pandas Series
-
-.. code:: python
-
-    christian = room_temp_sensors_df['S.SERVISYS.Bureau-Christian.ZN~2dT']
-    float_christian = christian.astype(float)
-    float_christian.describe()
-
-
-
+    room_temp_serie.describe()
 
 .. parsed-literal::
 
-    count    90.000000
-    mean     21.575769
-    std       0.833827
-    min      20.231600
-    25%      20.826225
-    50%      21.586100
-    75%      22.315075
-    max      22.745300
-    Name: S.SERVISYS.Bureau-Christian.ZN~2dT, dtype: float64
+    count    55.000000
+    mean     23.454680
+    std       0.388645
+    min      22.551900
+    25%      23.169800
+    50%      23.689800
+    75%      23.748750
+    max      23.806300
+    dtype: float64
 
-
-
-This is the kind of informations useful. Are we able to do the same with
-the dataframe ?
-
-.. code:: python
-
-    room_temp_sensors_df.astype(float).describe()
-
-
-
-
-.. raw:: html
-
-    <div>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>S.SERVISYS.Bureau-Christian.ZN~2dT</th>
-          <th>S.SERVISYS.Bureau-Matthieu.ZN~2dT</th>
-          <th>S.SERVISYS.Salle-Conf~e9rence.ZN~2dT</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>count</th>
-          <td>90.000000</td>
-          <td>90.000000</td>
-          <td>90.000000</td>
-        </tr>
-        <tr>
-          <th>mean</th>
-          <td>21.575769</td>
-          <td>21.769192</td>
-          <td>21.159672</td>
-        </tr>
-        <tr>
-          <th>std</th>
-          <td>0.833827</td>
-          <td>0.845972</td>
-          <td>0.794639</td>
-        </tr>
-        <tr>
-          <th>min</th>
-          <td>20.231600</td>
-          <td>20.387600</td>
-          <td>19.856500</td>
-        </tr>
-        <tr>
-          <th>25%</th>
-          <td>20.826225</td>
-          <td>20.875700</td>
-          <td>20.364600</td>
-        </tr>
-        <tr>
-          <th>50%</th>
-          <td>21.586100</td>
-          <td>22.142900</td>
-          <td>21.392550</td>
-        </tr>
-        <tr>
-          <th>75%</th>
-          <td>22.315075</td>
-          <td>22.545175</td>
-          <td>21.799675</td>
-        </tr>
-        <tr>
-          <th>max</th>
-          <td>22.745300</td>
-          <td>22.828400</td>
-          <td>22.533600</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-
-Much better. But the problem will be the same if we want to resample
-data... Pandas won't know what to do with Quantity when computing mean
-or any other function...
-
-Discussion
-----------
-
-Quantity is good, but ...
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-We need a way to "tell" Pandas how to treat Quantity values. We will
-encounter problems with multistate values or binary values... This is
-what I will try to figure out next.
-
-How could we deal with units ?
-------------------------------
-
-As metadata on columns ?
-
-
-
-
-
-.. code:: python
-
-    float_christian.units
-
-
-
-
-.. parsed-literal::
-
-    'degC'
 
 

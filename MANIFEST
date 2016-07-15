@@ -43,13 +43,6 @@ pyhaystack\client\ops\vendor\__init__.py
 pyhaystack\client\ops\vendor\niagara.py
 pyhaystack\client\ops\vendor\skyspark.py
 pyhaystack\client\ops\vendor\widesky.py
-pyhaystack\history\HisRecord.py
-pyhaystack\history\__init__.py
-pyhaystack\io\__init__.py
-pyhaystack\io\haystackPoint.py
-pyhaystack\io\haystackRead.py
-pyhaystack\io\jsonParser.py
-pyhaystack\io\zincParser.py
 pyhaystack\server\__init__.py
 pyhaystack\util\__init__.py
 pyhaystack\util\asyncexc.py
