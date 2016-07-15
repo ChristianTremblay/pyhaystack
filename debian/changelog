@@ -1,3 +1,8 @@
+pyhaystack (0.9) unstable; urgency=low
+  * Pull upstream release 0.9
+  * Add bugfix for POST handling
+ -- Stuart Longland <stuartl@vrt.com.au>  Sat, 16 Jul 2016 08:47:52 +1000
+
 pyhaystack (0.71.1.8.2-6) unstable; urgency=low
   * Fix to handle empty series when writing frames.
  -- Stuart Longland <stuartl@vrt.com.au>  Thu, 02 Jun 2016 16:19:00 +1000
