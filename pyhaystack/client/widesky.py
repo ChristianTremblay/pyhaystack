@@ -11,7 +11,7 @@ from .ops.vendor.widesky import WideskyAuthenticateOperation, \
 from .mixins.vendor.widesky import crud, multihis
 
 class WideskyHaystackSession(crud.CRUDOpsMixin,
-        #multihis.MultiHisOpsMixin,
+        multihis.MultiHisOpsMixin,
         HaystackSession):
     """
     The WideskyHaystackSession class implements some base support for
