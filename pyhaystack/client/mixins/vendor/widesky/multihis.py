@@ -51,6 +51,7 @@ class MultiHisOpsMixin(object):
         """
         # Grid
         grid = hszinc.Grid()
+        grid.column['ts'] = {}
 
         # A mapping of IDs to column indexes
         point_idx = {}
