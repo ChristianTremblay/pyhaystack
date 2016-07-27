@@ -223,7 +223,7 @@ class HTTPClient(object):
                 body_size = len(body)
 
             if body_size is not False:
-                headers['Content-Length'] = body_size
+                headers['Content-Length'] = str(body_size)
 
             if body_type is not None:
                 headers['Content-Type'] = body_type
