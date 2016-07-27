@@ -532,6 +532,11 @@ class HisWriteSeriesOperation(state.HaystackOperation):
             else:
                 records = self._series
 
+            if not bool(records):
+                # No data, skip writing this series.
+                self._state_machine.write_done(result=None)
+                return
+
             # Time-shift the records.
             if hasattr(self._tz, 'localize'):
                 localise = lambda ts : self._tz.localize(ts) \
@@ -674,6 +679,7 @@ class HisWriteFrameOperation(state.HaystackOperation):
                     ('do_multi_write',  'init',             'multi_write'),
                     ('all_write_done',  'multi_write',      'done'),
                     ('do_single_write', 'init',             'single_write'),
+                    ('no_data',         'init',             'done'),
                     ('all_write_done',  'single_write',     'done'),
                     ('exception',       '*',                'done'),
                 ], callbacks={
@@ -683,7 +689,10 @@ class HisWriteFrameOperation(state.HaystackOperation):
                 })
 
     def go(self):
-        if hasattr(self._session, 'multi_his_write'):
+        if not bool(self._columns):
+            self._log.debug('No data to write')
+            self._state_machine.no_data(result=None)
+        elif hasattr(self._session, 'multi_his_write'):
             # Session object supports multi-his-write
             self._log.debug('Using multi-his-write support')
             self._state_machine.do_multi_write()
