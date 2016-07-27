@@ -151,7 +151,7 @@ class CreateEntityOperation(EntityRetrieveOperation):
         :param session: Haystack HTTP session object.
         :param entities: A list of entities to create.
         """
-
+        self._log = session._log.getChild('create_entity')
         super(CreateEntityOperation, self).__init__(session, single)
         self._new_entities = entities
         self._state_machine = fysom.Fysom(
@@ -176,7 +176,7 @@ class CreateEntityOperation(EntityRetrieveOperation):
                 raise TypeError('%r is not a dict' % e)
             e = e.copy()
             e_id = e.pop('id')
-            if isinstance(e, hszinc.Ref):
+            if isinstance(e_id, hszinc.Ref):
                 e_id = e_id.name
             if '.' in e_id:
                 e_id = e_id.split('.')[-1]
