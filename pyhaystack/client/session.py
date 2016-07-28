@@ -9,6 +9,7 @@ maintaining a session with the server.
 import logging
 import hszinc
 import weakref
+from threading import Lock
 from six import string_types
 
 from .http import sync
@@ -55,7 +56,7 @@ class HaystackSession(object):
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None,
                 tagging_model=HaystackTaggingModel, log=None,
-                pint=False):
+                pint=False, cache_expiry=3600.0):
         """
         Initialise a base Project Haystack session handler.
 
@@ -67,6 +68,7 @@ class HaystackSession(object):
         :param tagging_model: Entity Tagging model in use.
         :param log: Logging object for reporting messages.
         :param pint: Configure hszinc to use basic quantity or Pint Quanity
+        :param cache_expiry: Number of seconds before cached data expires.
         
         See : https://pint.readthedocs.io/ for details about pint
         """
@@ -100,6 +102,11 @@ class HaystackSession(object):
         # Tagging model in use
         self._tagging_model = tagging_model(self)
 
+        # Grid cache
+        self._grid_lk = Lock()
+        self._grid_expiry = cache_expiry
+        self._grid_cache = {}   # 'op' -> (op, expiry, grid)
+
     # Public methods/properties
 
     def authenticate(self, callback=None):
@@ -131,13 +138,13 @@ class HaystackSession(object):
 
         return auth_op
 
-    def about(self, callback=None):
+    def about(self, cached=True, callback=None):
         """
         Retrieve the version information of this Project Haystack server.
         """
         return self._get_grid('about', callback)
 
-    def ops(self, callback=None):
+    def ops(self, cached=True, callback=None):
         """
         Retrieve the operations supported by this Project Haystack server.
         """
@@ -477,14 +484,15 @@ class HaystackSession(object):
             uri = '%s/%s' % (self._api_dir, uri)
         return self._client.get(uri, callback, **kwargs)
 
-    def _get_grid(self, uri, callback, expect_format=None, **kwargs):
+    def _get_grid(self, uri, callback, expect_format=None,
+            cached=False, **kwargs):
         """
         Perform a HTTP GET of a grid.
         """
         if expect_format is None:
             expect_format=self._grid_format
         op = self._GET_GRID_OPERATION(self, uri,
-                expect_format=expect_format, **kwargs)
+                expect_format=expect_format, cached=cached, **kwargs)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
