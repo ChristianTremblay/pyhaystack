@@ -138,23 +138,23 @@ class HaystackSession(object):
 
         return auth_op
 
-    def about(self, cached=True, callback=None):
+    def about(self, cache=True, callback=None):
         """
         Retrieve the version information of this Project Haystack server.
         """
-        return self._get_grid('about', callback, cached=cached)
+        return self._get_grid('about', callback, cache=cache)
 
-    def ops(self, cached=True, callback=None):
+    def ops(self, cache=True, callback=None):
         """
         Retrieve the operations supported by this Project Haystack server.
         """
-        return self._get_grid('ops', callback, cached=cached)
+        return self._get_grid('ops', callback, cache=cache)
 
-    def formats(self, callback=None):
+    def formats(self, cache=True, callback=None):
         """
         Retrieve the grid formats supported by this Project Haystack server.
         """
-        return self._get_grid('formats', callback, cached=cached)
+        return self._get_grid('formats', callback, cache=cache)
 
     def read(self, ids=None, filter_expr=None, limit=None, callback=None):
         """
@@ -485,14 +485,14 @@ class HaystackSession(object):
         return self._client.get(uri, callback, **kwargs)
 
     def _get_grid(self, uri, callback, expect_format=None,
-            cached=False, **kwargs):
+            cache=False, **kwargs):
         """
         Perform a HTTP GET of a grid.
         """
         if expect_format is None:
             expect_format=self._grid_format
         op = self._GET_GRID_OPERATION(self, uri,
-                expect_format=expect_format, cached=cached, **kwargs)
+                expect_format=expect_format, cache=cache, **kwargs)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
