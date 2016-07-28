@@ -142,19 +142,19 @@ class HaystackSession(object):
         """
         Retrieve the version information of this Project Haystack server.
         """
-        return self._get_grid('about', callback)
+        return self._get_grid('about', callback, cached=cached)
 
     def ops(self, cached=True, callback=None):
         """
         Retrieve the operations supported by this Project Haystack server.
         """
-        return self._get_grid('ops', callback)
+        return self._get_grid('ops', callback, cached=cached)
 
     def formats(self, callback=None):
         """
         Retrieve the grid formats supported by this Project Haystack server.
         """
-        return self._get_grid('formats', callback)
+        return self._get_grid('formats', callback, cached=cached)
 
     def read(self, ids=None, filter_expr=None, limit=None, callback=None):
         """
