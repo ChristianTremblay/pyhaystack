@@ -692,10 +692,11 @@ class HisWriteFrameOperation(state.HaystackOperation):
                 initial='init', final='done',
                 events=[
                     # Event             Current State       New State
-                    ('do_multi_write',  'init',             'multi_write'),
-                    ('all_write_done',  'multi_write',      'done'),
-                    ('do_single_write', 'init',             'single_write'),
+                    ('probe_multi',     'init'              'probing'),
                     ('no_data',         'init',             'done'),
+                    ('do_multi_write',  'probing',          'multi_write'),
+                    ('all_write_done',  'multi_write',      'done'),
+                    ('do_single_write', 'probing',          'single_write'),
                     ('all_write_done',  'single_write',     'done'),
                     ('exception',       '*',                'done'),
                 ], callbacks={
@@ -708,7 +709,22 @@ class HisWriteFrameOperation(state.HaystackOperation):
         if not bool(self._columns):
             self._log.debug('No data to write')
             self._state_machine.no_data(result=None)
-        elif hasattr(self._session, 'multi_his_write'):
+        else:
+            self._state_machine.probe_multi()
+
+    def _do_probe_multi(self, event):
+        self._log.debug('Probing for multi-his-write support')
+        self._session.has_features([self._session.FEATURE_HISWRITE_MULTI],
+                callback=self._on_probe_multi)
+
+    def _on_probe_multi(self, operation):
+        try:
+            result = operation.result
+        except: # Catch all exceptions to pass to caller.
+            self._state_machine.exception(result=AsynchronousException())
+            return
+
+        if result.get(FEATURE_HISWRITE_MULTI):
             # Session object supports multi-his-write
             self._log.debug('Using multi-his-write support')
             self._state_machine.do_multi_write()
