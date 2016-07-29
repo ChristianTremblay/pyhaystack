@@ -195,13 +195,15 @@ class HisReadFrameOperation(state.HaystackOperation):
                 initial='init', final='done',
                 events=[
                     # Event             Current State       New State
-                    ('do_multi_read',   'init',             'multi_read'),
+                    ('probe_multi',     'init'              'probing'),
+                    ('do_multi_read',   'probing',          'multi_read'),
                     ('all_read_done',   'multi_read',       'postprocess'),
-                    ('do_single_read',  'init',             'single_read'),
+                    ('do_single_read',  'probing',          'single_read'),
                     ('all_read_done',   'single_read',      'postprocess'),
                     ('process_done',    'postprocess',      'done'),
                     ('exception',       '*',                'done'),
                 ], callbacks={
+                    'onenterprobing':       self._do_probe_multi,
                     'onentermulti_read':    self._do_multi_read,
                     'onentersingle_read':   self._do_single_read,
                     'onenterpostprocess':   self._do_postprocess,
@@ -209,7 +211,21 @@ class HisReadFrameOperation(state.HaystackOperation):
                 })
 
     def go(self):
-        if hasattr(self._session, 'multi_his_read'):
+        self._state_machine.probe_multi()
+
+    def _do_probe_multi(self, event):
+        self._log.debug('Probing for multi-his-read support')
+        self._session.has_features([self._session.FEATURE_HISREAD_MULTI],
+                callback=self._on_probe_multi)
+
+    def _on_probe_multi(self, operation):
+        try:
+            result = operation.result
+        except: # Catch all exceptions to pass to caller.
+            self._state_machine.exception(result=AsynchronousException())
+            return
+
+        if result.get(FEATURE_HISREAD_MULTI):
             # Session object supports multi-his-read
             self._log.debug('Using multi-his-read support')
             self._state_machine.do_multi_read()
@@ -790,4 +806,3 @@ class MetaDataFrame(DataFrame):
  
     def add_meta(self, key, value):
         self.meta[key] = value
-    
