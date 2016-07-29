@@ -7,6 +7,8 @@ features of a client according to the server implementation.
 """
 
 from ...util.asyncexc import AsynchronousException
+from ...util import state
+import fysom
 
 class HasFeaturesOperation(state.HaystackOperation):
     """
@@ -22,6 +24,7 @@ class HasFeaturesOperation(state.HaystackOperation):
         :param cache: Whether or not to use cache for this check.
         """
         super(HasFeaturesOperation, self).__init__()
+        self._log = session._log.getChild('has_features')
         self._session = session
         self._features = set(features)
         self._cache = cache
@@ -30,7 +33,8 @@ class HasFeaturesOperation(state.HaystackOperation):
         # compare the features to the op names to see if they're present.
         self._need_about = False
         self._need_formats = False
-        self._need_ops = all([('/' in feature) for feature in self._features])
+        self._need_ops = any([('/' not in feature) \
+                for feature in self._features])
 
         # Retrieved feature data
         self._about = None
@@ -49,7 +53,7 @@ class HasFeaturesOperation(state.HaystackOperation):
                     ('formats_done',    'get_formats',      'get_ops'),
                     ('ops_done',        'get_ops',          'check_features'),
                     ('checked',         'check_features',   'done'),
-                    ('exception',       '*',                'failed'),
+                    ('exception',       '*',                'done'),
                 ], callbacks={
                     'onenterget_about':     self._do_get_about,
                     'onenterget_formats':   self._do_get_formats,
@@ -62,6 +66,8 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         Start the request.
         """
+        self._log.debug('Needed: about=%s, formats=%s, ops=%s',
+                self._need_about, self._need_formats, self._need_ops)
         self._state_machine.go()
 
     def _do_get_about(self, event):
@@ -70,20 +76,23 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         try:
             if self._need_about:
+                self._log.debug('Retrieving about data')
                 self._session.about(callback=self._on_got_about,
                         cache=self._cache)
             else:
+                self._log.debug('Skipping about data')
                 self._state_machine.about_done()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
-    def _on_got_about(self, op):
+    def _on_got_about(self, operation, **kwargs):
         """
         Store the result of the "about" request.
         """
         try:
-            self._about = op.result
+            self._about = operation.result
             self._about_data = self._about[0]
+            self._log.debug('Got about data: %s', self._about_data)
             self._state_machine.about_done()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
@@ -94,21 +103,24 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         try:
             if self._need_formats:
+                self._log.debug('Retrieving formats data')
                 self._session.formats(callback=self._on_got_formats,
                         cache=self._cache)
             else:
+                self._log.debug('Skipping formats data')
                 self._state_machine.formats_done()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
-    def _on_got_formats(self, op):
+    def _on_got_formats(self, operation, **kwargs):
         """
         Store the result of the "formats" request.
         """
         try:
-            self._formats = op.result
+            self._formats = operation.result
             for row in self._formats:
                 self._formats_data[row['mime']] = row
+            self._log.debug('Got formats data: ', self._formats_data)
             self._state_machine.formats_done()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
@@ -119,21 +131,24 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         try:
             if self._need_ops:
+                self._log.debug('Retrieving ops data')
                 self._session.ops(callback=self._on_got_ops,
                         cache=self._cache)
             else:
+                self._log.debug('Skipping ops data')
                 self._state_machine.ops_done()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
-    def _on_got_ops(self, op):
+    def _on_got_ops(self, operation, **kwargs):
         """
         Store the result of the "ops" request.
         """
         try:
-            self._about = op.result
+            self._ops = operation.result
             for row in self._ops:
                 self._ops_data[row['name']] = row
+            self._log.debug('Got ops data: %s', self._ops_data)
             self._state_machine.ops_done()
         except: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
