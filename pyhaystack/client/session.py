@@ -16,6 +16,7 @@ from .http import sync
 from .ops import grid as grid_ops
 from .ops import entity as entity_ops
 from .ops import his as his_ops
+from .ops import feature as feature_ops
 from .entity.models.haystack import HaystackTaggingModel
 
 class HaystackSession(object):
@@ -52,6 +53,8 @@ class HaystackSession(object):
     _HIS_READ_FRAME_OPERATION = his_ops.HisReadFrameOperation
     _HIS_WRITE_SERIES_OPERATION = his_ops.HisWriteSeriesOperation
     _HIS_WRITE_FRAME_OPERATION = his_ops.HisWriteFrameOperation
+
+    _HAS_FEATURES_OPERATION = feature_ops.HasFeaturesOperation
 
     def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
                 http_client=sync.SyncHttpClient, http_args=None,
