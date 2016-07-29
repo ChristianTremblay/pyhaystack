@@ -472,6 +472,25 @@ class HaystackSession(object):
         op.go()
         return op
 
+    # Extension feature support.
+    FEATURE_HISREAD_MULTI = 'hisRead/multi'   # Multi-point hisRead
+    FEATURE_HISWRITE_MULTI = 'hisWrite/multi'   # Multi-point hisWrite
+    def has_features(self, features, cache=True, callback=None):
+        """
+        Determine if a given feature is supported.  This is a helper function
+        for determining if the server implements a given feature.  The feature
+        is given as a string in the form of "base_feature/extension".
+
+        Result is a dict of features and the states (boolean).
+
+        :param features: Features to check for.
+        """
+        op = self._HAS_FEATURES_OPERATION(self, features, cache=cache)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
+
     # Protected methods/properties
 
     def _get(self, uri, callback, api=True, **kwargs):
