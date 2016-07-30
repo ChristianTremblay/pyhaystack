@@ -245,3 +245,108 @@ class TestSession(object):
         assert op.is_done
         actual = op.result
         grid_cmp(expected, actual)
+
+    def test_read_one_id(self, server_session):
+        (server, session) = server_session
+        op = session.read(hszinc.Ref('my.entity.id'))
+
+        # The operation should still be in progress
+        assert not op.is_done
+
+        # There shall be one request
+        assert server.requests() == 1
+        rq = server.next_request()
+
+        # Request shall be a GET
+        assert rq.method == 'GET', 'Expecting GET, got %s' % rq
+
+        # Request shall be for a specific URI
+        assert rq.uri == BASE_URI + 'api/read?id=%40my.entity.id'
+
+        # Accept header shall be given
+        assert rq.headers['Accept'] == 'text/zinc'
+
+        # Make a grid to respond with
+        expected = hszinc.Grid()
+
+        expected.column['id'] = {}
+        expected.column['dis'] = {}
+        expected.extend([{
+                "id": hszinc.Ref('my.entity.id'),
+                "dis": 'my entity'
+        }])
+
+        rq.respond(status=200, headers={
+            'Content-Type': 'text/zinc',
+        }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
+
+        # State machine should now be done
+        assert op.is_done
+        actual = op.result
+        grid_cmp(expected, actual)
+
+    def test_read_many_id(self, server_session):
+        (server, session) = server_session
+        op = session.read([
+            hszinc.Ref('my.entity.id1'),
+            hszinc.Ref('my.entity.id2'),
+            hszinc.Ref('my.entity.id3'),
+        ])
+
+        # The operation should still be in progress
+        assert not op.is_done
+
+        # There shall be one request
+        assert server.requests() == 1
+        rq = server.next_request()
+
+        # Request shall be a GET
+        assert rq.method == 'POST', 'Expecting POST, got %s' % rq
+
+        # Request shall be for a specific URI
+        assert rq.uri == BASE_URI + 'api/read'
+
+        # Body shall be in ZINC
+        assert rq.headers['Content-Type'] == 'text/zinc'
+
+        # Body shall be a single valid grid of this form:
+        expected = hszinc.Grid()
+        expected.column['id'] = {}
+        expected.extend([{
+                "id": hszinc.Ref('my.entity.id1'),
+            }, {
+                "id": hszinc.Ref('my.entity.id2'),
+            }, {
+                "id": hszinc.Ref('my.entity.id3'),
+        }])
+        actual = hszinc.parse(rq.body, mode=hszinc.MODE_ZINC)
+        assert len(actual) == 1
+        grid_cmp(expected, actual[0])
+
+        # Accept header shall be given
+        assert rq.headers['Accept'] == 'text/zinc'
+
+        # Make a grid to respond with
+        expected = hszinc.Grid()
+
+        expected.column['id'] = {}
+        expected.column['dis'] = {}
+        expected.extend([{
+                "id": hszinc.Ref('my.entity.id1'),
+                "dis": 'my entity 1'
+            }, {
+                "id": hszinc.Ref('my.entity.id2'),
+                "dis": 'my entity 2'
+            }, {
+                "id": hszinc.Ref('my.entity.id3'),
+                "dis": 'my entity 3'
+        }])
+
+        rq.respond(status=200, headers={
+            'Content-Type': 'text/zinc',
+        }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
+
+        # State machine should now be done
+        assert op.is_done
+        actual = op.result
+        grid_cmp(expected, actual)
