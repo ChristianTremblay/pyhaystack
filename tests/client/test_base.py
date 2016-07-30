@@ -139,7 +139,7 @@ class TestSession(object):
         # Request shall be a GET
         assert rq.method == 'GET', 'Expecting GET, got %s' % rq
 
-        # Request shall be for base + 'api/about'
+        # Request shall be for base + 'api/ops'
         assert rq.uri == BASE_URI + 'api/ops'
 
         # Accept header shall be given
@@ -186,6 +186,55 @@ class TestSession(object):
             }, {
                 "name": "invokeAction",
                 "summary": "Invoke an action on an entity"
+        }])
+
+        rq.respond(status=200, headers={
+            'Content-Type': 'text/zinc',
+        }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
+
+        # State machine should now be done
+        assert op.is_done
+        actual = op.result
+        grid_cmp(expected, actual)
+
+    def test_formats(self, server_session):
+        (server, session) = server_session
+        op = session.formats()
+
+        # The operation should still be in progress
+        assert not op.is_done
+
+        # There shall be one request
+        assert server.requests() == 1
+        rq = server.next_request()
+
+        # Request shall be a GET
+        assert rq.method == 'GET', 'Expecting GET, got %s' % rq
+
+        # Request shall be for base + 'api/formats'
+        assert rq.uri == BASE_URI + 'api/formats'
+
+        # Accept header shall be given
+        assert rq.headers['Accept'] == 'text/zinc'
+
+        # Make a grid to respond with
+        expected = hszinc.Grid()
+
+        expected.column['mime'] = {}
+        expected.column['receive'] = {}
+        expected.column['send'] = {}
+        expected.extend([{
+                "mime": "text/csv",
+                "receive": hszinc.MARKER,
+                "send": hszinc.MARKER,
+            }, {
+                "mime": "text/zinc",
+                "receive": hszinc.MARKER,
+                "send": hszinc.MARKER,
+            }, {
+                "mime": "application/json",
+                "receive": hszinc.MARKER,
+                "send": hszinc.MARKER,
         }])
 
         rq.respond(status=200, headers={
