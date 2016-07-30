@@ -124,3 +124,75 @@ class TestSession(object):
         assert op.is_done
         actual = op.result
         grid_cmp(expected, actual)
+
+    def test_ops(self, server_session):
+        (server, session) = server_session
+        op = session.ops()
+
+        # The operation should still be in progress
+        assert not op.is_done
+
+        # There shall be one request
+        assert server.requests() == 1
+        rq = server.next_request()
+
+        # Request shall be a GET
+        assert rq.method == 'GET', 'Expecting GET, got %s' % rq
+
+        # Request shall be for base + 'api/about'
+        assert rq.uri == BASE_URI + 'api/ops'
+
+        # Accept header shall be given
+        assert rq.headers['Accept'] == 'text/zinc'
+
+        # Make a grid to respond with
+        expected = hszinc.Grid()
+
+        expected.column['name'] = {}
+        expected.column['summary'] = {}
+        expected.extend([{
+                "name": "about",
+                "summary": "Summary information for server"
+            }, {
+                "name": "ops",
+                "summary": "Operations supported by this server"
+            }, {
+                "name": "formats",
+                "summary": "Grid data formats supported by this server"
+            }, {
+                "name": "read",
+                "summary": "Read records by id or filter"
+            }, {
+                "name": "hisRead",
+                "summary": "Read historical records"
+            }, {
+                "name": "hisWrite",
+                "summary": "Write historical records"
+            }, {
+                "name": "nav",
+                "summary": "Navigate a project"
+            }, {
+                "name": "watchSub",
+                "summary": "Subscribe to change notifications"
+            }, {
+                "name": "watchUnsub",
+                "summary": "Unsubscribe from change notifications"
+            }, {
+                "name": "watchPoll",
+                "summary": "Poll for changes in watched points"
+            }, {
+                "name": "pointWrite",
+                "summary": "Write a real-time value to a point"
+            }, {
+                "name": "invokeAction",
+                "summary": "Invoke an action on an entity"
+        }])
+
+        rq.respond(status=200, headers={
+            'Content-Type': 'text/zinc',
+        }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
+
+        # State machine should now be done
+        assert op.is_done
+        actual = op.result
+        grid_cmp(expected, actual)
