@@ -5,9 +5,13 @@ Core Haystack Session client tests.  This class is intended to test the
 core functions of PyHaystack's session class.
 """
 
+# Assume unicode literals as per Python 3
+from __future__ import unicode_literals
+
 import pytest
 
 from pyhaystack.client.http import dummy as dummy_http
+from ..util import grid_cmp
 
 # For simplicity's sake, we'll just use the WideSky client.
 # Pretend we're version 0.0.1.
@@ -70,6 +74,9 @@ class TestSession(object):
         (server, session) = server_session
         op = session.about()
 
+        # The operation should still be in progress
+        assert not op.is_done
+
         # There shall be one request
         assert server.requests() == 1
         rq = server.next_request()
@@ -84,18 +91,19 @@ class TestSession(object):
         assert rq.headers['Accept'] == 'text/zinc'
 
         # Make a grid to respond with
-        res = hszinc.Grid()
+        expected = hszinc.Grid()
 
-        res.column['haystackVersion'] = {}
-        res.column['tz'] = {}
-        res.column['serverName'] = {}
-        res.column['serverTime'] = {}
-        res.column['productName'] = {}
-        res.column['productUri'] = {}
-        res.column['productVersion'] = {}
-        res.column['moduleName'] = {}
-        res.column['moduleVersion'] = {}
-        res.append({
+        expected.column['haystackVersion'] = {}
+        expected.column['tz'] = {}
+        expected.column['serverName'] = {}
+        expected.column['serverTime'] = {}
+        expected.column['serverBootTime'] = {}
+        expected.column['productName'] = {}
+        expected.column['productUri'] = {}
+        expected.column['productVersion'] = {}
+        expected.column['moduleName'] = {}
+        expected.column['moduleVersion'] = {}
+        expected.append({
             'haystackVersion': '2.0',
             'tz': 'UTC',
             'serverName': 'pyhaystack dummy server',
@@ -103,10 +111,16 @@ class TestSession(object):
             'serverBootTime': datetime.datetime.now(tz=pytz.UTC),
             'productName': 'pyhaystack dummy server',
             'productVersion': '0.0.1',
+            'productUri': hszinc.Uri('http://pyhaystack.readthedocs.io'),
             'moduleName': 'tests.client.base',
             'moduleVersion': '0.0.1',
         })
 
         rq.respond(status=200, headers={
             'Content-Type': 'text/zinc',
-        }, content=hszinc.dump(res, mode=hszinc.MODE_ZINC))
+        }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
+
+        # State machine should now be done
+        assert op.is_done
+        actual = op.result
+        grid_cmp(expected, actual)
