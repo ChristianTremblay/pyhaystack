@@ -29,6 +29,26 @@ class EquipMixin(object):
         """
         In a navigation context, component of an equipment is a point (tag/entity)
         """
+        # Using [key] syntax on an equipment allows to retrieve a tag directly
+        # or a point referred to this particular equipment
+        for each in self.tags:
+            if key == each:
+                return self.tags[key]
+        # if key not found in tags... we probably are searching a point
+        # self will call __iter__ which will look for points in equipment
+        for point in self:
+            partial_results = []
+            # Given an ID.... should return the point with this ID
+            if key.replace('@','') == str(point.id).replace('@',''):
+                return point
+            # Given a dis or navName... should return point
+            elif key == point.tags['dis'] or key == point.tags['navName']:
+                return point
+            # Given a partial dis or nav... raise an error with a hint
+            # Will need to think about that... make things go bad for things
+            # with similar names
+            #elif key in point.tags['dis'] or key in point.tags['navName']:
+            #    raise KeyError('Wrong point name. Do you mean "%s" ?' % point.tags['dis'])
         request = self.find_entity(key)
         return request.result
         
@@ -47,7 +67,7 @@ class EquipMixin(object):
         try:
             return self._list_of_points
         except AttributeError:
-            print('Reading points...')
+            print('Reading points for this equipment...')
             self._add_points()
             return self._list_of_points
 
@@ -63,10 +83,10 @@ class EquipMixin(object):
         Store a local copy of equip for this site
         To accelerate browser
         """
-        if not '_list_of_equip' in self.__dict__.keys():
+        if not '_list_of_points' in self.__dict__.keys():
             self._list_of_points = []       
-        for equip in self['point'].items():
-            self._list_of_points.append(equip[1])
+        for point in self['point'].items():
+            self._list_of_points.append(point[1])
 
 
 class EquipRefMixin(object):

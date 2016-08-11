@@ -27,9 +27,25 @@ class SiteMixin(object):
 
 
     def __getitem__(self,key):
+        # Using [key] syntax on a site allow to retrieve a tag directly
+        # or an equipment referred to this particular site
+        for each in self.tags:
+            if key == each:
+                return self.tags[key]
+        # if key not found in tags... we probably are searching an equipment
+        # self will call __iter__ which will look for equipments
         for each in self:
-            if key in each:
+            # Given an ID.... should return the equip with this ID
+            if key.replace('@','') == str(each.id).replace('@',''):
                 return each
+            # Given a dis or navName... should return equip
+            elif key == each.tags['dis'] or key == each.tags['navName']:
+                return each
+            # Given a partial dis or nav... raise an error with a hint
+            # Will need to think about that... make things go bad for things
+            # with similar names
+            #elif key in each.tags['dis'] or key in each.tags['navName']:
+            #    raise KeyError('Wrong equipment name. Do you mean "%s" ?' % each.tags['dis'])
         request = self.find_entity(key)
         return request.result
 
@@ -46,9 +62,10 @@ class SiteMixin(object):
         First read will force a request and create local list
         """
         try:
+            # At first, this variable will not exist... will be created
             return self._list_of_equip
         except AttributeError:
-            print('Reading equipments...')
+            print('Reading equipments for this site...')
             self._add_equip()
             return self._list_of_equip
             
