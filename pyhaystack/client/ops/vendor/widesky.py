@@ -10,10 +10,13 @@ import fysom
 import json
 import base64
 import shlex
+import semver
 
 from ....util import state
 from ....util.asyncexc import AsynchronousException
 from ..entity import EntityRetrieveOperation
+from ..feature import HasFeaturesOperation
+from ...session import HaystackSession
 
 class WideskyAuthenticateOperation(state.HaystackOperation):
     """
@@ -151,7 +154,7 @@ class CreateEntityOperation(EntityRetrieveOperation):
         :param session: Haystack HTTP session object.
         :param entities: A list of entities to create.
         """
-
+        self._log = session._log.getChild('create_entity')
         super(CreateEntityOperation, self).__init__(session, single)
         self._new_entities = entities
         self._state_machine = fysom.Fysom(
@@ -176,7 +179,7 @@ class CreateEntityOperation(EntityRetrieveOperation):
                 raise TypeError('%r is not a dict' % e)
             e = e.copy()
             e_id = e.pop('id')
-            if isinstance(e, hszinc.Ref):
+            if isinstance(e_id, hszinc.Ref):
                 e_id = e_id.name
             if '.' in e_id:
                 e_id = e_id.split('.')[-1]
@@ -184,3 +187,30 @@ class CreateEntityOperation(EntityRetrieveOperation):
             return e
         entities = list(map(_preprocess_entity, self._new_entities))
         self._session.create(entities, callback=self._on_read)
+
+
+class WideSkyHasFeaturesOperation(HasFeaturesOperation):
+    def __init__(self, session, features, **kwargs):
+        super(WideSkyHasFeaturesOperation, self).__init__(
+                session, features, **kwargs)
+
+        # Turn on retrieval of 'about' version data.
+        self._need_about = True
+
+    def _check_features(self):
+        res = super(WideSkyHasFeaturesOperation, self)._check_features()
+
+        # Ensure this is WideSky
+        if self._about_data['productName'] not in (
+                'Widesky Semantic Database Toolkit', 'WideSky'):
+            # Not recognised, stop here.
+            return res
+
+
+        # Get the WideSky version
+        ver = self._about_data['productVersion']
+        for feature in self._features:
+            if feature in (HaystackSession.FEATURE_HISREAD_MULTI,
+                    HaystackSession.FEATURE_HISWRITE_MULTI):
+                res[feature] = semver.match(ver, '>=0.5.0')
+        return res

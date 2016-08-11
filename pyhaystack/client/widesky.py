@@ -7,11 +7,11 @@ VRT Widesky Client support
 from time import time
 from .session import HaystackSession
 from .ops.vendor.widesky import WideskyAuthenticateOperation, \
-        CreateEntityOperation
+        CreateEntityOperation, WideSkyHasFeaturesOperation
 from .mixins.vendor.widesky import crud, multihis
 
 class WideskyHaystackSession(crud.CRUDOpsMixin,
-        #multihis.MultiHisOpsMixin,
+        multihis.MultiHisOpsMixin,
         HaystackSession):
     """
     The WideskyHaystackSession class implements some base support for
@@ -21,6 +21,7 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
 
     _AUTH_OPERATION = WideskyAuthenticateOperation
     _CREATE_ENTITY_OPERATION = CreateEntityOperation
+    _HAS_FEATURES_OPERATION = WideSkyHasFeaturesOperation
 
     def __init__(self, uri, username, password,
             client_id, client_secret,
