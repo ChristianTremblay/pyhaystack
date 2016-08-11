@@ -37,7 +37,7 @@ class EquipMixin(object):
         # if key not found in tags... we probably are searching a point
         # self will call __iter__ which will look for points in equipment
         for point in self:
-            partial_results = []
+            #partial_results = []
             # Given an ID.... should return the point with this ID
             if key.replace('@','') == str(point.id).replace('@',''):
                 return point
