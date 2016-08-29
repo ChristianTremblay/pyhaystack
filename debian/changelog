@@ -1,3 +1,8 @@
+pyhaystack (0.9.0.3) unstable; urgency=low
+  * Fix handling of multiple entity read requests where IDs for non-existent
+    entities are given.  (VRT JIRA issue 366; upstream Github PR #26)
+ -- Stuart Longland <stuartl@vrt.com.au>  Tue, 30 Aug 2016 08:12:52 +1000
+
 pyhaystack (0.9.0.2) unstable; urgency=low
   * Implement auto-detection of multi-point hisRead/hisWrite support
  -- Stuart Longland <stuartl@vrt.com.au>  Fri, 29 Jul 2016 14:37:23 +1000
