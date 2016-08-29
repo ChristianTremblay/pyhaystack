@@ -48,7 +48,13 @@ class EntityRetrieveOperation(state.HaystackOperation):
                     continue
 
                 row = row.copy()
-                entity_id = row.pop('id').name  # Should be a Ref
+                entity_ref = row.pop('id')
+
+                # This entity does not exist
+                if entity_ref is None:
+                    continue
+
+                entity_id = entity_ref.name
 
                 try:
                     entity = self._entities[entity_id]
