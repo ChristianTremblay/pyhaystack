@@ -5,6 +5,9 @@ consistent interface to make processing and handling of requests more
 convenient and to aid portability of pyhaystack.
 """
 
+# Assume unicode literals as per Python 3
+from __future__ import unicode_literals
+
 import shlex
 import re
 try:
@@ -280,6 +283,11 @@ class HTTPResponse(object):
         Attempt to decode the raw body into text based on the encoding given.
         """
         if self._text is None:
+            body = self.body
+            if not hasattr(body, 'decode'):
+                # It probably is a str/unicode
+                return body
+
             content_encoding = self.content_type_args.get('charset')
             if content_encoding is None:
                 self._text = self.body.decode()
