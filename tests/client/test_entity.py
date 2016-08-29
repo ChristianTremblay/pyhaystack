@@ -158,7 +158,7 @@ class TestSession(object):
             entity = op.result
             assert entity is None
         except NameError as e:
-            assert e.message == 'No matching entity found'
+            assert str(e) == 'No matching entity found'
 
     def test_get_multi_entity_missng(self, server_session):
         (server, session) = server_session
