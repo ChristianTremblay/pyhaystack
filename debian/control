@@ -9,8 +9,9 @@ Standards-Version: 3.9.1
 
 Package: python-pyhaystack
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-hszinc, python-tz,
+Depends: python-hszinc, python-tz, python-requests,
  python-six, python-fysom, python-signalslot, python-semver
+Suggests:  ${misc:Depends}, ${python:Depends}
 Description: Python Haystack Utility
  pyhaystack |build-status| |coverage| |docs| 
  ===========================================
