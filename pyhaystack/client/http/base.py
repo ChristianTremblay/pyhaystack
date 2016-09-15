@@ -30,6 +30,8 @@ class HTTPClient(object):
     """
 
     PROTO_RE    = re.compile(r'^[a-z]+://')
+    CONTENT_TYPE_HDR    = u'Content-Type'.encode('us-ascii')
+    CONTENT_LENGTH_HDR  = u'Content-Length'.encode('us-ascii')
 
     def __init__(self, uri=None, params=None, headers=None, cookies=None,
             auth=None, timeout=None, proxies=None, tls_verify=None,
@@ -226,13 +228,13 @@ class HTTPClient(object):
                 body_size = len(body)
 
             if body_size is not False:
-                headers['Content-Length'] = str(body_size)
+                headers[self.CONTENT_LENGTH_HDR] = str(body_size)
 
             if body_type is not None:
-                headers['Content-Type'] = body_type
+                headers[self.CONTENT_TYPE_HDR] = body_type
 
-        self.request(method='POST', uri=uri, callback=callback, body=body,
-                headers=headers, **kwargs)
+        self.request(method='POST', uri=uri, callback=callback,
+                body=body, headers=headers, **kwargs)
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
