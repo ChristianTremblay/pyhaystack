@@ -53,9 +53,11 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
 
         super(WideskyAuthenticateOperation, self).__init__()
         self._auth_headers = {
-                'Authorization': 'Basic %s' % base64.b64encode(
-                    ':'.join([session._client_id,
-                        session._client_secret]).encode()).decode(),
+                'Authorization': (u'Basic %s' % base64.b64encode(
+                            ':'.join([session._client_id,
+                                session._client_secret]).encode('utf-8')
+                        ).decode('us-ascii')
+                    ).encode('us-ascii'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
         }
@@ -63,7 +65,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
             'username': session._username,
             'password': session._password,
             'grant_type': 'password',
-        })
+        }).encode('utf-8')
         self._session = session
         self._retries = retries
         self._auth_result = None
