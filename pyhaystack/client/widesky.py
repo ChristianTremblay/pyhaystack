@@ -66,10 +66,10 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
         try:
             self._auth_result = operation.result
             self._client.headers = {
-                    'Authorization': '%s %s' % (
-                        self._auth_result['token_type'],
-                        self._auth_result['access_token'],
-                    )
+                    'Authorization': (u'%s %s' % (
+                        self._auth_result['token_type'].decode('us-ascii'),
+                        self._auth_result['access_token'].decode('us-ascii'),
+                    )).encode('us-ascii')
             }
         except:
             self._auth_result = None
