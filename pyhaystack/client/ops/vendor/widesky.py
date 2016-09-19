@@ -207,10 +207,15 @@ class WideSkyHasFeaturesOperation(HasFeaturesOperation):
             return res
 
 
-        # Get the WideSky version
-        ver = self._about_data['productVersion']
+        # Get the WideSky version, preferring moduleVersion over productVersion
+        ver = self._about_data.get('moduleVersion',
+                self._about_data['productVersion'])
         for feature in self._features:
             if feature in (HaystackSession.FEATURE_HISREAD_MULTI,
                     HaystackSession.FEATURE_HISWRITE_MULTI):
-                res[feature] = semver.match(ver, '>=0.5.0')
+                try:
+                    res[feature] = semver.match(ver, '>=0.5.0')
+                except ValueError:
+                    # Unrecognised version string
+                    return res
         return res
