@@ -30,8 +30,8 @@ class HTTPClient(object):
     """
 
     PROTO_RE    = re.compile(r'^[a-z]+://')
-    CONTENT_TYPE_HDR    = u'Content-Type'.encode('us-ascii')
-    CONTENT_LENGTH_HDR  = u'Content-Length'.encode('us-ascii')
+    CONTENT_TYPE_HDR    = b'Content-Type'
+    CONTENT_LENGTH_HDR  = b'Content-Length'
 
     def __init__(self, uri=None, params=None, headers=None, cookies=None,
             auth=None, timeout=None, proxies=None, tls_verify=None,
@@ -299,8 +299,8 @@ class HTTPResponse(object):
 
     def _parse_content_type(self):
         # Handle both cases
-        content_type = self.headers.get('Content-Type', \
-                self.headers.get('content-type'))
+        content_type = self.headers.get(b'Content-Type', \
+                self.headers.get(b'content-type'))
 
         # Is content encoding shoehorned in there?
         if ';' in content_type:
