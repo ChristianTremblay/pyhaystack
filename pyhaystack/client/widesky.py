@@ -10,6 +10,17 @@ from .ops.vendor.widesky import WideskyAuthenticateOperation, \
         CreateEntityOperation, WideSkyHasFeaturesOperation
 from .mixins.vendor.widesky import crud, multihis
 
+def _decode_str(s, enc='utf-8'):
+    """
+    Try to decode a 'str' object to a Unicode string.
+    """
+    try:
+        return s.decode(enc)
+    except AttributeError:
+        # This is probably already a Unicode string
+        return s
+
+
 class WideskyHaystackSession(crud.CRUDOpsMixin,
         multihis.MultiHisOpsMixin,
         HaystackSession):
@@ -67,8 +78,10 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
             self._auth_result = operation.result
             self._client.headers = {
                     'Authorization': (u'%s %s' % (
-                        self._auth_result['token_type'].decode('us-ascii'),
-                        self._auth_result['access_token'].decode('us-ascii'),
+                        _decode_str(self._auth_result['token_type'],
+                            'us-ascii'),
+                        _decode_str(self._auth_result['access_token'],
+                            'us-ascii'),
                     )).encode('us-ascii')
             }
         except:
