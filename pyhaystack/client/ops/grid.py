@@ -69,9 +69,9 @@ class BaseGridOperation(state.HaystackOperation):
 
         if not raw_response:
             if expect_format == hszinc.MODE_ZINC:
-                self._headers['Accept'] = 'text/zinc'
+                self._headers[b'Accept'] = 'text/zinc'
             elif expect_format == hszinc.MODE_JSON:
-                self._headers['Accept'] = 'application/json'
+                self._headers[b'Accept'] = 'application/json'
             elif expect_format is not None:
                 raise ValueError(
                         'expect_format must be one onf hszinc.MODE_ZINC '\
