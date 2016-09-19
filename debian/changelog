@@ -1,3 +1,8 @@
+pyhaystack (0.9.0.5) unstable; urgency=low
+  * Pull in bugfixes for HTTP headers
+  * Pull in version detection updates for WideSky
+ -- Stuart Longland <stuartl@vrt.com.au>  Mon, 19 Sep 2016 14:17:33 +1000
+
 pyhaystack (0.9.0.4) unstable; urgency=low
   * Fix dependencies on pandas.
  -- Stuart Longland <stuartl@vrt.com.au>  Tue, 06 Sep 2016 14:56:03 +1000
