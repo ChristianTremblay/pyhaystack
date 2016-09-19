@@ -54,7 +54,7 @@ def server_session():
     assert server.requests() == 0, 'More requests waiting'
     rq.respond(status=200,
             headers={
-                'Content-Type': 'application/json'
+                b'Content-Type': 'application/json'
             },
             content='''{
                 "token_type": "Bearer",
@@ -91,7 +91,7 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/read?id=%40my.entity.id'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
 
         # Make a grid to respond with
         response = hszinc.Grid()
@@ -106,7 +106,7 @@ class TestSession(object):
         })
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(response, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
@@ -138,7 +138,7 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/read?id=%40my.nonexistent.id'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
 
         # Make a grid to respond with.  Note, server might also choose to
         # throw an error, but we'll pretend it doesn't.
@@ -148,7 +148,7 @@ class TestSession(object):
         response.column['dis'] = {}
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(response, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
@@ -180,11 +180,11 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/read'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
-        assert rq.headers['Content-Type'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
+        assert rq.headers[b'Content-Type'] == 'text/zinc'
 
         # Body shall be a single grid:
-        rq_grid = hszinc.parse(rq.body, mode=hszinc.MODE_ZINC)
+        rq_grid = hszinc.parse(rq.body.decode('utf-8'), mode=hszinc.MODE_ZINC)
         assert len(rq_grid) == 1
         rq_grid = rq_grid[0]
 
@@ -221,7 +221,7 @@ class TestSession(object):
             }])
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(response, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
@@ -266,11 +266,11 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/read'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
-        assert rq.headers['Content-Type'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
+        assert rq.headers[b'Content-Type'] == 'text/zinc'
 
         # Body shall be a single grid:
-        rq_grid = hszinc.parse(rq.body, mode=hszinc.MODE_ZINC)
+        rq_grid = hszinc.parse(rq.body.decode('utf-8'), mode=hszinc.MODE_ZINC)
         assert len(rq_grid) == 1
         rq_grid = rq_grid[0]
 
@@ -303,7 +303,7 @@ class TestSession(object):
             }])
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(response, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
