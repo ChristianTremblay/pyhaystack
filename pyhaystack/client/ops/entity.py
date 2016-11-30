@@ -39,11 +39,23 @@ class EntityRetrieveOperation(state.HaystackOperation):
         try:
             # See if the read succeeded.
             grid = operation.result
+            self._log.debug('Received grid: %s', grid)
 
             # Iterate over each row:
             for row in grid:
+                # Ignore rows that don't specify an ID.
+                if 'id' not in row:
+                    continue
+
                 row = row.copy()
-                entity_id = row.pop('id').name  # Should be a Ref
+                entity_ref = row.pop('id')
+
+                # This entity does not exist
+                if entity_ref is None:
+                    continue
+
+                entity_id = entity_ref.name
+
                 try:
                     entity = self._entities[entity_id]
                     entity._update_tags(row)
@@ -114,6 +126,7 @@ class GetEntityOperation(EntityRetrieveOperation):
         :param refresh_all: Refresh all entities, ignore existing content.
         """
 
+        self._log = session._log.getChild('get_entity')
         super(GetEntityOperation, self).__init__(session, single)
         self._entity_ids = set(map(lambda r : r.name \
                 if isinstance(r, hszinc.Ref) else r, entity_ids))
@@ -200,6 +213,7 @@ class FindEntityOperation(EntityRetrieveOperation):
         :param limit: Maximum number of entities to fetch.
         """
 
+        self._log = session._log.getChild('find_entity')
         super(FindEntityOperation, self).__init__(session, single)
         self._filter_expr = filter_expr
         self._limit = limit
