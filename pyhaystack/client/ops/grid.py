@@ -146,18 +146,25 @@ class BaseGridOperation(state.HaystackOperation):
             self._state_machine.cache_miss()    # Nope
             return
 
+        # Initialise data
+        op = None
+        grid = None
+        expiry = 0.0
+
         with self._session._grid_lk:
             try:
                 (op, expiry, grid) = self._session._grid_cache[self._cache_key]
             except KeyError:
-                # Put ourselves there
+                # Not in cache
+                pass
+
+            if (grid is None) or (expiry <= time()):
+                # We have a cache miss.
                 op = self
-                expiry = 0.0
                 grid = None
                 self._session._grid_cache[self._cache_key] = (op, expiry, grid)
 
-        if (grid is not None) and (expiry > time()):
-            # We have a cache hit!
+        if grid is not None:
             self._state_machine.cache_hit(result=grid)
             return
 
