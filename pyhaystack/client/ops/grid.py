@@ -23,7 +23,8 @@ class BaseGridOperation(state.HaystackOperation):
 
     def __init__(self, session, uri, args=None,
             expect_format=hszinc.MODE_ZINC, multi_grid=False,
-            raw_response=False, retries=2, cache=False, cache_key=None):
+            raw_response=False, retries=2, cache=False, cache_key=None,
+            accept_status=None):
         """
         Initialise a request for the grid with the given URI and arguments.
 
@@ -43,6 +44,8 @@ class BaseGridOperation(state.HaystackOperation):
         :param cache: Whether or not to cache this result.  If True, the
                       result is cached by the session object.
         :param cache_key: Name of the key to use when the object is cached.
+        :param accept_status: What status codes to accept, in addition to the
+                            usual ones?
         """
 
         super(BaseGridOperation, self).__init__()
@@ -61,6 +64,7 @@ class BaseGridOperation(state.HaystackOperation):
         self._expect_format = expect_format
         self._raw_response = raw_response
         self._headers = {}
+        self._accept_status = accept_status
 
         self._cache = cache
         if cache and (cache_key is None):
@@ -292,7 +296,8 @@ class GetGridOperation(BaseGridOperation):
 
         try:
             self._session._get(self._uri, params=self._args,
-                    headers=self._headers, callback=self._on_response)
+                    headers=self._headers, callback=self._on_response,
+                    accept_status=self._accept_status)
         except: # Catch all exceptions to pass to caller.
             self._log.debug('Get fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
@@ -335,7 +340,8 @@ class PostGridOperation(BaseGridOperation):
         try:
             self._session._post(self._uri, body=self._body,
                     body_type=self._content_type, params=self._args,
-                    headers=self._headers, callback=self._on_response)
+                    headers=self._headers, callback=self._on_response,
+                    accept_status=self._accept_status)
         except: # Catch all exceptions to pass to caller.
             self._log.debug('Post fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
