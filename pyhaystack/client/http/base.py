@@ -301,6 +301,8 @@ class HTTPResponse(object):
         # Handle both cases
         content_type = self.headers.get(b'Content-Type', \
                 self.headers.get(b'content-type'))
+        assert content_type is not None, 'Missing content type in %s' \
+                % list(self.headers.keys())
 
         # Is content encoding shoehorned in there?
         if ';' in content_type:
