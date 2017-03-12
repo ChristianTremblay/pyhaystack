@@ -20,7 +20,7 @@ class SyncHttpClient(HTTPClient):
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert):
+            tls_verify, tls_cert, accept_status):
 
         if auth is not None:
             if isinstance(auth, BasicAuthenticationCredentials):
@@ -44,7 +44,9 @@ class SyncHttpClient(HTTPClient):
                             auth=auth, timeout=timeout,
                             proxies=proxies, verify=tls_verify,
                             cert=tls_cert)
-                    response.raise_for_status()
+                    if (accept_status is None) or \
+                            (response.status_code not in accept_status):
+                        response.raise_for_status()
                 except:
                     if self.log is not None:
                         self.log.debug('Exception in request %s of %s with '\
