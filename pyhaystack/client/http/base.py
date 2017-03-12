@@ -35,7 +35,7 @@ class HTTPClient(object):
 
     def __init__(self, uri=None, params=None, headers=None, cookies=None,
             auth=None, timeout=None, proxies=None, tls_verify=None,
-            tls_cert=None, log=None):
+            tls_cert=None, accept_status=None, log=None):
         """
         Instantiate a HTTP client instance with some default parameters.
         These parameters are made accessible as properties to be modified at
@@ -83,7 +83,8 @@ class HTTPClient(object):
     def request(self, method, uri, callback, body=None, params=None,
             headers=None, cookies=None, auth=None, timeout=None, proxies=None,
             tls_verify=None, tls_cert=None, exclude_params=None,
-            exclude_headers=None, exclude_cookies=None, exclude_proxies=None):
+            exclude_headers=None, exclude_cookies=None, exclude_proxies=None,
+            accept_status=None):
         """
         Perform a request with this client.  Most parameters here exist to either
         add to or override the defaults given by the client attributes.  The
@@ -132,6 +133,10 @@ class HTTPClient(object):
                         If True, exclude all default proxies and use only
                         the proxies given.  Otherwise, this is an iterable
                         of proxy names to be excluded.
+        :param accept_status:
+                        If not None, this gives a list of status codes that
+                        will not raise an error, but instead be passed through
+                        for the Haystack client to handle.
         """
         # Is this an absolute URL?
         if not self.PROTO_RE.match(uri):
@@ -198,7 +203,7 @@ class HTTPClient(object):
         self._request(method=method, uri=uri, callback=callback, body=body,
                 headers=headers, cookies=cookies, auth=auth,
                 timeout=timeout, proxies=proxies, tls_verify=tls_verify,
-                tls_cert=tls_cert)
+                tls_cert=tls_cert, accept_status=accept_status)
 
     def get(self, uri, callback, **kwargs):
         """
@@ -238,7 +243,7 @@ class HTTPClient(object):
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert):
+            tls_verify, tls_cert, accept_status):
         """
         Perform a HTTP request using the underlying implementation.  This is
         expected to take the arguments given, perform a query, then return the
