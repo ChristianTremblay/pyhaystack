@@ -215,3 +215,44 @@ class TestOnHTTPGridResponse(object):
         # This should drop our session
         session._on_http_grid_response(res)
         assert session._auth_result is None
+
+    def test_no_op_if_exception_not_http_status_error(self):
+        """
+        Function ignores exceptions other than HTTP status errors.
+        """
+        server = dummy_http.DummyHttpServer()
+        session = widesky.WideskyHaystackSession(
+            uri=BASE_URI,
+            username='testuser',
+            password='testpassword',
+            client_id='testclient',
+            client_secret='testclientsecret',
+            http_client=dummy_http.DummyHttpClient,
+            http_args={'server': server, 'debug': True})
+
+        # Seed this with parameters
+        auth_result = {
+                'expires_in': (time.time() + 3600.0) * 1000.0,
+                'access_token': 'abcdefgh',
+                'refresh_token': '12345678',
+        }
+        session._auth_result = auth_result
+
+        # Generate a dummy exception, wrap it up in an AsynchronousException
+        class DummyError(Exception):
+            pass
+
+        try:
+            raise DummyError('Testing')
+        except DummyError:
+            res = AsynchronousException()
+
+        # This should do nothing
+        session._on_http_grid_response(res)
+
+        # Same keys
+        assert set(auth_result.keys()) == set(session._auth_result.keys()), \
+                'Keys mismatch'
+        for key in auth_result.keys():
+            assert auth_result[key] == session._auth_result[key], \
+                    'Mismatching key %s' % key
