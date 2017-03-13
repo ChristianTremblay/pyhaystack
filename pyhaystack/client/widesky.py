@@ -69,7 +69,7 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
 
     # Private methods/properties
 
-    def _on_http_response(self, response):
+    def _on_http_grid_response(self, response):
         # If there's a '401' error, then we've lost the token.
         if isinstance(response, AsynchronousException):
             try:

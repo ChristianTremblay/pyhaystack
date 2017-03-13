@@ -195,8 +195,8 @@ class BaseGridOperation(state.HaystackOperation):
             # Does the session want to invoke any relevant hooks?
             # This allows a session to detect problems in the session and
             # abort the operation.
-            if hasattr(self._session, '_on_http_response'):
-                self._session._on_http_response(response)
+            if hasattr(self._session, '_on_http_grid_response'):
+                self._session._on_http_grid_response(response)
 
             # Process the HTTP error, if any.
             if isinstance(response, AsynchronousException):
