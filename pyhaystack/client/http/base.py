@@ -259,9 +259,9 @@ class HTTPResponse(object):
     """
     def __init__(self, status_code, headers, body, cookies=None):
         self.status_code = status_code
-        self.headers = CaseInsensitiveDict(headers)
+        self.headers = CaseInsensitiveDict(headers or {})
         self.body = body
-        self.cookies = CaseInsensitiveDict(cookies)
+        self.cookies = CaseInsensitiveDict(cookies or {})
         self._content_type = None
         self._content_type_args = None
         self._text = None
@@ -321,20 +321,27 @@ class CaseInsensitiveDict(dict):
     """
     A dict object that maps keys in a case-insensitive manner.
     """
+    @classmethod
+    def _key_to_str(cls, key):
+        # Handle bytes
+        if isinstance(key, bytes):
+            key = key.decode('utf-8')
+        return str(key).lower()
+
     def __init__(self, *args, **kwargs):
         super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
-        self._key_map = dict([(str(k).lower(), k) for k in self.keys()])
+        self._key_map = dict([(self._key_to_str(k), k) for k in self.keys()])
 
     def __getitem__(self, key, *args, **kwargs):
         try:
-            key = self._key_map[key]
+            key = self._key_map[self._key_to_str(key)]
         except KeyError:
             pass
         return super(CaseInsensitiveDict, self).__getitem__(
                 key, *args, **kwargs)
 
     def __setitem__(self, key, *args, **kwargs):
-        self._key_map[str(key).lower()] = key
+        self._key_map[self._key_to_str(k)] = key
         return super(CaseInsensitiveDict, self).__setitem__(
                 key, *args, **kwargs)
 
