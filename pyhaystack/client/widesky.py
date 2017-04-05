@@ -9,6 +9,19 @@ from .session import HaystackSession
 from .ops.vendor.widesky import WideskyAuthenticateOperation, \
         CreateEntityOperation, WideSkyHasFeaturesOperation
 from .mixins.vendor.widesky import crud, multihis
+from ..util.asyncexc import AsynchronousException
+from .http.exceptions import HTTPStatusError
+
+def _decode_str(s, enc='utf-8'):
+    """
+    Try to decode a 'str' object to a Unicode string.
+    """
+    try:
+        return s.decode(enc)
+    except AttributeError:
+        # This is probably already a Unicode string
+        return s
+
 
 class WideskyHaystackSession(crud.CRUDOpsMixin,
         multihis.MultiHisOpsMixin,
@@ -56,6 +69,24 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
 
     # Private methods/properties
 
+    def _on_http_grid_response(self, response):
+        # If there's a '401' error, then we've lost the token.
+        if isinstance(response, AsynchronousException):
+            try:
+                response.reraise()
+            except HTTPStatusError as e:
+                status_code = e.status
+            except:
+                # Anything else, no-op … let the state machine handle it!
+                return
+        else:
+            status_code = response.status_code
+
+        if (status_code == 401) and (self._auth_result is not None):
+            self._log.warning('Authentication lost due to HTTP error 401.')
+            self._auth_result = None
+            self._client.headers = {}
+
     def _on_authenticate_done(self, operation, **kwargs):
         """
         Process the result of an authentication operation.  This needs to be
@@ -66,10 +97,12 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
         try:
             self._auth_result = operation.result
             self._client.headers = {
-                    'Authorization': '%s %s' % (
-                        self._auth_result['token_type'],
-                        self._auth_result['access_token'],
-                    )
+                    'Authorization': (u'%s %s' % (
+                        _decode_str(self._auth_result['token_type'],
+                            'us-ascii'),
+                        _decode_str(self._auth_result['access_token'],
+                            'us-ascii'),
+                    )).encode('us-ascii')
             }
         except:
             self._auth_result = None

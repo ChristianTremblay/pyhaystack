@@ -23,7 +23,8 @@ class BaseGridOperation(state.HaystackOperation):
 
     def __init__(self, session, uri, args=None,
             expect_format=hszinc.MODE_ZINC, multi_grid=False,
-            raw_response=False, retries=2, cache=False, cache_key=None):
+            raw_response=False, retries=2, cache=False, cache_key=None,
+            accept_status=None):
         """
         Initialise a request for the grid with the given URI and arguments.
 
@@ -43,6 +44,8 @@ class BaseGridOperation(state.HaystackOperation):
         :param cache: Whether or not to cache this result.  If True, the
                       result is cached by the session object.
         :param cache_key: Name of the key to use when the object is cached.
+        :param accept_status: What status codes to accept, in addition to the
+                            usual ones?
         """
 
         super(BaseGridOperation, self).__init__()
@@ -61,6 +64,7 @@ class BaseGridOperation(state.HaystackOperation):
         self._expect_format = expect_format
         self._raw_response = raw_response
         self._headers = {}
+        self._accept_status = accept_status
 
         self._cache = cache
         if cache and (cache_key is None):
@@ -69,9 +73,9 @@ class BaseGridOperation(state.HaystackOperation):
 
         if not raw_response:
             if expect_format == hszinc.MODE_ZINC:
-                self._headers['Accept'] = 'text/zinc'
+                self._headers[b'Accept'] = 'text/zinc'
             elif expect_format == hszinc.MODE_JSON:
-                self._headers['Accept'] = 'application/json'
+                self._headers[b'Accept'] = 'application/json'
             elif expect_format is not None:
                 raise ValueError(
                         'expect_format must be one onf hszinc.MODE_ZINC '\
@@ -188,6 +192,12 @@ class BaseGridOperation(state.HaystackOperation):
         Process the response given back by the HTTP server.
         """
         try:
+            # Does the session want to invoke any relevant hooks?
+            # This allows a session to detect problems in the session and
+            # abort the operation.
+            if hasattr(self._session, '_on_http_grid_response'):
+                self._session._on_http_grid_response(response)
+
             # Process the HTTP error, if any.
             if isinstance(response, AsynchronousException):
                 response.reraise()
@@ -292,7 +302,8 @@ class GetGridOperation(BaseGridOperation):
 
         try:
             self._session._get(self._uri, params=self._args,
-                    headers=self._headers, callback=self._on_response)
+                    headers=self._headers, callback=self._on_response,
+                    accept_status=self._accept_status)
         except: # Catch all exceptions to pass to caller.
             self._log.debug('Get fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
@@ -322,7 +333,7 @@ class PostGridOperation(BaseGridOperation):
                 session=session, uri=uri, args=args, **kwargs)
 
         # Convert the grids to their native format
-        self._body = hszinc.dump(grid, mode=post_format)
+        self._body = hszinc.dump(grid, mode=post_format).encode('utf-8')
         if post_format == hszinc.MODE_ZINC:
             self._content_type = 'text/zinc'
         else:
@@ -335,7 +346,8 @@ class PostGridOperation(BaseGridOperation):
         try:
             self._session._post(self._uri, body=self._body,
                     body_type=self._content_type, params=self._args,
-                    headers=self._headers, callback=self._on_response)
+                    headers=self._headers, callback=self._on_response,
+                    accept_status=self._accept_status)
         except: # Catch all exceptions to pass to caller.
             self._log.debug('Post fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
