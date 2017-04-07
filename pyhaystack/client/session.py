@@ -474,6 +474,11 @@ class HaystackSession(object):
             op.done_sig.connect(callback)
         op.go()
         return op
+    
+    @property
+    def sites(self):
+        sites = self.find_entity('site').result()
+        
 
     # Extension feature support.
     FEATURE_HISREAD_MULTI = 'hisRead/multi'   # Multi-point hisRead

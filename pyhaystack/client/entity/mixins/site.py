@@ -26,9 +26,20 @@ class SiteMixin(object):
         return self._session.find_entity(filter_expr, limit, single, callback)
 
 
-    def __getitem__(self,key):
-        # Using [key] syntax on a site allow to retrieve a tag directly
-        # or an equipment referred to this particular site
+    def __getitem__(self, key):
+        """
+        A site is typically the first level object... under it there are 
+        equipments (equip). 
+        
+        It makes sense to use site[equip] syntax to find an equip related to
+        the site.
+        
+        But we don't want to loose the possibility to get a tag from a site
+        using the same syntax.
+        
+        As tags are direct child of a site, they will have priority.
+        """
+        # First look for tags
         for each in self.tags:
             if key == each:
                 return self.tags[key]
@@ -46,12 +57,24 @@ class SiteMixin(object):
             # with similar names
             #elif key in each.tags['dis'] or key in each.tags['navName']:
             #    raise KeyError('Wrong equipment name. Do you mean "%s" ?' % each.tags['dis'])
+        
+        # if nothing has been returned... search among entities
         request = self.find_entity(key)
         return request.result
 
     def __iter__(self):
         """
         When iterating over a site, we iterate equipments.
+        This will allow something like :: 
+            
+            for equip in site:
+                do something
+        
+        This will requires the creation of the list of equipments (see below)
+        This process can be long depending on the server, this is why we 
+        cache a list.
+        
+        It will be possible to update the list later.
         """
         for equip in self.equipments:
             yield equip
@@ -59,6 +82,8 @@ class SiteMixin(object):
     @property
     def equipments(self):
         """
+        site.equipments returns the list of equipments under a site
+        
         First read will force a request and create local list
         """
         try:
@@ -78,7 +103,7 @@ class SiteMixin(object):
         
     def _add_equip(self):
         """
-        Store a local copy of equip for this site
+        Store a local copy of equip names for this site
         To accelerate browser
         """
         if not '_list_of_equip' in self.__dict__.keys():
