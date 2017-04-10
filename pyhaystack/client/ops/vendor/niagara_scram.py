@@ -154,14 +154,12 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
     def _do_second_msg(self, event):
         print('do_second_msg')
         msg = 'action=sendClientFirstMessage&clientFirstMessage=n,,%s' % self.client_first_msg
-        #self._session._client._session.headers.update({'Cookie':'niagara_userid=%s' % (self._session._username)})
         cookies = dict(niagara_userid = self._session._username)
         try:
             self._session._post('%s/j_security_check' % (self._login_uri),
                     body=msg.encode('utf-8'),
                     callback=self._on_second_msg,
                     headers={"Content-Type": "application/x-niagara-login-support"},
-                    #         "Cookie": 'niagara_userid=%s' % (self._session._username)},
                     cookies=cookies,
                     exclude_cookies=True, api=False)
         except Exception as e:
@@ -209,7 +207,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
 
     def _do_authenticated(self, event):
         print('do auth msg')
-        self.salted_password = scram.salted_password( self.server_salt, self.server_iterations, self._algorithm_name, self._session._password )
+        self.salted_password = scram.salted_password_2( self.server_salt, self.server_iterations, self._algorithm_name, self._session._password )
         print('Salted password :', self.salted_password)
         client_final_without_proof = "c=%s,r=%s" % ( scram.standard_b64encode(b'n,,').decode(), 
                                                     self.server_nonce )
@@ -230,7 +228,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         try:
             # Post
             self._session._post('%s/j_security_check' % self._login_uri,
-                    body=final_msg.encode("utf-8"),
+                    body=final_msg.strip().encode("utf-8"),
                     callback=self._on_authenticated,
                     headers={"Content-Type": "application/x-niagara-login-support"},
                     cookies=cookies,
@@ -252,7 +250,22 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         except AttributeError:
             pass        
         try:
-            print(response.body.decode('utf-8'))
+            server_final_message = response.body.decode('utf-8')
+            server_key = hmac.new( unhexlify( self.salted_password ), "Server Key".encode('UTF-8'), self._algorithm).hexdigest()
+            server_signature = hmac.new( unhexlify( server_key ) , self.auth_msg.encode() , self._algorithm ).hexdigest()
+            remote_server_signature = hexlify( scram.b64decode( scram.regex_after_equal( server_final_message ) ) )
+            
+            if server_signature == remote_server_signature.decode():
+                print("Remote Server Signature Accepted")
+                print(server_final_message)
+                self._state_machine.login_done(result={'cookie': dict(JSESSIONID=self.jsession,
+                                                                      niagara_userid=self._session._username),
+                                                       'headers': dict(JSESSIONID=self.jsession,
+                                                                      niagara_userid=self._session._username)})
+            else:
+                print("Server Validation failed")
+                raise Exception('Login Failed')
+            
 #                header_response = e.headers['WWW-Authenticate']
 #                tab_header = header_response.split(',')
 #                server_data = scram.regex_after_equal(tab_header[0])
@@ -270,8 +283,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
 
 #                self._state_machine.do_server_token()
             #print(self._session._client._session.get('%s/haystack/about' % self._login_uri))
-            self._state_machine.login_done(result={'header': response.headers,
-                                                   'cookies': response.cookies})
+            #self._state_machine.login_done(result={'cookie': dict(JSESSIONID=self.jsession)})
 
         except Exception as e:
              self._state_machine.exception(result=AsynchronousException())
@@ -332,4 +344,4 @@ def _createClientProof(salted_password, auth_msg, algorithm):
     stored_key          = scram._hash_sha256( unhexlify(client_key), algorithm )
     client_signature    = hmac.new( unhexlify( stored_key ) , auth_msg.encode() , algorithm ).hexdigest()
     client_proof        = scram._xor (client_key, client_signature)
-    return b2a_base64(unhexlify(client_proof.strip())).decode('utf-8')
+    return b2a_base64(unhexlify(client_proof)).decode('utf-8')
