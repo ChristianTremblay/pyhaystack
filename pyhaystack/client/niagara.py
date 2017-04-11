@@ -99,9 +99,10 @@ class Niagara4HaystackSession(HaystackSession):
         try:
             op_result = operation.result
             self._authenticated = True
-            #self._client.auth = op_result['header']
-            self._client.cookies = op_result['cookie']
-            self._client.headers = op_result['headers']
+            self._client.auth = ""
+            #self._client.cookies = op_result['cookie']
+            print('Should be ok')
+#            self._client.headers = op_result['headers']
         except:
             self._authenticated = False
             self._client.auth = None

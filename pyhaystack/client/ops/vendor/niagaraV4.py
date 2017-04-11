@@ -116,5 +116,5 @@ class Niagara:
     def _xor(self, s1, s2):
         return hex(int(s1, 16) ^ int(s2, 16))[2:]
 
-niagara = Niagara("http://10.137.161.11:88/j_security_check/", "pyhaystack", "PWhaystack1" )
+niagara = Niagara("http://192.168.210.10:88/j_security_check/", "pyhaystack", "PWhaystack1" )
 auth_token = niagara.scram_authentication()

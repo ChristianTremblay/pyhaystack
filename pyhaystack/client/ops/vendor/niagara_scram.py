@@ -100,11 +100,12 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         Test if server respond...
         """
         print('do_new', self._login_uri)
+        self._session._client._session.cookies.clear()
         try:
             self._session._get('%s/prelogin?clear=true' % self._login_uri,
                     callback=self._on_new_session,
                     cookies={}, headers={}, exclude_cookies=True,
-                    exclude_headers=True, api=False)
+                    api=False)
         except: # Catch all exceptions to pass to caller.
             pass
 
@@ -129,8 +130,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
                     callback=self._on_hs_token,
                     cookies={}, 
                     headers={}, 
-                    exclude_cookies=True,
-                    exclude_headers=True, api=False)
+                    api=False)
         except: # Catch all exceptions to pass to caller.
             pass        
 
@@ -159,9 +159,13 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             self._session._post('%s/j_security_check' % (self._login_uri),
                     body=msg.encode('utf-8'),
                     callback=self._on_second_msg,
-                    headers={"Content-Type": "application/x-niagara-login-support"},
-                    cookies=cookies,
-                    exclude_cookies=True, api=False)
+                    headers={"Content-Type": "application/x-niagara-login-support",
+                             "Connection": "Keep-Alive",
+                             "Referer": '%s/login'%self._login_uri,
+                             "Accept-Encoding": "gzip, deflate",
+                             "Accept": "text/html, application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+                    #cookies=cookies,
+                    api=False)
         except Exception as e:
             self._state_machine.exception(result=AsynchronousException())
 
@@ -231,8 +235,8 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
                     body=final_msg.strip().encode("utf-8"),
                     callback=self._on_authenticated,
                     headers={"Content-Type": "application/x-niagara-login-support"},
-                    cookies=cookies,
-                    exclude_cookies=True,
+                    #headers={},
+                    #cookies=cookies,
                     api=False)
         except:
             self._state_machine.exception(result=AsynchronousException())
@@ -258,9 +262,8 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             if server_signature == remote_server_signature.decode():
                 print("Remote Server Signature Accepted")
                 print(server_final_message)
+                #self._session._client._session.cookies.clear()
                 self._state_machine.login_done(result={'cookie': dict(JSESSIONID=self.jsession,
-                                                                      niagara_userid=self._session._username),
-                                                       'headers': dict(JSESSIONID=self.jsession,
                                                                       niagara_userid=self._session._username)})
             else:
                 print("Server Validation failed")
@@ -302,6 +305,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         """
         Return the result from the state machine.
         """
+        print('Done')
         self._done(event.result)
 
 #def get_digest_info(param):
@@ -345,3 +349,4 @@ def _createClientProof(salted_password, auth_msg, algorithm):
     client_signature    = hmac.new( unhexlify( stored_key ) , auth_msg.encode() , algorithm ).hexdigest()
     client_proof        = scram._xor (client_key, client_signature)
     return b2a_base64(unhexlify(client_proof)).decode('utf-8')
+
