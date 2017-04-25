@@ -70,7 +70,8 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
                     ('get_new_session',   'init',               'newsession'),
                     ('do_hs_token',       'newsession',         'handshake_token'),
                     ('do_second_msg',     'handshake_token',    'second_msg'),
-                    ('do_validate_second','second_msg',         'authenticated'),
+                    ('do_validate_second','second_msg',         'third_msg'),
+                    ('do_last_msg',       'third_msg',          'authenticated'),
                     ('login_done',        'authenticated',      'done'),
                     ('exception',         '*',                  'failed'),
                     ('retry',             'failed',             'newsession'),
@@ -79,6 +80,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
                     'onenternewsession':        self._do_new_session,
                     'onenterhandshake_token':   self._do_hs_token,
                     'onentersecond_msg':        self._do_second_msg,
+                    'onenterthird_msg':         self._do_third_msg,
                     'onenterauthenticated':     self._do_authenticated,
                     'onenterfailed':            self._do_fail_retry,
                     'onenterdone':              self._do_done,
@@ -89,7 +91,9 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         Start the request.
         """
         # Are we logged in?
+        print('================================')
         print('Go')
+        print('================================')
         try:
             self._state_machine.get_new_session()
         except: # Catch all exceptions to pass to caller.
@@ -99,7 +103,10 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         """
         Test if server respond...
         """
+        print('================================')
         print('do_new', self._login_uri)
+        print('================================')
+        
         try:
             self._session._get('%s/prelogin?clear=true' % self._login_uri,
                     callback=self._on_new_session,
@@ -122,7 +129,10 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         """
         Test if server respond...
         """
+        print('================================')
         print('do_hs_token', self._login_uri)
+        print('================================')
+        
         try:
             self._session._post('%s/prelogin' % self._login_uri,
                     params={'j_username': self._session._username},
@@ -138,7 +148,9 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         """
         Retrieve the log-in parameters.
         """
+        print('================================')
         print('on_hs_token', response.headers)
+        print('================================')
         
         try:
             #if isinstance(response, AsynchronousException):
@@ -147,12 +159,19 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             self._nonce = scram.get_nonce_16()
             self._salt_username = scram.base64_no_padding(self._session._username)
             self.client_first_msg = "n=%s,r=%s" % (self._session._username, self._nonce)
+            print('_nonce : ', self._nonce)
+            print('_salt_username : ', self._salt_username)
+            print('Client first msg : ', self.client_first_msg)
+            print('Cookies : ', self._session._client.cookies)
+
             self._state_machine.do_second_msg()
         except Exception as e: # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_second_msg(self, event):
+        print('================================')
         print('do_second_msg')
+        print('================================')
         msg = 'action=sendClientFirstMessage&clientFirstMessage=n,,%s' % self.client_first_msg
         cookies = dict(niagara_userid = self._session._username)
         try:
@@ -161,21 +180,28 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
                     callback=self._on_second_msg,
                     headers={"Content-Type": "application/x-niagara-login-support"},
                     cookies=cookies,
-                    exclude_cookies=True, api=False)
+                    #exclude_cookies=True, 
+                    api=False)
         except Exception as e:
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_second_msg(self, response):
+        print('================================')
         print('on second msg')
-        try:
-            response.reraise() # ← AsynchronousException class
-        except HTTPStatusError as e:
-            if e.status != 401 and e.status != 303 and e.status != 500:
-                raise
-            else:
-                response = e
-        except AttributeError:
-            pass
+        print('================================')
+        
+#        try:
+#            print('Response : \n', response.text)
+#            print('---------------------------')
+#            print('')
+#            #response.reraise() # ← AsynchronousException class
+#        except HTTPStatusError as e:
+#            if e.status != 401 and e.status != 303 and e.status != 500:
+#                raise
+#            else:
+#                response = e
+#        except AttributeError:
+#            pass
         try:
             print('do validate hs token', response.headers)
 #        try:
@@ -205,8 +231,10 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             self._state_machine.exception(result=AsynchronousException())
 
 
-    def _do_authenticated(self, event):
-        print('do auth msg')
+    def _do_third_msg(self, event):
+        print('================================')
+        print('do third msg')
+        print('================================')
         self.salted_password = scram.salted_password_2( self.server_salt, self.server_iterations, self._algorithm_name, self._session._password )
         print('Salted password :', self.salted_password)
         client_final_without_proof = "c=%s,r=%s" % ( scram.standard_b64encode(b'n,,').decode(), 
@@ -229,26 +257,28 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             # Post
             self._session._post('%s/j_security_check' % self._login_uri,
                     body=final_msg.strip().encode("utf-8"),
-                    callback=self._on_authenticated,
+                    callback=self._on_third_msg,
                     headers={"Content-Type": "application/x-niagara-login-support"},
                     cookies=cookies,
-                    exclude_cookies=True,
+                    #exclude_cookies=True,
                     api=False)
         except:
             self._state_machine.exception(result=AsynchronousException())
 
-    def _on_authenticated(self, response):
+    def _on_third_msg(self, response):
+        print('================================')
         print('on_authenticated', response.headers)
-        try:
-            response.reraise() # ← AsynchronousException class
-        except HTTPStatusError as e:
-            if e.status != 401 and e.status != 303:
-                raise
-            else:
-                print('Error : ', e)
-                response = e
-        except AttributeError:
-            pass        
+        print('================================')
+#        try:
+#            response.reraise() # ← AsynchronousException class
+#        except HTTPStatusError as e:
+#            if e.status != 401 and e.status != 303:
+#                raise
+#            else:
+#                print('Error : ', e)
+#                response = e
+#        except AttributeError:
+#            pass        
         try:
             server_final_message = response.body.decode('utf-8')
             server_key = hmac.new( unhexlify( self.salted_password ), "Server Key".encode('UTF-8'), self._algorithm).hexdigest()
@@ -258,10 +288,17 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             if server_signature == remote_server_signature.decode():
                 print("Remote Server Signature Accepted")
                 print(server_final_message)
-                self._state_machine.login_done(result={'cookie': dict(JSESSIONID=self.jsession,
-                                                                      niagara_userid=self._session._username),
-                                                       'headers': dict(JSESSIONID=self.jsession,
-                                                                      niagara_userid=self._session._username)})
+                cookies = dict(JSESSIONID=self.jsession, niagara_userid=self._session._username)
+                print('Cookies : ', self._session._client.cookies)
+                self._session._client.cookies = cookies
+                print('Cookies : ', self._session._client.cookies)
+                #self._session._client.headers = (dict(JSESSIONID=self.jsession,
+                #                                                      niagara_userid=self._session._username))
+                
+                self._state_machine.do_last_msg()
+                
+                      
+            
             else:
                 print("Server Validation failed")
                 raise Exception('Login Failed')
@@ -287,7 +324,48 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
 
         except Exception as e:
              self._state_machine.exception(result=AsynchronousException())
+    def _do_authenticated(self, event):
+        print('================================')
+        print('do auth msg')
+        print('================================')
+        try:
+            # Post
+            self._session._post('%s/j_security_check' % self._login_uri,
+                    body=None,
+                    callback=self._on_authenticated,
+                    headers={"Content-Type": "application/x-niagara-login-support"},
+                    #cookies=cookies,
+                    #exclude_cookies=True,
+                    api=False)
+        except:
+            self._state_machine.exception(result=AsynchronousException())
 
+    def _on_authenticated(self, response):
+        print('================================')
+        print('on_authenticated', response.headers)
+        print('================================')
+#        try:
+#            response.reraise() # ← AsynchronousException class
+#        except HTTPStatusError as e:
+#            if e.status != 401 and e.status != 303:
+#                raise
+#            else:
+#                print('Error : ', e)
+#                response = e
+#        except AttributeError:
+#            pass        
+        try:
+            print('LAST RESPONSE : ', response.body.decode('utf-8'))
+                
+            self._state_machine.login_done(result={'cookie': dict(JSESSIONID=self.jsession,
+                                                                  niagara_userid=self._session._username),
+                                                   'headers': dict(JSESSIONID=self.jsession,
+                                                                  niagara_userid=self._session._username)})
+                  
+        except Exception as e:
+             self._state_machine.exception(result=AsynchronousException())
+
+                  
     def _do_fail_retry(self, event):
         """
         Determine whether we retry or fail outright.
