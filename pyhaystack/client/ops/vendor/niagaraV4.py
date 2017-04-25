@@ -16,11 +16,12 @@ class Niagara:
         self.url             = url
         self.username        = username
         self.password        = password
+        self.request_session = requests.Session()
+        self.request_session.headers.update({"Content-Type": "application/x-niagara-login-support"})
+
         self.client_nonce    = self.get_nonce()
         self.algorithm_name  = "sha256"
         self.algorithm       = sha256
-        self.request_session = requests.Session()
-        self.request_session.headers.update({"Content-Type": "application/x-niagara-login-support"})
 
     def get_nonce(self):
         return urlsafe_b64encode( os.urandom(16) ).decode()
@@ -38,7 +39,7 @@ class Niagara:
 
         try:
             self.request_session.headers.update({"Cookie": "niagara_userid=pyhaystack"})
-            result = self.request_session.post(self.url, params)
+            result = self.request_session.post(self.url+'/j_security_check/', params)
             server_first_msg  = result.text
             tab_response      = server_first_msg.split(",")
             server_nonce      = self.regex_after_equal( tab_response[0] )
@@ -88,13 +89,15 @@ class Niagara:
 
         #TODO: We may find a way to use the same request_session without creating a new requests.Session()
         try:
-            s = requests.Session()
-            s.cookies = self.request_session.cookies
-            s.headers.update({"Content-Type": "application/x-niagara-login-support"})
+            #s = requests.Session()
+            s = self.request_session
+            #s.cookies = self.request_session.cookies
+            #s.headers.update({"Content-Type": "application/x-niagara-login-support"})
             result = s.post( self.url, final_msg.strip() )
             server_final_message = result.text
             self.processServerFinalMessage( server_final_message, auth_msg, salted_password )
-
+            about = s.get(self.url + '/haystack/about')
+            print(about.text)
         except urlliberror2.HTTPError as e:
             print(e)
 
@@ -116,5 +119,5 @@ class Niagara:
     def _xor(self, s1, s2):
         return hex(int(s1, 16) ^ int(s2, 16))[2:]
 
-niagara = Niagara("http://10.137.161.11:88/j_security_check/", "pyhaystack", "PWhaystack1" )
+niagara = Niagara("http://192.168.210.10:88", "pyhaystack", "PWhaystack1" )
 auth_token = niagara.scram_authentication()
