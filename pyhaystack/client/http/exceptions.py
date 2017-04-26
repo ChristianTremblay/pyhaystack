@@ -40,3 +40,5 @@ class HTTPStatusError(HTTPBaseError):
         self.body = body
         self.status = status
         super(HTTPStatusError, self).__init__(message, status)
+        
+    
