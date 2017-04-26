@@ -12,6 +12,6 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 __author__ = 'Christian Tremblay, Stuart J. Longland, @sudo-Whateverman, Igor'
 __author_email__ = 'christian.tremblay@servisys.com'
-__version__ = '0.91.1'
+__version__ = '0.91.2'
 __license__ = 'LGPL'
 __copyright__ = "Christian Tremblay / SERVISYS inc. | Stuart J. Longland / VRT | 2016"

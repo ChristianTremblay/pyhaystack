@@ -64,7 +64,7 @@ class SyncHttpClient(HTTPClient):
                 raise HTTPRedirectError(e.message)
             except requests.exceptions.ConnectionError as e:
                 raise HTTPConnectionError(e.strerror, e.errno)
-            except requests.exceptions.RequestException:
+            except requests.exceptions.RequestException as e:
                 # TODO: handle this with a more specific exception
                 raise HTTPBaseError(e.message)
 
