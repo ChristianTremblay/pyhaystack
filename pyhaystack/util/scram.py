@@ -41,5 +41,3 @@ def regex_after_equal(s):
 
 def _xor(s1, s2):
     return hex(int(s1, 16) ^ int(s2, 16))[2:]
-
-
