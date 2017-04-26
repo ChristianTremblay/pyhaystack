@@ -14,7 +14,10 @@ from six import string_types
 IMPLEMENTATION_ALIAS = {
         'niagara-ax':   'niagara.NiagaraHaystackSession',
         'ax':           'niagara.NiagaraHaystackSession',
-        'skyspark':     'skyspark.SkysparkHaystackSession',
+        'niagara4':     'niagara.Niagara4HaystackSession',
+        'n4':           'niagara.Niagara4HaystackSession',
+        'skyspark2':    'skyspark.SkysparkHaystackSession',
+        'skyspark':     'skyspark.SkysparkScramHaystackSession',       
         'widesky':      'widesky.WideskyHaystackSession',
 }
 
@@ -67,11 +70,11 @@ def get_implementation(implementation):
     return impl
 
 
-def get_instance(implementation, **kwargs):
+def get_instance(implementation, *args, **kwargs):
     """
     Get an instance of a Project Haystack client.
     """
     if isinstance(implementation, string_types):
         implementation = get_implementation(implementation)
 
-    return implementation(**kwargs)
+    return implementation(*args, **kwargs)
