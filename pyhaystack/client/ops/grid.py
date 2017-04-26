@@ -220,7 +220,6 @@ class BaseGridOperation(state.HaystackOperation):
                 decoded = [hszinc.parse(body, mode=hszinc.MODE_JSON)]
             else:
                 # We don't recognise this!
-                print(body)
                 raise ValueError('Unrecognised content type %s' % content_type)
 
             # Check for exceptions
