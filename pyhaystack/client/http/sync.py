@@ -13,6 +13,11 @@ from ...util.asyncexc import AsynchronousException
 
 import requests
 
+try : 
+    from requests.exceptions import SSLError
+except ImportError:
+    from requests.packages.urllib3.exceptions import SSLError
+
 class SyncHttpClient(HTTPClient):
     def __init__(self, **kwargs):
         self._session = requests.Session()
@@ -47,11 +52,16 @@ class SyncHttpClient(HTTPClient):
                     if (accept_status is None) or \
                             (response.status_code not in accept_status):
                         response.raise_for_status()
-                except:
+                except SSLError as e:
+                    if self.log is not None:
+                        self.log.warning('Problem with the certificate : %s', e)
+                        self.log.warning('You can use http_args={"tls_verify":False} to validate issue.')
+                    raise
+                except Exception as e:
                     if self.log is not None:
                         self.log.debug('Exception in request %s of %s with '\
                                 'body %r, headers %r, cookies %r, auth %r',
-                                method, uri, body, headers, cookies, auth,
+                                method, uri, body, headers, cookies, auth, 
                                 exc_info=1)
                     raise
 
@@ -71,7 +81,7 @@ class SyncHttpClient(HTTPClient):
             result = HTTPResponse(response.status_code,
                 dict(response.headers), response.content,
                 dict(response.cookies))
-        except:
+        except Exception as e:
             # Catch all exceptions and forward those to the callback function
             result = AsynchronousException()
 

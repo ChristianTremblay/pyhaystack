@@ -108,7 +108,6 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
 
     def _on_new_session(self, response):
         if isinstance(response, AsynchronousException):
-            print('Maybe you need to use a certificate to connect. Try using http_args={"tls_verify":False}')
             self._state_machine.exception(result=AsynchronousException())
         else:
             try:
