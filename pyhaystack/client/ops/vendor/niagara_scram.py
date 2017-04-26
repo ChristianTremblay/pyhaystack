@@ -21,7 +21,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
     An implementation of the log-in procedure for Niagara4.  The procedure
     is as follows:
 
-        
+
     1. Log to the prelogin screen and send the username
     2. First Message -> Send an authentication request to the server using the salted user name and a nonce
     3. Second Message -> Send an encoded message that proves we have the password.
@@ -123,24 +123,24 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
     def _do_prelogin(self, event):
         """
         Send the username to the prelogin page
-        """     
+        """
         try:
             self._session._post('%s/prelogin' % self._login_uri,
                     params={'j_username': self._session._username},
                     callback=self._on_prelogin,
-                    cookies={}, 
-                    headers={}, 
+                    cookies={},
+                    headers={},
                     exclude_cookies=True,
                     exclude_headers=True, api=False)
 
         except: # Catch all exceptions to pass to caller.
-            pass        
+            pass
 
     def _on_prelogin(self, response):
         """
         Retrieve the log-in parameters.
         """
-        try:       
+        try:
             self._nonce = scram.get_nonce_16()
             self._salt_username = scram.base64_no_padding(self._session._username)
             self.client_first_msg = "n=%s,r=%s" % (self._session._username, self._nonce)
@@ -171,7 +171,7 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         """
         Retrieve the security parameters from the response.
         This includes the JSESSIONID
-        """        
+        """
         try:
             self.jsession = get_jession(response.headers['set-cookie'])
             self.server_first_msg  = response.body.decode('utf-8')	
@@ -181,9 +181,9 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             self.server_iterations = scram.regex_after_equal( tab_response[2] )
             self._algorithm_name = "sha256"
             self._algorithm = sha256
-            
+
             self._state_machine.do_second_msg()
-            
+
         except Exception as e:
             self._state_machine.exception(result=AsynchronousException())
 
@@ -193,11 +193,11 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         Send the client second (final) message to server
         """
         self.salted_password = scram.salted_password_2( self.server_salt, self.server_iterations, self._algorithm_name, self._session._password )
-        client_final_without_proof = "c=%s,r=%s" % ( scram.standard_b64encode(b'n,,').decode(), 
+        client_final_without_proof = "c=%s,r=%s" % ( scram.standard_b64encode(b'n,,').decode(),
                                                     self.server_nonce )
-        self.auth_msg = "%s,%s,%s" % ( self.client_first_msg, self.server_first_msg, 
+        self.auth_msg = "%s,%s,%s" % ( self.client_first_msg, self.server_first_msg,
                                       client_final_without_proof )
-                        
+
         client_proof = _createClientProof(self.salted_password, self.auth_msg, self._algorithm)
         client_final_message = client_final_without_proof + ",p=" + client_proof
         final_msg = 'action=sendClientFinalMessage&clientFinalMessage=%s' % (client_final_message)
@@ -218,18 +218,18 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         """
         Retrieve the security parameters from the second response.
         We will compare signatures to validate the authentication
-        """        
+        """
         try:
             server_final_message = response.body.decode('utf-8')
             server_key = hmac.new( unhexlify( self.salted_password ), "Server Key".encode('UTF-8'), self._algorithm).hexdigest()
             server_signature = hmac.new( unhexlify( server_key ) , self.auth_msg.encode() , self._algorithm ).hexdigest()
             remote_server_signature = hexlify( scram.b64decode( scram.regex_after_equal( server_final_message ) ) )
-            
+
             if server_signature == remote_server_signature.decode():
                 cookies = dict(JSESSIONID=self.jsession, niagara_userid=self._session._username)
                 self._session._client.cookies = cookies
                 self._state_machine.do_validate_login()
-                          
+
             else:
                 raise Exception('Login Failed, local and remote signature are different')
 
@@ -252,17 +252,17 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
     def _on_validate_login(self, response):
         """
         Retrieve the response and set authenticated status
-        """        
+        """
         try:
             if response.status_code == 200:
-                self._state_machine.login_done(result={'authenticated': True})                  
+                self._state_machine.login_done(result={'authenticated': True})
             else:
                 raise HTTPStatusError('Server refused the last message')
 
         except Exception as e:
              self._state_machine.exception(result=AsynchronousException())
 
-                  
+
     def _do_fail_retry(self, event):
         """
         Determine whether we retry or fail outright.
@@ -295,7 +295,7 @@ def get_jession(arg_header):
             jsession = scram.regex_after_equal(key)
             jsession = jsession.split(";")[0]
             return jsession
-        
+
 def _createClientProof(salted_password, auth_msg, algorithm):
     client_key          = hmac.new( unhexlify( salted_password ), "Client Key".encode('UTF-8'), algorithm).hexdigest()
     stored_key          = scram._hash_sha256( unhexlify(client_key), algorithm )
