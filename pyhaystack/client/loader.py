@@ -17,7 +17,7 @@ IMPLEMENTATION_ALIAS = {
         'niagara4':     'niagara.Niagara4HaystackSession',
         'n4':           'niagara.Niagara4HaystackSession',
         'skyspark2':    'skyspark.SkysparkHaystackSession',
-        'skyspark':     'skyspark.SkysparkScramHaystackSession',       
+        'skyspark':     'skyspark.SkysparkScramHaystackSession',
         'widesky':      'widesky.WideskyHaystackSession',
 }
 
