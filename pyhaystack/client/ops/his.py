@@ -359,7 +359,7 @@ class HisReadFrameOperation(state.HaystackOperation):
                     """
                     data.add_meta(name,get_units(serie))
                     data[name] = data[name].apply(convert_quantity)
-                    
+
             else:
                 data = self._data_by_ts
             self._state_machine.process_done(result=data)

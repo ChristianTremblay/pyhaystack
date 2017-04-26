@@ -33,10 +33,10 @@ class HaystackSession(object):
 
     Methods for Haystack operations return an 'Operation' object, which
     may be used in any of two ways:
-    
-    - as a synchronous result placeholder by calling its `wait` method 
+
+    - as a synchronous result placeholder by calling its `wait` method
     followed by inspection of its `result` attribute.
-    - as an asynchronous call manager by connecting a "slot" (`callable` 
+    - as an asynchronous call manager by connecting a "slot" (`callable`
     that takes keyword arguments) to the `done_sig` signal.
 
     The base class takes some arguments that control the default behaviour of
@@ -72,7 +72,7 @@ class HaystackSession(object):
         :param log: Logging object for reporting messages.
         :param pint: Configure hszinc to use basic quantity or Pint Quanity
         :param cache_expiry: Number of seconds before cached data expires.
-        
+
         See : https://pint.readthedocs.io/ for details about pint
         """
         if log is None:
@@ -82,7 +82,7 @@ class HaystackSession(object):
 
         if http_args is None:
             http_args = {}
-        
+
         #Configure hszinc to use pint or not for Quantity definition
         self.config_pint(pint)
 

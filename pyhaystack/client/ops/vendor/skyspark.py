@@ -88,7 +88,7 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
         try:
             self._session._get(self._login_uri,
                     callback=self._on_new_session,
-                    
+
                     cookies={}, headers={}, exclude_cookies=True,
                     exclude_headers=True, api=False)
                     #args={'username': self._session._username},
@@ -170,22 +170,22 @@ class SkysparkAuthenticateOperation(state.HaystackOperation):
         Return the result from the state machine.
         """
         self._done(event.result)
-        
-def get_digest_info(param):    
+
+def get_digest_info(param):
     message = binary_encoding("%s:%s" % (param['username'], param['userSalt']))
-    password_buf = binary_encoding(param['password']) 
+    password_buf = binary_encoding(param['password'])
     hmac_final = base64.b64encode(hmac.new(key=password_buf, msg=message, digestmod=hashlib.sha1).digest())
-    
+
     digest_msg = binary_encoding('%s:%s' % (hmac_final.decode('utf-8'), param['nonce']))
     digest = hashlib.sha1()
     digest.update(digest_msg)
     digest_final = base64.b64encode((digest.digest()))
-    
+
     res ={'hmac' : hmac_final.decode('utf-8'),
          'digest' : digest_final.decode('utf-8'),
          'nonce' : param['nonce']}
     return res
-    
+
 def binary_encoding(string, encoding = 'utf-8'):
     """
     This helper function will allow compatibility with Python 2 and 3

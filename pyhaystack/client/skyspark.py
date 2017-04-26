@@ -65,7 +65,7 @@ class SkysparkScramHaystackSession(HaystackSession):
     """
 
     _AUTH_OPERATION = SkysparkScramAuthenticateOperation
-    
+
     def __init__(self, uri, username, password, project, **kwargs):
         """
         Initialise a Skyspark Project Haystack session handler.
@@ -74,7 +74,7 @@ class SkysparkScramHaystackSession(HaystackSession):
         :param username: Authentication user name.
         :param password: Authentication password.
         :param project: Skyspark project name
-        """     
+        """
         super(SkysparkScramHaystackSession, self).__init__(uri,
              'api/%s' % project,**kwargs)
 
@@ -82,7 +82,7 @@ class SkysparkScramHaystackSession(HaystackSession):
         self._password = password
         self._project = project
         self._authenticated = False
-        
+
     @property
     def is_logged_in(self):
         """

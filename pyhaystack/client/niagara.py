@@ -96,7 +96,7 @@ class Niagara4HaystackSession(HaystackSession):
         try:
             op_result = operation.result
             self._authenticated = op_result['authenticated']
-            
+
         except:
             self._authenticated = False
             self._client.auth = None
