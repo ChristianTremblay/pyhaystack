@@ -5,7 +5,15 @@ from binascii import b2a_hex, unhexlify, b2a_base64, hexlify
 from requests.auth import HTTPBasicAuth
 from base64 import standard_b64encode, b64decode, urlsafe_b64encode, \
         urlsafe_b64decode
-from hashlib import sha1, sha256, pbkdf2_hmac
+from hashlib import sha1, sha256
+
+try:
+    # Python 3.4+
+    from hashlib import pbkdf2_hmac
+except ImportError:
+    # Python 3.3 and earlier, needs backports-hashlib.pbkdf2
+    # https://pypi.python.org/pypi/backports.pbkdf2/
+    from backports.pbkdf2 import pbkdf2_hmac
 
 import re
 import os
