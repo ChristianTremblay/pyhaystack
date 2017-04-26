@@ -3,7 +3,8 @@
 
 from binascii import b2a_hex, unhexlify, b2a_base64, hexlify
 from requests.auth import HTTPBasicAuth
-from base64 import standard_b64encode, b64decode, urlsafe_b64encode, urlsafe_b64decode
+from base64 import standard_b64encode, b64decode, urlsafe_b64encode, \
+        urlsafe_b64decode
 from hashlib import sha1, sha256, pbkdf2_hmac
 
 import re
@@ -21,12 +22,14 @@ def _hash_sha256(client_key, algorithm):
     return hashFunc.hexdigest()
 
 def salted_password(salt, iterations, algorithm_name, password):
-    dk = pbkdf2_hmac( algorithm_name, password.encode(), urlsafe_b64decode(salt), int(iterations))
+    dk = pbkdf2_hmac(algorithm_name, password.encode(),
+            urlsafe_b64decode(salt), int(iterations))
     encrypt_password = hexlify(dk)
     return encrypt_password
 
 def salted_password_2(salt, iterations, algorithm_name, password):
-    dk = pbkdf2_hmac( algorithm_name, password.encode(), unhexlify(salt), int(iterations))
+    dk = pbkdf2_hmac(algorithm_name, password.encode(),
+            unhexlify(salt), int(iterations))
     encrypt_password = hexlify(dk)
     return encrypt_password
 
