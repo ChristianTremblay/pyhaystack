@@ -1,3 +1,6 @@
+#!python
+# -*- coding: utf-8 -*-
+
 from binascii import b2a_hex, unhexlify, b2a_base64, hexlify
 from requests.auth import HTTPBasicAuth
 from base64 import standard_b64encode, b64decode, urlsafe_b64encode, urlsafe_b64decode
