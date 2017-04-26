@@ -107,14 +107,18 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
             pass
 
     def _on_new_session(self, response):
-        try:
-            if response.status_code == 200:
-                self._state_machine.do_prelogin()
-            else:
-                raise HTTPStatusError("Unable to connect to server")
-            
-        except Exception as e: # Catch all exceptions to pass to caller.
+        if isinstance(response, AsynchronousException):
+            print('Maybe you need to use a certificate to connect. Try using http_args={"tls_verify":False}')
             self._state_machine.exception(result=AsynchronousException())
+        else:
+            try:
+                if response.status_code == 200:
+                    self._state_machine.do_prelogin()
+                else:
+                    raise HTTPStatusError("Unable to connect to server")
+                
+            except Exception as e: # Catch all exceptions to pass to caller.
+                self._state_machine.exception(result=AsynchronousException())
 
     def _do_prelogin(self, event):
         """
