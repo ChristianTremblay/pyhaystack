@@ -60,8 +60,8 @@ class NiagaraHaystackSession(HaystackSession):
 
 class Niagara4HaystackSession(HaystackSession):
     """
-    The NiagaraHaystackSession class implements some base support for
-    NiagaraAX. This is mainly a convenience for
+    The Niagara4HaystackSession class implements some base support for
+    Niagara4. This is mainly a convenience for
     collecting the username and password details.
     """
 
@@ -69,7 +69,7 @@ class Niagara4HaystackSession(HaystackSession):
 
     def __init__(self, uri, username, password, **kwargs):
         """
-        Initialise a Nagara Project Haystack session handler.
+        Initialise a Nagara 4 Project Haystack session handler.
 
         :param uri: Base URI for the Haystack installation.
         :param username: Authentication user name.
@@ -91,18 +91,12 @@ class Niagara4HaystackSession(HaystackSession):
 
     def _on_authenticate_done(self, operation, **kwargs):
         """
-        Process the result of an authentication operation.  This needs to be
-        implemented in the subclass and should, at minimum, set a flag in the
-        subclass to indicate the authentication state and clear the _auth_op
-        attribute on the base class.
+        Process the result of an authentication operation.
         """
         try:
             op_result = operation.result
-            self._authenticated = True
-            self._client.auth = ""
-            #self._client.cookies = op_result['cookie']
-            print('Should be ok')
-#            self._client.headers = op_result['headers']
+            self._authenticated = op_result['authenticated']
+            
         except:
             self._authenticated = False
             self._client.auth = None

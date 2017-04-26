@@ -68,11 +68,6 @@ class SyncHttpClient(HTTPClient):
                 # TODO: handle this with a more specific exception
                 raise HTTPBaseError(e.message)
 
-            print('COOOOOOKIES: ', {i.name: i for i in list(response.cookies)})
-            try:
-                print('SET-COOKIES : ', response.headers['Set-Cookie'])
-            except:
-                pass
             result = HTTPResponse(response.status_code,
                 dict(response.headers), response.content,
                 dict(response.cookies))
