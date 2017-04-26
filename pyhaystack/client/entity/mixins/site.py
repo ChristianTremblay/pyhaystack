@@ -6,6 +6,7 @@
 """
 
 import hszinc
+from ....exception import HaystackError
 
 class SiteMixin(object):
     """
@@ -52,15 +53,17 @@ class SiteMixin(object):
             # Given a dis or navName... should return equip
             elif key == each.tags['dis'] or key == each.tags['navName']:
                 return each
-            # Given a partial dis or nav... raise an error with a hint
-            # Will need to think about that... make things go bad for things
-            # with similar names
-            #elif key in each.tags['dis'] or key in each.tags['navName']:
-            #    raise KeyError('Wrong equipment name. Do you mean "%s" ?' % each.tags['dis'])
-        
-        # if nothing has been returned... search among entities
-        request = self.find_entity(key)
-        return request.result
+            try:
+                if key == each.tags['navNameFormat']:
+                    return each
+            except KeyError:
+                pass
+        else:    
+            try:
+                request = self.find_entity(key)
+                return request.result
+            except HaystackError as e:
+                self._session._log.warning('{} not found'.format(key))
 
     def __iter__(self):
         """

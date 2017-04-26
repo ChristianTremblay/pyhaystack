@@ -6,6 +6,7 @@
 """
 
 import hszinc
+from ....exception import HaystackError
 
 class EquipMixin(object):
     """
@@ -44,13 +45,17 @@ class EquipMixin(object):
             # Given a dis or navName... should return point
             elif key == point.tags['dis'] or key == point.tags['navName']:
                 return point
-            # Given a partial dis or nav... raise an error with a hint
-            # Will need to think about that... make things go bad for things
-            # with similar names
-            #elif key in point.tags['dis'] or key in point.tags['navName']:
-            #    raise KeyError('Wrong point name. Do you mean "%s" ?' % point.tags['dis'])
-        request = self.find_entity(key)
-        return request.result
+            try:
+                if key == point.tags['navNameFormat']:
+                    return point
+            except KeyError:
+                pass
+        else:    
+            try:
+                request = self.find_entity(key)
+                return request.result
+            except HaystackError as e:
+                self._session._log.warning('{} not found'.format(key))
         
     def __iter__(self):
         """

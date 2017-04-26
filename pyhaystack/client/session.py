@@ -476,9 +476,21 @@ class HaystackSession(object):
         return op
     
     @property
+    def site(self):
+        """
+        This helper will return the first site found on the server.
+        This case is typical : having one site per server.
+        """
+        sites = self.find_entity('site').result
+        return sites[list(sites.keys())[0]]
+
+    @property
     def sites(self):
-        sites = self.find_entity('site').result()
-        
+        """
+        This helper will return all sites found on the server.
+        """
+        sites = self.find_entity('site').result
+        return sites
 
     # Extension feature support.
     FEATURE_HISREAD_MULTI = 'hisRead/multi'   # Multi-point hisRead
