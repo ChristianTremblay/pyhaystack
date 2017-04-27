@@ -15,7 +15,8 @@ several sub-classes exist.
 There are two ways to create a session instance:
 
 * Directly: by importing the relevant class and calling its constructor.
-* Via the :py:func:`pyhaystack.client.get_instance` factory.
+* Via the `pyhaystack.connect` (also known as
+  :py:func:`pyhaystack.client.get_instance`) factory.
 
 The former works well for ad-hoc usage in terminal sessions such as Jupyter
 Notebook, ipython and the plain Python shell.  The latter is recommended for
@@ -203,13 +204,13 @@ Direct approach
                                     password='myPassword',
                                     pint=True)
 
-`get_instance()` approach
+`connect()` approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-    from pyhaystack.client import get_instance
-    session = get_instance(implementation='ax',
+    import pyhaystack
+    session = pyhaystack.connect(implementation='ax',
                             uri='http://ip:port',
                             username='user',
                             password='myPassword',
@@ -243,13 +244,13 @@ Direct approach
                     client_id='my_id', client_secret='my_secret'
                     pint=True)
 
-`get_instance()` approach
+`connect()` approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-    from pyhaystack.client import get_instance
-    session = get_instance(implementation='widesky',
+    import pyhaystack
+    session = pyhaystack.connect(implementation='widesky',
             uri='https://yourtenant.on.widesky.cloud/reference',
             username='user', password='my_password',
             client_id='my_id', client_secret='my_secret'
@@ -280,13 +281,13 @@ Direct approach
                                     project='my_project'
                                     pint=True)
 
-`get_instance()` approach
+`connect()` approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-    from pyhaystack.client import get_instance
-    session = get_instance(implementation='skyspark',
+    import pyhaystack
+    session = pyhaystack.connect(implementation='skyspark',
                                     uri='http://ip:port',
                                     username='user',
                                     password='my_password',
@@ -296,7 +297,7 @@ Direct approach
 Loading from a file
 """""""""""""""""""
 
-The `get_instance` approach lends itself well to storing the connection
+The `connect` approach lends itself well to storing the connection
 details in a plaintext file using either JSON or YAML format.  e.g. given the
 file `my-haystack-server.json`:
 
@@ -316,10 +317,14 @@ This can be instantiated like this:
 ::
 
     import json
-    from pyhaystack.client import get_instance
-    session = get_instance(**json.load(open("my-haystack-server.json","r")))
+    import pyhaystack
+    session = pyhaystack.connect(
+        **json.load(
+            open("my-haystack-server.json","r")
+        )
+    )
 
-(Similarly for YAML.)
+(Similarly for YAML, `import yaml` and use `yaml.safe_load`.)
 
 ----------
 Next steps
