@@ -50,6 +50,38 @@ until a request is made.
 If, when making a request, pyhaystack detects that it has been disconnected,
 it will attempt to re-connect automatically.
 
+Loading from a file
+"""""""""""""""""""
+
+The `connect` approach lends itself well to storing the connection
+details in a plaintext file using either JSON or YAML format.  e.g. given the
+file `my-haystack-server.json`:
+
+::
+
+    {
+        "implementation": "skyspark",
+        "uri": "http://ip:port",
+        "username": "user",
+        "password": "password",
+        "project": "my_project",
+        "pint": true
+    }
+
+This can be instantiated like this:
+
+::
+
+    import json
+    import pyhaystack
+    session = pyhaystack.connect(
+        **json.load(
+            open("my-haystack-server.json","r")
+        )
+    )
+
+(Similarly for YAML, `import yaml` and use `yaml.safe_load`.)
+
 Base session options
 --------------------
 
@@ -293,38 +325,6 @@ Direct approach
                                     password='my_password',
                                     project='my_project'
                                     pint=True)
-
-Loading from a file
-"""""""""""""""""""
-
-The `connect` approach lends itself well to storing the connection
-details in a plaintext file using either JSON or YAML format.  e.g. given the
-file `my-haystack-server.json`:
-
-::
-
-    {
-        "implementation": "skyspark",
-        "uri": "http://ip:port",
-        "username": "user",
-        "password": "password",
-        "project": "my_project",
-        "pint": true
-    }
-
-This can be instantiated like this:
-
-::
-
-    import json
-    import pyhaystack
-    session = pyhaystack.connect(
-        **json.load(
-            open("my-haystack-server.json","r")
-        )
-    )
-
-(Similarly for YAML, `import yaml` and use `yaml.safe_load`.)
 
 ----------
 Next steps
