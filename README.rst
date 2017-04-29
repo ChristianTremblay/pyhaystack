@@ -13,11 +13,12 @@ Which clients are implemented ?
 -------------------------------
 Actually, connection can be established with :
 
+* Niagara4_ by Tridium
 * NiagaraAX_ by Tridium
 * Widesky_ by VRT_
-* Skyspark_ by SkyFoundry
+* Skyspark_ by SkyFoundry (version 2 and 3)
 
-Connection to Niagara AX requires the nHaystack_ module by J2 Innovations
+Connection to Niagara AX or Niagara 4 requires the nHaystack_ module by J2 Innovations
 
 How do I install pyhaystack ?
 -----------------------------
@@ -80,6 +81,8 @@ to pyhaystack (ex. unit conversion)
 .. _Skyspark : https://www.skyfoundry.com/skyspark/
 
 .. _NiagaraAX : https://www.tridium.com/en/products-services/niagaraax
+
+.. _Niagara4 : https://www.tridium.com/en/products-services/niagara4
 
 .. _VRT : http://www.vrt.com.au/
 
