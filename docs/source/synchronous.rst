@@ -1,130 +1,83 @@
 Using pyhaystack in a synchronous way
 =====================================
+Exploring a site is the first thing we do to start analysing it. Here are some
+tips on the way you can explore your site.
 
-Declaring session
------------------
+We assume here that the session is created and you defined ::
 
-.. code:: python
-
-    from pyhaystack.client.niagara import NiagaraHaystackSession
-    import logging
-    logging.root.setLevel(logging.DEBUG)
-    session = NiagaraHaystackSession(uri='http://server', username='user', password='myComplicatedPassword')
+    site = session.site
 
 Browsing a site
 ---------------
+A site is typically filled with equipments. Pyhaystack assumes that if you use
+bracket request over a site, you probably want to explore :
 
-Let's have a look to the site
+    * tags (area, dis, geoAddr, tz, etc...)
+    * equipments (VAV, AHU, etc...)
+    * anything else
 
-.. code:: python
+Lookup will be made in this order. If the key you passed can't be found in tags,
+pyhaystack will start building a list of equipments under the site.
 
-    site = session.find_entity(filter_expr='site')
-    site
+Read tags
+++++++++++
+All tags can be retrieved using site['tagName']::
+                                    
+    site ['area']
+    
+    # Returns
+    BasicQuantity(0.0, 'ft²')
 
+Find equipments
+++++++++++++++++
+Equipments can be found using the same syntax.
+So if you write ::
 
-.. parsed-literal::
+    my_equip = site['myEquip']
+    Reading equipments for this site...
+    
+If the equipment exist, it will be returned
+    
+Once the first read is done, you can access the list using ::
 
-    <FindEntityOperation done: {'S.SERVISYS': <@S.SERVISYS: {area=Quantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='SERVISYS', geoAddr='12', geoCity='Bromont', geoCountry='Canada', geoLat=0.0, geoLon=0.0, geoPostalCode='J2L1J5', geoState='Québec', geoStreet='Du Pacifique Est', navName='SERVISYS', navNameFormat='SERVISYS', site, tz='Montreal'}>}>
+    site.equipments
+    # Returns a list of EquipSiteRefEntity
+    
+.. note:: 
+    The key provided will be compared to the ID, the dis and the navName. And 
+    will return the first hit.
+    
+Find points under equipments
++++++++++++++++++++++++++++++
+The same logic we saw for site can be applied to equipment. Equipments are typically
+filled with points that we need to access to. Using the bracket syntax should
+allow us to do so.
+So if you write ::
 
+    zone_temp = my_equip['ZN~2dT']
+    Reading points for this equipment...
+    
+.. note::
+    This time again, a list is populated under the object. All points for the 
+    equipment will be accessible using the simple syntax `equip.points`. This 
+    list is also used to iterate rapidly over point when making search. This way,
+    pyhaystack doesn't need to poll the server.
+  
+Finding something else using a filter
+++++++++++++++++++++++++++++++++++++++
+If the square bracket search doesn't find tag or equipment or point, it will also
+try to use find_entity  using the provided key. This way, you can also use this 
+simple syntax to look for more complicated results ::
 
-This print shows us the ``__repr__()`` function return value as a
-FindEntityOperation. If we were using this asynchronously, and let say
-the operation would not be finished, we would be noticed about the fact
-that it's not done.
-
-Actually, we know the operation succeeded.
-
-But site is not an object we can use easily. To retrive something
-useful, we need to call the result property.
-
-.. code:: python
-
-    site = site.result
-    site
-
-
-
-
-.. parsed-literal::
-
-    {'S.SERVISYS': <@S.SERVISYS: {area=Quantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='SERVISYS', geoAddr='12', geoCity='Bromont', geoCountry='Canada', geoLat=0.0, geoLon=0.0, geoPostalCode='J2L1J5', geoState='Québec', geoStreet='Du Pacifique Est', navName='SERVISYS', navNameFormat='SERVISYS', site, tz='Montreal'}>}
-
-
-
-Now we have a dict that we can use to retrieve the entity which is a
-pyhaystack object
-
-.. code:: python
-
-    type(site['S.SERVISYS'])
-
-
-
-
-.. parsed-literal::
-
-    pyhaystack.client.entity.model.SiteTzEntity
-
-
-
-Most common properties of entities are "dis" and "tags"
-
-.. code:: python
-
-    site['S.SERVISYS'].dis
-
-
-
-
-.. parsed-literal::
-
-    'SERVISYS'
-
-
-
-.. code:: python
-
-    site['S.SERVISYS'].tags
-
-
-
-
-.. parsed-literal::
-
-    {area=Quantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='SERVISYS', geoAddr='12', geoCity='Bromont', geoCountry='Canada', geoLat=0.0, geoLon=0.0, geoPostalCode='J2L1J5', geoState='Québec', geoStreet='Du Pacifique Est', navName='SERVISYS', navNameFormat='SERVISYS', site, tz='Montreal'}
-
-
-
-.. code:: python
-
-    site['S.SERVISYS'].tags['tz']
-
-
-
-
-.. parsed-literal::
-
-    'Montreal'
-
-
-
-Wrap up
--------
-
-We created a request to find something on the server (the site).
-Pyhaystack gave us in return an operation. This operation runs in the
-background (if you're using an asynchronous call or a thread...) The
-operation tells you when it's done.
-
-When the operation is done, you can retrieve the "result" using the
-property named "result".
-
-Typically, result will give a dict that contains the information you
-need.
-
-In our case, the result was a pyhaystack entity that contained tags.
-
-Tags are also a dict that can be browsed using square brackets.
+    air_sensors = my_equip['sensor and air']
+    # Returns all the points corresponding to this search.
+    
+.. note::
+    The square bracket search is context sensitive. The find_entity function
+    will be called "where the search is done". This means that when using this
+    search under an equipment, it will look under the equipment. You can also
+    use this search under a site, the search will be done under this particular 
+    site.
 
 Histories
 ---------
@@ -314,29 +267,21 @@ get the unit.
 
     <UnitsContainer({'degC': 1.0})>
 
-Describe
-~~~~~~~~
+Points history
+~~~~~~~~~~~~~~
+When using the square bracket search to retrieve a point, you can also chain
+the his function to the result ::
 
-Describe is a Pandas function that gives you some information about a
-Dataframe or a serie.
+    pcv6 = site['PCV~2d11~2d012_BVV~2d06']
+    zone_temp = pcv6['ZN~2dT']
+    zone_temp.his()
+    
+    # Return a Pandas Series with today's history by default.
+    
+Refer to the chapter on histories for more details.
 
-Here is an example from the room_temp_serie
 
-.. code:: python
 
-    room_temp_serie.describe()
-
-.. parsed-literal::
-
-    count    55.000000
-    mean     23.454680
-    std       0.388645
-    min      22.551900
-    25%      23.169800
-    50%      23.689800
-    75%      23.748750
-    max      23.806300
-    dtype: float64
 
 
 

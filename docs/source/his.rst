@@ -51,6 +51,31 @@ all zone temperature sensors.
 
 We use ``find_entity`` first, then we call ``his_read_frame`` over the result.
 
+
+Describe
+~~~~~~~~
+
+Describe is a Pandas function that gives you some information about a
+Dataframe or a serie.
+
+Here is an example from the room_temp_serie
+
+.. code:: python
+
+    room_temp_serie.describe()
+
+.. parsed-literal::
+
+    count    55.000000
+    mean     23.454680
+    std       0.388645
+    min      22.551900
+    25%      23.169800
+    50%      23.689800
+    75%      23.748750
+    max      23.806300
+    dtype: float64
+
 .. _his : http://project-haystack.org/tag/his
 
 .. _his_read : http://project-haystack.org/doc/Ops#hisRead

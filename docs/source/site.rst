@@ -51,17 +51,28 @@ Session.nav()
 Session.nav() let you see what's under the server. Result of the request coud look
 like that ::
 
-    session.nav()
+    session.nav().result
 
     Out[9]:
-        <GetGridOperation done: <Grid>
+        <Grid>
         	Columns:
         		dis
         		navId
         	Row    0: dis='ComponentSpace', navId='slot:/'
         	Row    1: dis='HistorySpace', navId='his:/'
         	Row    2: dis='Site', navId='sep:/'
-    </Grid>>
+        </Grid>
+            
+    session.nav(nav_id='his:/').result
+
+    Out[10]:
+        <Grid>
+        	Columns:
+        		dis
+        		stationName
+        		navId
+        	Row    0: dis='mySite', stationName='mySite', navId='his:/mySite'
+        </Grid>
 
 Site
 ----
@@ -77,12 +88,20 @@ The site_ is
 
 To browse a site you will use ::
 
-    site = session.find_entity(filter_expr='site')
+    site = session.find_entity(filter_expr='site').result
 
-and get something like ::
+and get a dict containing all the information provided ::
 
-    <FindEntityOperation done: {'S.SERVISYS': <@S.SERVISYS: {area=Quantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='SERVISYS', geoAddr='12', geoCity='Bromont', geoCountry='Canada', geoLat=0.0, geoLon=0.0, geoPostalCode='J2L1J5', geoState='QuÃ©bec', geoStreet='Du Pacifique Est', navName='SERVISYS', navNameFormat='SERVISYS', site, tz='Montreal'}>}>
+    {'S.site': <@S.site: {area=BasicQuantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='site', geoAddr='2017', geoCity='thisTown', geoCountry='myCountry', geoLat=0.0, geoLon=0.0, geoPostalCode='', geoState='myState', geoStreet='myStreet', navName='site', site, tz='New_York'}>}
 
 
+A session have typically one site attached to it, but there could be more. As a shortcut, 
+pyhaystack provide properties on session to get the site ::
+
+    # Target the first site (returns a SiteTzEntity)
+    session.site
+    
+    # Get a dict with all sites
+    session.sites
 
 .. _site : http://project-haystack.org/doc/Structure#site
