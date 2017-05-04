@@ -206,7 +206,7 @@ class HaystackSession(object):
         operation allows servers to expose the database in a human-friendly
         tree (or graph) that can be explored.
         """
-        return self._get_grid('nav', callback, args={'nav_id': nav_id})
+        return self._get_grid('nav', callback, args={'navId': nav_id})
 
     def watch_sub(self, points, watch_id=None, watch_dis=None,
             lease=None, callback=None):
