@@ -1,16 +1,16 @@
 Your first request
 ===================
-You defined a session, now you want to connect to the server. The first 
+You defined a session, now you want to connect to the server. The first
 request you could make is called "about".
 
   About
 
     The about op queries basic information about the server.
-    
+
     Request: empty grid
-    
+
     Response: single row grid with following columns:
-    
+
     * haystackVersion: Str version of REST implementation, must be "2.0"
     * tz: Str of server's default timezone
     * serverName: Str name of the server or project database
@@ -62,7 +62,7 @@ like that ::
         	Row    1: dis='HistorySpace', navId='his:/'
         	Row    2: dis='Site', navId='sep:/'
         </Grid>
-            
+
     session.nav(nav_id='his:/').result
 
     Out[10]:
@@ -76,12 +76,12 @@ like that ::
 
 Site
 ----
-The site_ is 
+The site_ is
 
-    "A site entity models a single facility using the site tag. 
-    A good rule of thumb is to model any building with its own 
-    street address as its own site. For example a campus is better 
-    modeled with each building as a site, versus treating the entire 
+    "A site entity models a single facility using the site tag.
+    A good rule of thumb is to model any building with its own
+    street address as its own site. For example a campus is better
+    modeled with each building as a site, versus treating the entire
     campus as one site."
 
     -- project-haystack
@@ -95,12 +95,12 @@ and get a dict containing all the information provided ::
     {'S.site': <@S.site: {area=BasicQuantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='site', geoAddr='2017', geoCity='thisTown', geoCountry='myCountry', geoLat=0.0, geoLon=0.0, geoPostalCode='', geoState='myState', geoStreet='myStreet', navName='site', site, tz='New_York'}>}
 
 
-A session have typically one site attached to it, but there could be more. As a shortcut, 
+A session have typically one site attached to it, but there could be more. As a shortcut,
 pyhaystack provide properties on session to get the site ::
 
     # Target the first site (returns a SiteTzEntity)
     session.site
-    
+
     # Get a dict with all sites
     session.sites
 

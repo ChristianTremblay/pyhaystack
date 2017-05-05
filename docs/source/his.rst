@@ -5,7 +5,7 @@ as zinc grid, pandas series or pandas Dataframe depending on your needs.
 
 Range
 +++++
-rng (range) can be one of the following 
+rng (range) can be one of the following
 [ref : his_read_]
 
 * "today"
@@ -27,7 +27,7 @@ Zinc Date and time format
 Retrieve simple grid
 --------------------
 ::
-    
+
     session.his_read('S.SERVISYS.Bureau-Christian.ZN~2dT', rng='today').result
 
 

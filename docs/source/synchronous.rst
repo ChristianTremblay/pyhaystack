@@ -22,9 +22,9 @@ pyhaystack will start building a list of equipments under the site.
 Read tags
 ++++++++++
 All tags can be retrieved using site['tagName']::
-                                    
+
     site ['area']
-    
+
     # Returns
     BasicQuantity(0.0, 'ft²')
 
@@ -35,18 +35,18 @@ So if you write ::
 
     my_equip = site['myEquip']
     Reading equipments for this site...
-    
+
 If the equipment exist, it will be returned
-    
+
 Once the first read is done, you can access the list using ::
 
     site.equipments
     # Returns a list of EquipSiteRefEntity
-    
-.. note:: 
-    The key provided will be compared to the ID, the dis and the navName. And 
+
+.. note::
+    The key provided will be compared to the ID, the dis and the navName. And
     will return the first hit.
-    
+
 Find points under equipments
 +++++++++++++++++++++++++++++
 The same logic we saw for site can be applied to equipment. Equipments are typically
@@ -56,27 +56,27 @@ So if you write ::
 
     zone_temp = my_equip['ZN~2dT']
     Reading points for this equipment...
-    
+
 .. note::
-    This time again, a list is populated under the object. All points for the 
-    equipment will be accessible using the simple syntax `equip.points`. This 
+    This time again, a list is populated under the object. All points for the
+    equipment will be accessible using the simple syntax `equip.points`. This
     list is also used to iterate rapidly over point when making search. This way,
     pyhaystack doesn't need to poll the server.
-  
+
 Finding something else using a filter
 ++++++++++++++++++++++++++++++++++++++
 If the square bracket search doesn't find tag or equipment or point, it will also
-try to use find_entity  using the provided key. This way, you can also use this 
+try to use find_entity  using the provided key. This way, you can also use this
 simple syntax to look for more complicated results ::
 
     air_sensors = my_equip['sensor and air']
     # Returns all the points corresponding to this search.
-    
+
 .. note::
     The square bracket search is context sensitive. The find_entity function
     will be called "where the search is done". This means that when using this
     search under an equipment, it will look under the equipment. You can also
-    use this search under a site, the search will be done under this particular 
+    use this search under a site, the search will be done under this particular
     site.
 
 Histories
@@ -189,7 +189,7 @@ site.
 
 
 
-It's also possible to get a serie out of a sensor : 
+It's also possible to get a serie out of a sensor :
 
 .. code:: python
 
@@ -275,9 +275,9 @@ the his function to the result ::
     pcv6 = site['PCV~2d11~2d012_BVV~2d06']
     zone_temp = pcv6['ZN~2dT']
     zone_temp.his()
-    
+
     # Return a Pandas Series with today's history by default.
-    
+
 Refer to the chapter on histories for more details.
 
 
