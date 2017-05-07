@@ -92,8 +92,8 @@ be familiar with how this works.
 The signal object has a single method, :py:meth:`signalslot.Signal.connect`,
 which takes a method or function as an argument.  The passed-in method or
 function needs to accept keyword arguments, and will receive a single
-argument, `operation`, which will point to the instance of the
-`HaystackOperation` that emitted it.
+argument, ``operation``, which will point to the instance of the
+``HaystackOperation`` that emitted it.
 
 Asynchronous Exceptions
 """""""""""""""""""""""
@@ -128,8 +128,8 @@ In the callback function, you can do something like this:
         except:
             # Handle your exception
 
-If `result` is an exception, it'll be re-raised, allowing you to handle it in
-your code.
+If ``result`` is an exception, it'll be re-raised, allowing you to handle it
+in your code.
 
 Your first request
 ==================
@@ -163,7 +163,7 @@ Using a synchronous request, you would use ::
    op = session.about()
    op.wait()
 
-The output of `op.result` would print ::
+The output of ``op.result`` would print ::
 
     <Grid>
                 Columns:
