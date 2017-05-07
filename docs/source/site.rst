@@ -302,7 +302,7 @@ the following:
 
 * :py:class:`pyhaystack.client.entity.entity.Entity` (base class)
 * :py:class:`pyhaystack.client.entity.mixins.site.SiteMixin` (mixin class)
-* :py:class:`pyhaystack.client.entity.mixins.site.TzMixin` (mixin class)
+* :py:class:`pyhaystack.client.entity.mixins.tz.TzMixin` (mixin class)
 
 A session have typically one site attached to it, but there could be more. As
 a shortcut, pyhaystack provides properties on session to get the site:
