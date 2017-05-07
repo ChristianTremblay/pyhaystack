@@ -191,6 +191,9 @@ are the most useful arguments for ``http_args``:
   the root CA's certificate itself.  Note that your server's certificate is
   *NOT* part of the bundle.
 
+  See next section on CA certificates for more details on ways to add certificates
+  to the python process (requests).
+
 * ``tls_cert``: TLS client certificate.  This is used to authenticate the
   Pyhaystack client to a Project Haystack server using TLS client
   authentication.  It should either be the full path to a combined
@@ -211,8 +214,90 @@ very specialised environments.
   :py:class:`pyhaystack.client.http.auth.AuthenticationCredentials`
   sub-class.
 
+CA Certificates
+----------------
+
+Certifi
+""""""""
+When connecting to a server using SSL certificates, you may face specific warning 
+from requests. Using `http_args={tls_verify: False}` should not be a permanent
+solution.
+
+Following requests recommandations, it is possibile to use certifi_. Certifi is
+a collection of curated Root Certificates. This adds a file in your site-packages folder
+that will hold trusted certificates used by Requests. You can find this file using ::
+
+    import certifi
+    certifi.where()
+
+    # Returns something like
+    '/usr/local/lib/python2.7/site-packages/certifi/cacert.pem'
+
+You can then add trusted certificates to this file (just append the trusted .pem text file
+to the end of cacert.pem).
+
+Requests will accept all certificate from this file and consider your server secure.
+This will also prevent SSL warnings filling your session debug.
+
+Manual removing of warnings
+""""""""""""""""""""""""""""
+Another way of dealing with warning log messages is to use specific code to disable
+warnings ::
+
+    import requests
+    from requests.packages.urllib3.exceptions import InsecureRequestWarning
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+Disabling warning is done at your own risks. Use those features carefully.
+
+SubjectAltWarning
+^^^^^^^^^^^^^^^^^^
+By default, pyhaystack disable the SubjectAltWarning ::
+
+    # extract from __init__.py
+    import requests.packages.urllib3
+    from requests.packages.urllib3.exceptions import SubjectAltNameWarning
+    requests.packages.urllib3.disable_warnings(SubjectAltNameWarning)
+
+This is motivated by this issue : urllib3_issue523_
+
 Connecting to specific Haystack server implementations
 ------------------------------------------------------
+
+Niagara4 (nHaystack)
+""""""""""""""""""""""
+
+Specific arguments
+^^^^^^^^^^^^^^^^^^
+
+In addition to those supported by the base class, the following constructor
+arguments are supported:
+
+* ``username``: The username to use when authenticating with nHaystack
+* ``password``: The password to use when authenticating with nHaystack
+
+Direct approach
+^^^^^^^^^^^^^^^
+
+::
+
+    from pyhaystack.client.niagara import Niagara4HaystackSession
+    session = Niagara4HaystackSession(uri='http://ip:port',
+                                    username='user',
+                                    password='myPassword',
+                                    pint=True)
+
+``connect()`` approach
+^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    import pyhaystack
+    session = pyhaystack.connect(implementation='n4',
+                            uri='http://ip:port',
+                            username='user',
+                            password='myPassword',
+                            pint=True)
 
 Niagara AX (nHaystack)
 """"""""""""""""""""""
@@ -333,3 +418,6 @@ Next steps
 
 Having created a session instance, you're ready to start issuing requests,
 which is covered in the next section.
+
+.. _certifi : https://github.com/certifi/python-certifi
+.. _urllib3_issue523 : https://github.com/shazow/urllib3/issues/523
