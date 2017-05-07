@@ -43,9 +43,9 @@ To retrieve a specific entity, you give its identifier as the key:
 
 Having done this, it is possible to interrogate the tags attached to this
 entity.  These are accessed by the ``tags`` property, which also returns a
-:py:class:`pyhaystack.cient.entity.tags.MutableEntityTags` if your server
+:py:class:`pyhaystack.client.entity.tags.MutableEntityTags` if your server
 supports making changes via the Project Haystack API (currently only WideSky),
-or :py:class:`pyhaystack.cient.entity.tags.ReadOnlyEntityTags` otherwise.
+or :py:class:`pyhaystack.client.entity.tags.ReadOnlyEntityTags` otherwise.
 
 Both classes function like a :py:class:`dict`.
 
@@ -91,7 +91,7 @@ From this interface, it is also possible to update the values of these tags.
 This requires a back-end server that supports "CRUD" operations (Create, Read,
 Update & Delete).  If your server supports these operations (and pyhaystack
 supports using them), the ``tags`` property will be of type
-:py:class:`pyhaystack.cient.entity.tags.MutableEntityTags`.
+:py:class:`pyhaystack.client.entity.tags.MutableEntityTags`.
 
 Again, this object functions like a :py:class:`dict`:
 
