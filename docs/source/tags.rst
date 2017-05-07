@@ -33,6 +33,7 @@ identifier.  When exploring interactively, you can get a list of all the
 matching entities' identifiers by calling:
 
 ::
+
     list(znt.keys())
 
 To retrieve a specific entity, you give its identifier as the key:
