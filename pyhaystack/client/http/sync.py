@@ -13,6 +13,7 @@ from ...util.asyncexc import AsynchronousException
 
 import requests
 
+# Handle different versions of requests
 try : 
     from requests.exceptions import SSLError
 except ImportError:

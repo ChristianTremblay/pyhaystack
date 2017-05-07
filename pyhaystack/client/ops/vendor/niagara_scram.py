@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Niagara 4 operation implementations.
+Niagara4 operation implementations.
 """
 
 import fysom
@@ -29,14 +29,15 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
     5. Send final request to j_security_check as a proof
     6. Logged
 
-    Future requests should use the JSESSIONID cookies returned.
+    Future requests should use the JSESSIONID cookies returned (handled by the
+    requests session.
     """
 
     _COOKIE_RE = re.compile(r'^cookie[ \t]*:[ \t]*([^=]+)=(.*)$')
 
     def __init__(self, session, retries=0):
         """
-        Attempt to log in to the Niagara 4 server.
+        Attempt to log in to the Niagara4 server.
 
         :param session: Haystack HTTP session object.
         :param retries: Number of retries permitted in case of failure.

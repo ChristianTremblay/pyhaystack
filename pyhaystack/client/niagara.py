@@ -1,7 +1,7 @@
 #!python
 # -*- coding: utf-8 -*-
 """
-NiagaraAX Client support
+Tridium Niagara Client support (AX and N4)
 """
 
 from .session import HaystackSession

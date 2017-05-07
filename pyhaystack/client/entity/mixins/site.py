@@ -60,6 +60,7 @@ class SiteMixin(object):
                 pass
         else:    
             try:
+                # Maybe key is a filter_expr
                 request = self.find_entity(key)
                 return request.result
             except HaystackError as e:

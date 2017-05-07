@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-'point' related mix-ins
+'point' related mix-ins for high-level interface.
 """
 
 class HisMixin(object):
