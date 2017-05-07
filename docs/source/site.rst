@@ -22,15 +22,15 @@ and properties are significant for client use:
   state machine.  If the result was an exception, the exception will be
   re-raised.
 
-* :py:attr:`pyhaystack.util.state.HaystackOperation.is_done`: Returns `True`
-  if the operation is complete, `False` otherwise.
+* :py:attr:`pyhaystack.util.state.HaystackOperation.is_done`: Returns
+  ``True`` if the operation is complete, ``False`` otherwise.
 
-* :py:attr:`pyhaystack.util.state.HaystackOperation.is_failed`: Returns `True`
-  if the operation failed, `False` otherwise.
+* :py:attr:`pyhaystack.util.state.HaystackOperation.is_failed`: Returns
+  ``True`` if the operation failed, ``False`` otherwise.
 
 * :py:meth:`pyhaystack.util.state.HaystackOperation.wait`: This blocks the
-  current thread until the operation completes (or if `timeout` is specified,
-  until that number of seconds expires).
+  current thread until the operation completes (or if ``timeout`` is
+  specified, until that number of seconds expires).
 
 * :py:attr:`pyhaystack.util.state.HaystackOperation.done_sig`: This is a
   :py:class:`signalslot.Signal` class that is "emitted" when the operation
@@ -39,13 +39,13 @@ and properties are significant for client use:
 Synchronous usage
 """""""""""""""""
 
-If you are using an asynchronous HTTP client running in a separate thread, you
-can optionally block your local thread either temporarily or indefinitely
-using the `wait` method.
+If you are using an asynchronous HTTP client running in a separate thread,
+you can optionally block your local thread either temporarily or
+indefinitely using the ``wait`` method.
 
-When using the synchronous HTTP client, the `wait` is a no-op, since the state
-machine is returned to the caller in a resolved state.  Thus, in synchronous
-code, it is recommended to do the following:
+When using the synchronous HTTP client, the ``wait`` is a no-op, since the
+state machine is returned to the caller in a resolved state.  Thus, in
+synchronous code, it is recommended to do the following:
 
 ::
 
@@ -56,24 +56,26 @@ code, it is recommended to do the following:
         # do something with res
 
 This ensures that the operation is complete prior to retrieving its result.
+In getting into this habit, you won't be bitten in the posterior if an
+asynchronous client is used later on.
 
 Operation states
 """"""""""""""""
 
 The individual states of an operation depends on the type of state machine
 being inspected, however all have a final state that can be checked by
-inspecting the `is_done` property.  An operation is "done" if:
+inspecting the ``is_done`` property.  An operation is "done" if:
 
-* the operation succeeded, in which case see the `result` property to retrieve
-  the return value.
+* the operation succeeded, in which case see the ``result`` property to
+  retrieve the return value.
 
-* the operation failed, in which case reading `result` will re-raise the
+* the operation failed, in which case reading ``result`` will re-raise the
   exception.
 
 Signals
 """""""
 
-Pyhaystack uses the :py:module:`signalslot` module to provide a signal-based
+Pyhaystack uses the :py:mod:`signalslot` module to provide a signal-based
 interface using the observer pattern.  If you've ever worked with Qt, you'll
 be familiar with how this works.
 
@@ -230,23 +232,23 @@ retrieve these entities are:
 * :py:meth:`pyhaystack.client.session.HaystackSession.get_entity` and
 * :py:meth:`pyhaystack.client.session.HaystackSession.find_entity`
 
-Both are wrappers around the `read` operation that retrieve
+Both are wrappers around the ``read`` operation that retrieve
 :py:class:`pyhaystack.client.entity.entity.Entity` instances for the entities
 returned.
 
-`get_entity` expects a list of one or more fully qualified identifiers, and
-will perform a `read` query listing those identifiers as given.
+``get_entity`` expects a list of one or more fully qualified identifiers, and
+will perform a ``read`` query listing those identifiers as given.
 
-`find_entity` expects a filter expression, and performs a `read` specifying
-the given string as the `filter` argument.  (Note: `find_entity` takes an
-argument named `filter_expr` to avoid a clash with the built-in function
-:py:func:`filter`.)
+``find_entity`` expects a filter expression, and performs a ``read``
+specifying the given string as the ``filter`` argument.  (Note:
+``find_entity`` takes an argument named ``filter_expr`` to avoid a clash
+with the built-in function :py:func:`filter`.)
 
 In both cases, a :py:class:`dict` is returned, where the keys are the
-identifiers of matching entities and the values are the `Entity` instances
-themselves.  Depending on the tags present, and the `tagging_model` passed to
-the session, these `Entity` instances may include other mix-in classes as
-well.
+identifiers of matching entities and the values are the ``Entity`` instances
+themselves.  Depending on the tags present, and the ``tagging_model`` passed
+to the session, these ``Entity`` instances may include other mix-in classes
+as well.
 
 Building a filter string
 ------------------------
@@ -255,7 +257,7 @@ As a convenience, it is possible to build up a filter string using Python
 objects, then take a string representation of that composite object to
 generate a filter string.
 
-The classes are in :py:module:`pyhaystack.util.filterbuilder`.  An example:
+The classes are in :py:mod:`pyhaystack.util.filterbuilder`.  An example:
 
 ::
 
@@ -296,9 +298,9 @@ and get a dict containing all the information provided ::
 
     {'S.site': <@S.site: {area=BasicQuantity(0.0, 'ft²'), axSlotPath='slot:/site', axType='nhaystack:HSite', dis='site', geoAddr='2017', geoCity='thisTown', geoCountry='myCountry', geoLat=0.0, geoLon=0.0, geoPostalCode='', geoState='myState', geoStreet='myStreet', navName='site', site, tz='New_York'}>}
 
-Using the default tagging model, because the entity has a `site` tag and a
-`tz` tag, the resulting `Entity` class returned here will be subclasses of
-the following:
+Using the default tagging model, because the entity has a ``site`` tag and a
+``tz`` tag, the resulting ``Entity`` class returned here will be subclasses
+of the following:
 
 * :py:class:`pyhaystack.client.entity.entity.Entity` (base class)
 * :py:class:`pyhaystack.client.entity.mixins.site.SiteMixin` (mixin class)
