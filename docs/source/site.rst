@@ -258,6 +258,7 @@ generate a filter string.
 The classes are in :py:module:`pyhaystack.util.filterbuilder`.  An example:
 
 ::
+
     from pyhaystack.util import filterbuilder as fb # for brevity
 
     op = session.find_entity(fb.Field('site') & \
@@ -285,7 +286,7 @@ The site_ is
 
     -- project-haystack
 
-To browse a site you will use ::
+To browse a site you could use ::
 
     op = session.find_entity(filter_expr='site')
     op.wait()
