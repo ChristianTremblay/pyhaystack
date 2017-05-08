@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 import pytest
 
 from pyhaystack.client.http import dummy as dummy_http
+from pyhaystack.client.http.base import HTTPResponse
 from ..util import grid_cmp
 
 # For simplicity's sake, we'll just use the WideSky client.
@@ -31,13 +32,28 @@ logging.basicConfig(level=logging.DEBUG)
 
 BASE_URI = 'https://myserver/api/'
 
+# For testing _on_http_grid_response:
+class DummySession(widesky.WideskyHaystackSession):
+    def __init__(self, **kwargs):
+        self._on_http_grid_response_called = 0
+        self._on_http_grid_response_last_args = None
+        super(DummySession, self).__init__(**kwargs)
+
+    def _on_http_grid_response(self, response, *args, **kwargs):
+        self._log.debug(
+                'Received grid response: response=%r args=%r, kwargs=%r',
+                response, args, kwargs)
+        self._on_http_grid_response_called += 1
+        self._on_http_grid_response_last_args = (response, args, kwargs)
+
+
 @pytest.fixture
 def server_session():
     """
     Initialise a HaystackSession and dummy HTTP server instance.
     """
     server = dummy_http.DummyHttpServer()
-    session = widesky.WideskyHaystackSession(
+    session = DummySession(
             uri=BASE_URI,
             username='testuser',
             password='testpassword',
@@ -53,7 +69,7 @@ def server_session():
     assert server.requests() == 0, 'More requests waiting'
     rq.respond(status=200,
             headers={
-                'Content-Type': 'application/json'
+                b'Content-Type': 'application/json'
             },
             content='''{
                 "token_type": "Bearer",
@@ -70,6 +86,40 @@ def server_session():
 
 @pytest.mark.usefixtures("server_session")
 class TestSession(object):
+    def test_on_http_grid_response(self, server_session):
+        (server, session) = server_session
+
+        # Reset our counter
+        session._on_http_grid_response_called = 0
+        session._on_http_grid_response_last_args = None
+
+        # Fetch a grid
+        op = session._get_grid('dummy', callback=lambda *a, **kwa : None)
+
+        # The operation should still be in progress
+        assert not op.is_done
+
+        # There shall be one request
+        assert server.requests() == 1
+        rq = server.next_request()
+        # Make a grid to respond with
+        expected = hszinc.Grid()
+
+        expected.column['empty'] = {}
+        rq.respond(status=200, headers={
+            b'Content-Type': 'text/zinc',
+        }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
+
+        # Our dummy function should have been called
+        assert session._on_http_grid_response_called == 1
+        assert isinstance(session._on_http_grid_response_last_args, tuple)
+        assert len(session._on_http_grid_response_last_args) == 3
+
+        (response, args, kwargs) = session._on_http_grid_response_last_args
+        assert isinstance(response, HTTPResponse)
+        assert len(args) == 0
+        assert len(kwargs) == 0
+
     def test_about(self, server_session):
         (server, session) = server_session
         op = session.about()
@@ -88,7 +138,7 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/about'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
 
         # Make a grid to respond with
         expected = hszinc.Grid()
@@ -117,7 +167,7 @@ class TestSession(object):
         })
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
@@ -143,7 +193,7 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/ops'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
 
         # Make a grid to respond with
         expected = hszinc.Grid()
@@ -189,7 +239,7 @@ class TestSession(object):
         }])
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
@@ -215,7 +265,7 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/formats'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
 
         # Make a grid to respond with
         expected = hszinc.Grid()
@@ -238,7 +288,7 @@ class TestSession(object):
         }])
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
@@ -264,7 +314,7 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/read?id=%40my.entity.id'
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
 
         # Make a grid to respond with
         expected = hszinc.Grid()
@@ -277,7 +327,7 @@ class TestSession(object):
         }])
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done
@@ -307,7 +357,7 @@ class TestSession(object):
         assert rq.uri == BASE_URI + 'api/read'
 
         # Body shall be in ZINC
-        assert rq.headers['Content-Type'] == 'text/zinc'
+        assert rq.headers[b'Content-Type'] == 'text/zinc'
 
         # Body shall be a single valid grid of this form:
         expected = hszinc.Grid()
@@ -319,12 +369,13 @@ class TestSession(object):
             }, {
                 "id": hszinc.Ref('my.entity.id3'),
         }])
-        actual = hszinc.parse(rq.body, mode=hszinc.MODE_ZINC)
+        actual = hszinc.parse(rq.body.decode('utf-8'),
+                mode=hszinc.MODE_ZINC)
         assert len(actual) == 1
         grid_cmp(expected, actual[0])
 
         # Accept header shall be given
-        assert rq.headers['Accept'] == 'text/zinc'
+        assert rq.headers[b'Accept'] == 'text/zinc'
 
         # Make a grid to respond with
         expected = hszinc.Grid()
@@ -343,7 +394,7 @@ class TestSession(object):
         }])
 
         rq.respond(status=200, headers={
-            'Content-Type': 'text/zinc',
+            b'Content-Type': 'text/zinc',
         }, content=hszinc.dump(expected, mode=hszinc.MODE_ZINC))
 
         # State machine should now be done

@@ -9,7 +9,20 @@ for fetching session instances.
 from importlib import import_module
 from six import string_types
 
-# KNOWN IMPLEMENTATIONS
+# IMPLEMENTATION ALIASES: These help map short-hand aliases to full session
+# instances.  Further aliases can be added here.
+IMPLEMENTATION_ALIAS = {
+        'niagara-ax':   'niagara.NiagaraHaystackSession',
+        'ax':           'niagara.NiagaraHaystackSession',
+        'niagara4':     'niagara.Niagara4HaystackSession',
+        'n4':           'niagara.Niagara4HaystackSession',
+        'skyspark2':    'skyspark.SkysparkHaystackSession',
+        'skyspark':     'skyspark.SkysparkScramHaystackSession',
+        'widesky':      'widesky.WideskyHaystackSession',
+}
+
+# KNOWN IMPLEMENTATIONS: This is populated at run time with instances of session
+# classes as they are loaded.  It should be empty at first.
 _known_implementations = {}
 
 def get_implementation(implementation):
@@ -17,6 +30,10 @@ def get_implementation(implementation):
     Get an implementation of Project Haystack session manager based on
     the class name.
     """
+    # De-reference aliases first.
+    if implementation in IMPLEMENTATION_ALIAS:
+        implementation = IMPLEMENTATION_ALIAS[implementation]
+
     try:
         return _known_implementations[implementation]
     except KeyError:
@@ -53,11 +70,11 @@ def get_implementation(implementation):
     return impl
 
 
-def get_instance(implementation, **kwargs):
+def get_instance(implementation, *args, **kwargs):
     """
     Get an instance of a Project Haystack client.
     """
     if isinstance(implementation, string_types):
         implementation = get_implementation(implementation)
 
-    return implementation(**kwargs)
+    return implementation(*args, **kwargs)

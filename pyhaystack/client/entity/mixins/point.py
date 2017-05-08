@@ -2,13 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-'point' related mix-ins
+'point' related mix-ins for high-level interface.
 """
 
 class HisMixin(object):
     """
     A mix-in used for 'point' entities that carry the 'his' marker tag.
     """
+    def his(self, rng='today', tz=None, series_format=None, callback=None):
+        """
+        Shortcut to read_series
+        """
+        return self.his_read_series(rng=rng, tz=tz, series_format=series_format, callback=callback)
 
     def his_read_series(self, rng, tz=None, series_format=None, callback=None):
         """
@@ -30,3 +35,8 @@ class HisMixin(object):
         """
         return self._session.his_write_series(point=self, series=series,
                 tz=tz, callback=callback)
+
+class PointMixin(object):    
+    @property            
+    def value(self):
+        return (self._session.read(ids=self.id).result)[0]['curVal']

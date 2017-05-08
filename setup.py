@@ -47,7 +47,7 @@ setup(name='pyhaystack',
           'pyhaystack.client.entity.ops',
           'pyhaystack.util',
           'pyhaystack.server',
-          'pyhaystack.util',],
+          'pyhaystack.util'],
 #      entry_points={
 #          'console_scripts': ['pyhaystack=pyhaystack:main'],
 #     },

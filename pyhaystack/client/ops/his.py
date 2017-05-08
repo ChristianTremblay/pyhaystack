@@ -359,7 +359,7 @@ class HisReadFrameOperation(state.HaystackOperation):
                     """
                     data.add_meta(name,get_units(serie))
                     data[name] = data[name].apply(convert_quantity)
-                    
+
             else:
                 data = self._data_by_ts
             self._state_machine.process_done(result=data)
@@ -797,33 +797,36 @@ class HisWriteFrameOperation(state.HaystackOperation):
         Return the result from the state machine.
         """
         self._done(event.result)
-        
-class MetaSeries(Series):
-    """
-    Custom Pandas Serie with meta data
-    """
-    meta = {}
-    @property
-    def _constructor(self):
-        return MetaSeries
- 
-    def add_meta(self, key, value):
-        self.meta[key] = value
-        
-class MetaDataFrame(DataFrame):
-    """
-    Custom Pandas Dataframe with meta data
-    Made from MetaSeries
-    """
-    meta = {}
-    def __init__(self, *args, **kw):
-        super(MetaDataFrame, self).__init__(*args, **kw)
- 
-    @property
-    def _constructor(self):
-        return MetaDataFrame
- 
-    _constructor_sliced = MetaSeries
- 
-    def add_meta(self, key, value):
-        self.meta[key] = value
+
+
+if HAVE_PANDAS:
+    class MetaSeries(Series):
+        """
+        Custom Pandas Serie with meta data
+        """
+        meta = {}
+        @property
+        def _constructor(self):
+            return MetaSeries
+
+        def add_meta(self, key, value):
+            self.meta[key] = value
+
+
+    class MetaDataFrame(DataFrame):
+        """
+        Custom Pandas Dataframe with meta data
+        Made from MetaSeries
+        """
+        meta = {}
+        def __init__(self, *args, **kw):
+            super(MetaDataFrame, self).__init__(*args, **kw)
+
+        @property
+        def _constructor(self):
+            return MetaDataFrame
+
+        _constructor_sliced = MetaSeries
+
+        def add_meta(self, key, value):
+            self.meta[key] = value

@@ -31,7 +31,7 @@ class DummyHttpServer(object):
 
     def submit_request(self, method, uri, callback,
                 body, headers, cookies, auth, timeout, proxies,
-                tls_verify, tls_cert):
+                tls_verify, tls_cert, accept_status):
         """
         Submit a request.
         """
@@ -40,7 +40,7 @@ class DummyHttpServer(object):
 
         rq = DummyHttpClientRequest(rq_id, method, uri, callback,
                 body, headers, cookies, auth, timeout, proxies,
-                tls_verify, tls_cert)
+                tls_verify, tls_cert, accept_status)
         self._requests[rq_id] = rq
         self._rq_order.append(rq_id)
 
@@ -80,10 +80,10 @@ class DummyHttpClient(HTTPClient):
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert):
+            tls_verify, tls_cert, accept_status):
         self._server.submit_request(method,
                 uri, callback, body, headers, cookies, auth,
-                timeout, proxies, tls_verify, tls_cert)
+                timeout, proxies, tls_verify, tls_cert, accept_status)
 
 
 class DummyHttpClientRequest(object):
@@ -96,7 +96,7 @@ class DummyHttpClientRequest(object):
 
     def __init__(self, rq_id, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert):
+            tls_verify, tls_cert, accept_status):
         """
         Collect all the parameters supplied in the request.
         """
@@ -112,6 +112,7 @@ class DummyHttpClientRequest(object):
         self._proxies = (proxies or {}).copy()
         self._tls_verify = tls_verify
         self._tls_cert = tls_cert
+        self._accept_status = accept_status
 
     # Access methods
 
@@ -185,7 +186,8 @@ class DummyHttpClientRequest(object):
         if cookies is None:
             cookies = {}
 
-        if status < 400:
+        if ((self._accept_status is None) and (status < 400)) \
+                or (status in self._accept_status):
             result = HTTPResponse(status, headers.copy(), content,
                     cookies.copy())
         else:

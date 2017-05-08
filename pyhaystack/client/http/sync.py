@@ -13,6 +13,12 @@ from ...util.asyncexc import AsynchronousException
 
 import requests
 
+# Handle different versions of requests
+try : 
+    from requests.exceptions import SSLError
+except ImportError:
+    from requests.packages.urllib3.exceptions import SSLError
+
 class SyncHttpClient(HTTPClient):
     def __init__(self, **kwargs):
         self._session = requests.Session()
@@ -20,7 +26,7 @@ class SyncHttpClient(HTTPClient):
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert):
+            tls_verify, tls_cert, accept_status):
 
         if auth is not None:
             if isinstance(auth, BasicAuthenticationCredentials):
@@ -44,12 +50,19 @@ class SyncHttpClient(HTTPClient):
                             auth=auth, timeout=timeout,
                             proxies=proxies, verify=tls_verify,
                             cert=tls_cert)
-                    response.raise_for_status()
-                except:
+                    if (accept_status is None) or \
+                            (response.status_code not in accept_status):
+                        response.raise_for_status()
+                except SSLError as e:
+                    if self.log is not None:
+                        self.log.warning('Problem with the certificate : %s', e)
+                        self.log.warning('You can use http_args={"tls_verify":False} to validate issue.')
+                    raise
+                except Exception as e:
                     if self.log is not None:
                         self.log.debug('Exception in request %s of %s with '\
                                 'body %r, headers %r, cookies %r, auth %r',
-                                method, uri, body, headers, cookies, auth,
+                                method, uri, body, headers, cookies, auth, 
                                 exc_info=1)
                     raise
 
@@ -62,14 +75,14 @@ class SyncHttpClient(HTTPClient):
                 raise HTTPRedirectError(e.message)
             except requests.exceptions.ConnectionError as e:
                 raise HTTPConnectionError(e.strerror, e.errno)
-            except requests.exceptions.RequestException:
+            except requests.exceptions.RequestException as e:
                 # TODO: handle this with a more specific exception
                 raise HTTPBaseError(e.message)
 
             result = HTTPResponse(response.status_code,
                 dict(response.headers), response.content,
                 dict(response.cookies))
-        except:
+        except Exception as e:
             # Catch all exceptions and forward those to the callback function
             result = AsynchronousException()
 

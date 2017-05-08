@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Niagara AX/Niagara 4 operation implementations.
+Niagara AX operation implementations.
 """
 
 import fysom

@@ -30,10 +30,12 @@ class HTTPClient(object):
     """
 
     PROTO_RE    = re.compile(r'^[a-z]+://')
+    CONTENT_TYPE_HDR    = b'Content-Type'
+    CONTENT_LENGTH_HDR  = b'Content-Length'
 
     def __init__(self, uri=None, params=None, headers=None, cookies=None,
             auth=None, timeout=None, proxies=None, tls_verify=None,
-            tls_cert=None, log=None):
+            tls_cert=None, accept_status=None, log=None):
         """
         Instantiate a HTTP client instance with some default parameters.
         These parameters are made accessible as properties to be modified at
@@ -81,7 +83,8 @@ class HTTPClient(object):
     def request(self, method, uri, callback, body=None, params=None,
             headers=None, cookies=None, auth=None, timeout=None, proxies=None,
             tls_verify=None, tls_cert=None, exclude_params=None,
-            exclude_headers=None, exclude_cookies=None, exclude_proxies=None):
+            exclude_headers=None, exclude_cookies=None, exclude_proxies=None,
+            accept_status=None):
         """
         Perform a request with this client.  Most parameters here exist to either
         add to or override the defaults given by the client attributes.  The
@@ -130,6 +133,10 @@ class HTTPClient(object):
                         If True, exclude all default proxies and use only
                         the proxies given.  Otherwise, this is an iterable
                         of proxy names to be excluded.
+        :param accept_status:
+                        If not None, this gives a list of status codes that
+                        will not raise an error, but instead be passed through
+                        for the Haystack client to handle.
         """
         # Is this an absolute URL?
         if not self.PROTO_RE.match(uri):
@@ -196,7 +203,7 @@ class HTTPClient(object):
         self._request(method=method, uri=uri, callback=callback, body=body,
                 headers=headers, cookies=cookies, auth=auth,
                 timeout=timeout, proxies=proxies, tls_verify=tls_verify,
-                tls_cert=tls_cert)
+                tls_cert=tls_cert, accept_status=accept_status)
 
     def get(self, uri, callback, **kwargs):
         """
@@ -226,17 +233,17 @@ class HTTPClient(object):
                 body_size = len(body)
 
             if body_size is not False:
-                headers['Content-Length'] = str(body_size)
+                headers[self.CONTENT_LENGTH_HDR] = str(body_size)
 
             if body_type is not None:
-                headers['Content-Type'] = body_type
+                headers[self.CONTENT_TYPE_HDR] = body_type
 
-        self.request(method='POST', uri=uri, callback=callback, body=body,
-                headers=headers, **kwargs)
+        self.request(method='POST', uri=uri, callback=callback,
+                body=body, headers=headers, **kwargs)
 
     def _request(self, method, uri, callback, body,
             headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert):
+            tls_verify, tls_cert, accept_status):
         """
         Perform a HTTP request using the underlying implementation.  This is
         expected to take the arguments given, perform a query, then return the
@@ -252,9 +259,9 @@ class HTTPResponse(object):
     """
     def __init__(self, status_code, headers, body, cookies=None):
         self.status_code = status_code
-        self.headers = headers
+        self.headers = CaseInsensitiveDict(headers or {})
         self.body = body
-        self.cookies = cookies
+        self.cookies = CaseInsensitiveDict(cookies or {})
         self._content_type = None
         self._content_type_args = None
         self._text = None
@@ -296,9 +303,7 @@ class HTTPResponse(object):
         return self._text
 
     def _parse_content_type(self):
-        # Handle both cases
-        content_type = self.headers.get('Content-Type', \
-                self.headers.get('content-type'))
+        content_type = self.headers['content-type']
 
         # Is content encoding shoehorned in there?
         if ';' in content_type:
@@ -310,3 +315,37 @@ class HTTPResponse(object):
             content_type_args = {}
         self._content_type = content_type
         self._content_type_args = content_type_args
+
+
+class CaseInsensitiveDict(dict):
+    """
+    A dict object that maps keys in a case-insensitive manner.
+    """
+    @classmethod
+    def _key_to_str(cls, key):
+        # Handle bytes
+        if isinstance(key, bytes):
+            key = key.decode('utf-8')
+        return str(key).lower()
+
+    def __init__(self, *args, **kwargs):
+        super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
+        self._key_map = dict([(self._key_to_str(k), k) for k in self.keys()])
+
+    def __getitem__(self, key, *args, **kwargs):
+        try:
+            key = self._key_map[self._key_to_str(key)]
+        except KeyError:
+            pass
+        return super(CaseInsensitiveDict, self).__getitem__(
+                key, *args, **kwargs)
+
+    def __setitem__(self, key, *args, **kwargs):
+        self._key_map[self._key_to_str(k)] = key
+        return super(CaseInsensitiveDict, self).__setitem__(
+                key, *args, **kwargs)
+
+    def __delitem__(self, key, *args, **kwargs):
+        self._key_map.pop(str(key).lower(), None)
+        return super(CaseInsensitiveDict, self).__delitem__(
+                key, *args, **kwargs)
