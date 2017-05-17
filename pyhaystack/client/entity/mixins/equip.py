@@ -42,14 +42,16 @@ class EquipMixin(object):
             # Given an ID.... should return the point with this ID
             if key.replace('@','') == str(point.id).replace('@',''):
                 return point
-            # Given a dis or navName... should return point
-            elif key == point.tags['dis'] or key == point.tags['navName']:
-                return point
-            try:
-                if key == point.tags['navNameFormat']:
-                    return point
-            except KeyError:
-                pass
+            # Given a dis or navName... should return equip
+            if 'dis' in each.tags:
+                if key == each.tags['dis']:
+                    return each
+            if 'navName' in each.tags:
+                if key == each.tags['navName']:
+                    return each
+            if 'navNameFormat' in each.tags:
+                if key == each.tags['navNameFormat']:
+                    return each
         else:    
             try:
                 # Maybe key is a filter_expr
