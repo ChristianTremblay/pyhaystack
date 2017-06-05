@@ -114,6 +114,11 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
 
     def _do_login(self, event):
         try:
+            # Cover Niagara AX 3.7 where cookies are handled differently...
+            try:
+                niagara_session = self._cookies['niagara_session']
+            except KeyError:
+                niagara_session = ""
             self._session._post('login', self._on_login,
                     params={
                         'token':'',
@@ -122,7 +127,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
                         'content-type':'application/x-niagara-login-support',
                         'Referer':self._session._client.uri+'login/',
                         'accept':'text/zinc; charset=utf-8',
-                        'cookiePostfix' : self._cookies['niagara_session'],
+                        'cookiePostfix' : niagara_session,
                     },
                     headers={}, cookies=self._cookies,
                     exclude_cookies=True, exclude_proxies=True,
