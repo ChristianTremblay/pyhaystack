@@ -28,7 +28,7 @@ class WideskyHaystackSession(crud.CRUDOpsMixin,
         HaystackSession):
     """
     The WideskyHaystackSession class implements some base support for
-    NiagaraAX and Niagara4 servers.  This is mainly a convenience for
+    Widesky servers.  This is mainly a convenience for
     collecting the username and password details.
     """
 

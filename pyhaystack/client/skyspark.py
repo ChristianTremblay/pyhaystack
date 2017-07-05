@@ -7,8 +7,10 @@ Skyspark Client support
 from .session import HaystackSession
 from .ops.vendor.skyspark import SkysparkAuthenticateOperation
 from .ops.vendor.skyspark_scram import SkysparkScramAuthenticateOperation
+from .mixins.vendor.skyspark import evalexpr
 
-class SkysparkHaystackSession(HaystackSession):
+class SkysparkHaystackSession(HaystackSession,
+                              evalexpr.EvalOpsMixin):
     """
     The SkysparkHaystackSession class implements some base support for
     Skyspark servers.
