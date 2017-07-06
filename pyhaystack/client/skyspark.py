@@ -60,7 +60,8 @@ class SkysparkHaystackSession(HaystackSession,
         finally:
             self._auth_op = None
 
-class SkysparkScramHaystackSession(HaystackSession):
+class SkysparkScramHaystackSession(HaystackSession,
+                              evalexpr.EvalOpsMixin):
     """
     The SkysparkHaystackSession class implements some base support for
     Skyspark servers.

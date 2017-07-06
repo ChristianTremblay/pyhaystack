@@ -35,7 +35,7 @@ class EvalOpsMixin(object):
         """
         
         url = '/eval?expr=%s' % arg_expr
-        return = self._get_grid(url, callback=lambda *a, **k: None)
+        return self._get_grid(url, callback=lambda *a, **k: None)
 
 #    ===========================
 #    This function is commented and not working. I don't have anything to test
