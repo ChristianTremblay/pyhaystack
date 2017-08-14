@@ -34,7 +34,7 @@ class EvalOpsMixin(object):
         "readAll(site)"
         """
         
-        url = '/eval?expr=%s' % arg_expr
+        url = 'eval?expr=%s' % arg_expr
         return self._get_grid(url, callback=lambda *a, **k: None)
 
 #    ===========================
