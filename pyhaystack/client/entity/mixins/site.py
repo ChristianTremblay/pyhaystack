@@ -48,18 +48,22 @@ class SiteMixin(object):
         # self will call __iter__ which will look for equipments
         for each in self:
             # Given an ID.... should return the equip with this ID
+            
             if key.replace('@','') == str(each.id).replace('@',''):
                 return each
             # Given a dis or navName... should return equip
-            elif key == each.tags['dis'] or key == each.tags['navName']:
-                return each
-            try:
+            if 'dis' in each.tags:
+                if key == each.tags['dis']:
+                    return each
+            if 'navName' in each.tags:
+                if key == each.tags['navName']:
+                    return each
+            if 'navNameFormat' in each.tags:
                 if key == each.tags['navNameFormat']:
                     return each
-            except KeyError:
-                pass
         else:    
             try:
+                # Maybe key is a filter_expr
                 request = self.find_entity(key)
                 return request.result
             except HaystackError as e:

@@ -16,7 +16,7 @@ class EquipMixin(object):
     def find_entity(self, filter_expr=None, limit=None,
             single=False, callback=None):
         """
-        Retrieve the entities that are linked to this equip.
+        Retrieve the entities that are linked to this equipment.
         This is a convenience around the session find_entity method.
         """
         equip_ref = hszinc.dump_scalar(self.id)
@@ -42,16 +42,19 @@ class EquipMixin(object):
             # Given an ID.... should return the point with this ID
             if key.replace('@','') == str(point.id).replace('@',''):
                 return point
-            # Given a dis or navName... should return point
-            elif key == point.tags['dis'] or key == point.tags['navName']:
-                return point
-            try:
-                if key == point.tags['navNameFormat']:
-                    return point
-            except KeyError:
-                pass
+            # Given a dis or navName... should return equip
+            if 'dis' in each.tags:
+                if key == each.tags['dis']:
+                    return each
+            if 'navName' in each.tags:
+                if key == each.tags['navName']:
+                    return each
+            if 'navNameFormat' in each.tags:
+                if key == each.tags['navNameFormat']:
+                    return each
         else:    
             try:
+                # Maybe key is a filter_expr
                 request = self.find_entity(key)
                 return request.result
             except HaystackError as e:
