@@ -31,6 +31,42 @@ Or you can also git clone the develop branch and use ::
 
     python setup.py install
 
+.. note::
+    Some users reported problems when installing pyhaystack using the Python version 
+    provided by their OS (Mac OS users). We recommend to try the virtual environment
+    approach when you are unsure about the python version our modules dependencies.
+    
+Using virtual env
+------------------
+You can find more information on how to use virtualenv_ but here is a short way of making it work.
+
+::
+
+    sudo pip install virtualenv
+    mkdir your project folder
+    cd project
+    virtualenv venv
+    source venv/bin/activate
+
+.. note:: 
+    Once you are in your virtual env DO NOT use sudo to pip install.
+    (in fact, this is the part that made me think of permission issue as I read somewhere that we should never sudo pip install anything)
+
+So now you are in your virtual env (it's in parenthesis in the console) and you
+
+::
+                                   
+    pip install requests
+    pip install hszinc
+    pip install pyhaystack
+
+(note that this time you won't see any weird message when trying to install pandas and you need xcode to perform the install....)
+You are now able to ::
+
+    import hszinc
+    hszinc.MODE_ZINC
+    from pyhaystack.client.skyspark import SkysparkHaystackSession    
+
 What is project-haystack ?
 --------------------------
 As stated in the web site
@@ -102,3 +138,5 @@ to pyhaystack (ex. unit conversion)
 .. _Pint : http://pint.readthedocs.io
 
 .. _hszinc : https://github.com/vrtsystems/hszinc
+
+.. _virtualenv : https://virtualenv.pypa.io/en/stable/

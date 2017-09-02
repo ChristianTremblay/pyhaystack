@@ -276,8 +276,8 @@ arguments are supported:
 * ``username``: The username to use when authenticating with nHaystack
 * ``password``: The password to use when authenticating with nHaystack
 
-Direct approach
-^^^^^^^^^^^^^^^
+``Direct approach``
+^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -311,8 +311,8 @@ arguments are supported:
 * ``username``: The username to use when authenticating with nHaystack
 * ``password``: The password to use when authenticating with nHaystack
 
-Direct approach
-^^^^^^^^^^^^^^^
+``Direct approach``
+^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -350,8 +350,8 @@ arguments are supported:
 * ``client_secret``: The OAuth2 client secret to use when authenticating with
   WideSky.
 
-Direct approach
-^^^^^^^^^^^^^^^
+``Direct approach``
+^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -387,8 +387,8 @@ arguments are supported:
 * ``password``: The password to use when authenticating with SkySpark
 * ``project``: The name of the SkySpark project instance.
 
-Direct approach
-^^^^^^^^^^^^^^^
+``Direct approach``
+^^^^^^^^^^^^^^^^^^^
 
 ::
 

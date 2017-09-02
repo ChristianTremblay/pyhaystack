@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Skyspark v3+ operation implementations.
+Skyspark operation implementations.
 """
 
 import fysom

@@ -1,9 +1,5 @@
 #!python
 # -*- coding: utf-8 -*-
-"""
-Helper functions dealing with SCRAM authentication
-
-"""
 
 from binascii import b2a_hex, unhexlify, b2a_base64, hexlify
 from requests.auth import HTTPBasicAuth
