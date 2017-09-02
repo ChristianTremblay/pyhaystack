@@ -8,3 +8,4 @@ hszinc
 fysom
 signalslot
 semver
+certifi

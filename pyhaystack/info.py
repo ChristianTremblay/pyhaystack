@@ -2,7 +2,7 @@
 """
 File : pyhaystackTest.py (2.x)
 This module allow a connection to a haystack server
-Feautures provided allow user to fetch data from the server and eventually, to post to it.
+Features provided allow user to fetch data from the server and eventually, to post to it.
 
 See http://www.project-haystack.org for more details
 
@@ -12,6 +12,6 @@ Project Haystack is an open source initiative to streamline working with data fr
 
 __author__ = 'Christian Tremblay, Stuart Longland, @sudo-Whateverman, Igor'
 __author_email__ = 'christian.tremblay@servisys.com'
-__version__ = '0.91.5'
-__license__ = 'LGPL'
+__version__ = '0.92.5'
+__license__ = 'Apache 2.0'
 __copyright__ = "Christian Tremblay / SERVISYS inc. | Stuart Longland / VRT | 2016"
