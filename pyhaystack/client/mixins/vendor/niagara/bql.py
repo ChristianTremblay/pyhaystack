@@ -14,23 +14,6 @@ import pandas as pd
 from ....ops.grid import BaseAuthOperation
 from .....util.asyncexc import AsynchronousException
 
-class CsvFromBQL():
-    def __init__(self,bql, base_uri):
-        bql_request = 'ord?' + bql + '%7Cview:file:ITableToCsv'
-        bql_request.replace(' ', '%20')
-        self.uri = urljoin(base_uri, bql_request)    
-        self._file_like_object = None    
-        self.read()
-        
-    def read(self):
-        response = self._client._session.request('GET',self.uri).content
-        self._file_like_object = io.StringIO(response.decode('UTF-8'))
-    def get_frame(self):
-        if self._file_like_object:
-            return pd.read_csv(self._file_like_object)
-        else:
-            raise ValueError('You must first read the content of the request')
-            
 class BQLOperation(BaseAuthOperation):
        
     def __init__(self, session, bql, args=None, **kwargs):
