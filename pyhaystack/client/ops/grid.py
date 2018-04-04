@@ -172,7 +172,7 @@ class BaseGridOperation(BaseAuthOperation):
                             usual ones?
         """
 
-        super(BaseGridOperation, self).__init__()
+        super(BaseGridOperation, self).__init__(session, uri)
         if args is not None:
             # Convert scalars to strings
             args = dict([(param, hszinc.dump_scalar(value) \
