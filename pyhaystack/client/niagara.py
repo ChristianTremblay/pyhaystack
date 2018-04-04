@@ -79,6 +79,7 @@ class Niagara4HaystackSession(HaystackSession):
         self._username = username
         self._password = password
         self._authenticated = False
+        self._uri = uri
 
     @property
     def is_logged_in(self):

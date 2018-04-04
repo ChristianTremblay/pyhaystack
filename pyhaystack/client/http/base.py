@@ -341,7 +341,7 @@ class CaseInsensitiveDict(dict):
                 key, *args, **kwargs)
 
     def __setitem__(self, key, *args, **kwargs):
-        self._key_map[self._key_to_str(k)] = key
+        self._key_map[self._key_to_str(key)] = key
         return super(CaseInsensitiveDict, self).__setitem__(
                 key, *args, **kwargs)
 
