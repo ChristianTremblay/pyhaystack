@@ -7,6 +7,7 @@ Tridium Niagara Client support (AX and N4)
 from .session import HaystackSession
 from .ops.vendor.niagara import NiagaraAXAuthenticateOperation
 from .ops.vendor.niagara_scram import Niagara4ScramAuthenticateOperation
+from .mixins.vendor.niagara.bql import BQLOperation, BQLMixin
 
 class NiagaraHaystackSession(HaystackSession):
     """
@@ -58,7 +59,7 @@ class NiagaraHaystackSession(HaystackSession):
         finally:
             self._auth_op = None
 
-class Niagara4HaystackSession(HaystackSession):
+class Niagara4HaystackSession(HaystackSession, BQLMixin):
     """
     The Niagara4HaystackSession class implements some base support for
     Niagara4. This is mainly a convenience for
@@ -66,6 +67,7 @@ class Niagara4HaystackSession(HaystackSession):
     """
 
     _AUTH_OPERATION = Niagara4ScramAuthenticateOperation
+    _BQL_OPERATION = BQLOperation
 
     def __init__(self, uri, username, password, **kwargs):
         """
@@ -104,3 +106,14 @@ class Niagara4HaystackSession(HaystackSession):
             self._client.cookies = None
         finally:
             self._auth_op = None
+            
+    def _get_bql(self, bql, callback, cache=False, **kwargs):
+        """
+        Perform a HTTP GET of a grid.
+        """
+        op = self._BQL_OPERATION(self, bql,
+                cache=cache, **kwargs)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op

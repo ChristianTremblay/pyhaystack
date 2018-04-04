@@ -9,14 +9,138 @@ POST requests involving Haystack ZINC grids.
 import hszinc
 import fysom
 
-import shlex
 from ...util import state
 from ...exception import HaystackError, AuthenticationProblem
 from ...util.asyncexc import AsynchronousException
 from six import string_types
 from time import time
 
-class BaseGridOperation(state.HaystackOperation):
+class BaseAuthOperation(state.HaystackOperation):
+    """
+    A base class authentication operations.
+    """
+    """
+    A base class for GET and POST operations involving grids.
+    """
+
+    def __init__(self, session, uri, retries=2, cache=False,):
+        """
+        Initialise a request for the grid with the given URI and arguments.
+
+        :param session: Haystack HTTP session object.
+        :param uri: Possibly partial URI relative to the server base address
+                    to perform a query.  No arguments shall be given here.
+        :param expect_format: Request that the grid be sent in the given format.
+        :param args: Dictionary of key-value pairs to be given as arguments.
+        """
+
+        super(BaseAuthOperation, self).__init__()
+
+
+        self._retries = retries
+        self._session = session
+        self._uri = uri
+        self._headers = {}
+
+        self._cache = cache
+
+        self._state_machine = fysom.Fysom(
+                initial='init', final='done',
+                events=[
+                    # Event             Current State       New State
+                    ('auth_ok',         'init',             'check_cache'),
+                    ('auth_not_ok',     'init',             'auth_attempt'),
+                    ('auth_ok',         'auth_attempt',     'check_cache'),
+                    ('auth_not_ok',     'auth_attempt',     'auth_failed'),
+                    ('auth_failed',     'auth_attempt',     'done'),
+                    ('cache_hit',       'check_cache',      'done'),
+                    ('cache_miss',      'check_cache',      'submit'),
+                    ('response_ok',     'submit',           'done'),
+                    ('exception',       '*',                'failed'),
+                    ('retry',           'failed',           'init'),
+                    ('abort',           'failed',           'done'),
+                ], callbacks={
+                    'onretry':              self._check_auth,
+                    'onenterauth_attempt':  self._do_auth_attempt,
+                    'onenterauth_failed':   self._do_auth_failed,
+                    'onentercheck_cache':   self._do_check_cache,
+                    'onentersubmit':        self._do_submit,
+                    'onenterfailed':        self._do_fail_retry,
+                    'onenterdone':          self._do_done,
+                })
+
+    def go(self):
+        """
+        Start the request.
+        """
+        self._check_auth()
+
+    def _check_auth(self, *args):
+        """
+        Check authentication.
+        """
+        # Are we logged in?
+        try:
+            if self._session.is_logged_in:
+                self._state_machine.auth_ok()
+            else:
+                self._state_machine.auth_not_ok()
+        except: # Catch all exceptions to pass to caller.
+            self._log.debug('Authentication check fails', exc_info=1)
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_auth_attempt(self, event):
+        """
+        Tell the session object to log in, then call us back.
+        """
+        try:
+            self._session.authenticate(callback=self._on_authenticate)
+        except: # Catch all exceptions to pass to caller.
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _on_authenticate(self, *args, **kwargs):
+        """
+        Retry the authentication check.
+        """
+        self._log.debug('Authenticated, trying again')
+        self.go()
+
+    def _do_check_cache(self, event):
+        """
+        Implement if needed
+        """
+        self._state_machine.cache_miss()    # Nope
+        return
+
+    def _on_response(self, response):
+        raise NotImplementedError()
+        
+    def _do_fail_retry(self, event):
+        """
+        Determine whether we retry or fail outright.
+        """
+        if self._retries > 0:
+            self._retries -= 1
+            self._state_machine.retry()
+        else:
+            self._state_machine.abort(result=event.result)
+
+    def _do_auth_failed(self, event):
+        """
+        Raise and capture an authentication failure.
+        """
+        try:
+            raise AuthenticationProblem()
+        except:
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_done(self, event):
+        """
+        Return the result from the state machine.
+        """
+        self._done(event.result)
+
+class BaseGridOperation(BaseAuthOperation):
     """
     A base class for GET and POST operations involving grids.
     """
@@ -81,66 +205,6 @@ class BaseGridOperation(state.HaystackOperation):
                         'expect_format must be one onf hszinc.MODE_ZINC '\
                         'or hszinc.MODE_JSON')
 
-        self._state_machine = fysom.Fysom(
-                initial='init', final='done',
-                events=[
-                    # Event             Current State       New State
-                    ('auth_ok',         'init',             'check_cache'),
-                    ('auth_not_ok',     'init',             'auth_attempt'),
-                    ('auth_ok',         'auth_attempt',     'check_cache'),
-                    ('auth_not_ok',     'auth_attempt',     'auth_failed'),
-                    ('auth_failed',     'auth_attempt',     'done'),
-                    ('cache_hit',       'check_cache',      'done'),
-                    ('cache_miss',      'check_cache',      'submit'),
-                    ('response_ok',     'submit',           'done'),
-                    ('exception',       '*',                'failed'),
-                    ('retry',           'failed',           'init'),
-                    ('abort',           'failed',           'done'),
-                ], callbacks={
-                    'onretry':              self._check_auth,
-                    'onenterauth_attempt':  self._do_auth_attempt,
-                    'onenterauth_failed':   self._do_auth_failed,
-                    'onentercheck_cache':   self._do_check_cache,
-                    'onentersubmit':        self._do_submit,
-                    'onenterfailed':        self._do_fail_retry,
-                    'onenterdone':          self._do_done,
-                })
-
-    def go(self):
-        """
-        Start the request.
-        """
-        self._check_auth()
-
-    def _check_auth(self, *args):
-        """
-        Check authentication.
-        """
-        # Are we logged in?
-        try:
-            if self._session.is_logged_in:
-                self._state_machine.auth_ok()
-            else:
-                self._state_machine.auth_not_ok()
-        except: # Catch all exceptions to pass to caller.
-            self._log.debug('Authentication check fails', exc_info=1)
-            self._state_machine.exception(result=AsynchronousException())
-
-    def _do_auth_attempt(self, event):
-        """
-        Tell the session object to log in, then call us back.
-        """
-        try:
-            self._session.authenticate(callback=self._on_authenticate)
-        except: # Catch all exceptions to pass to caller.
-            self._state_machine.exception(result=AsynchronousException())
-
-    def _on_authenticate(self, *args, **kwargs):
-        """
-        Retry the authentication check.
-        """
-        self._log.debug('Authenticated, trying again')
-        self.go()
 
     def _do_check_cache(self, event):
         """
@@ -246,30 +310,6 @@ class BaseGridOperation(state.HaystackOperation):
             self._log.debug('Parse fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
-    def _do_fail_retry(self, event):
-        """
-        Determine whether we retry or fail outright.
-        """
-        if self._retries > 0:
-            self._retries -= 1
-            self._state_machine.retry()
-        else:
-            self._state_machine.abort(result=event.result)
-
-    def _do_auth_failed(self, event):
-        """
-        Raise and capture an authentication failure.
-        """
-        try:
-            raise AuthenticationProblem()
-        except:
-            self._state_machine.exception(result=AsynchronousException())
-
-    def _do_done(self, event):
-        """
-        Return the result from the state machine.
-        """
-        self._done(event.result)
 
 
 class GetGridOperation(BaseGridOperation):
