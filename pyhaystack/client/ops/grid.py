@@ -19,19 +19,19 @@ class BaseAuthOperation(state.HaystackOperation):
     """
     A base class authentication operations.
     """
-    """
-    A base class for GET and POST operations involving grids.
-    """
 
     def __init__(self, session, uri, retries=2, cache=False,):
         """
-        Initialise a request for the grid with the given URI and arguments.
+        Initialise a request for the authenticating with the given URI and arguments.
+        
+        It also contains the state machine for reconnection if needed.
 
         :param session: Haystack HTTP session object.
         :param uri: Possibly partial URI relative to the server base address
                     to perform a query.  No arguments shall be given here.
-        :param expect_format: Request that the grid be sent in the given format.
-        :param args: Dictionary of key-value pairs to be given as arguments.
+        :param retries: Number of retries permitted in case of failure.
+        :param cache: Whether or not to cache this result.  If True, the
+                      result is cached by the session object.
         """
 
         super(BaseAuthOperation, self).__init__()

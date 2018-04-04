@@ -9,7 +9,7 @@ from .ops.vendor.niagara import NiagaraAXAuthenticateOperation
 from .ops.vendor.niagara_scram import Niagara4ScramAuthenticateOperation
 from .mixins.vendor.niagara.bql import BQLOperation, BQLMixin
 
-class NiagaraHaystackSession(HaystackSession):
+class NiagaraHaystackSession(HaystackSession, BQLMixin):
     """
     The NiagaraHaystackSession class implements some base support for
     NiagaraAX. This is mainly a convenience for
@@ -17,7 +17,8 @@ class NiagaraHaystackSession(HaystackSession):
     """
 
     _AUTH_OPERATION = NiagaraAXAuthenticateOperation
-
+    _BQL_OPERATION = BQLOperation
+    
     def __init__(self, uri, username, password, **kwargs):
         """
         Initialise a Nagara Project Haystack session handler.
@@ -30,6 +31,7 @@ class NiagaraHaystackSession(HaystackSession):
         self._username = username
         self._password = password
         self._authenticated = False
+        self._uri = uri
 
     @property
     def is_logged_in(self):
@@ -107,13 +109,4 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin):
         finally:
             self._auth_op = None
             
-    def _get_bql(self, bql, callback, cache=False, **kwargs):
-        """
-        Perform a HTTP GET of a grid.
-        """
-        op = self._BQL_OPERATION(self, bql,
-                cache=cache, **kwargs)
-        if callback is not None:
-            op.done_sig.connect(callback)
-        op.go()
-        return op
+

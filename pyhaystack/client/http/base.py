@@ -35,7 +35,8 @@ class HTTPClient(object):
 
     def __init__(self, uri=None, params=None, headers=None, cookies=None,
             auth=None, timeout=None, proxies=None, tls_verify=None,
-            tls_cert=None, accept_status=None, log=None):
+            tls_cert=None, accept_status=None, log=None,
+            insecure_requests_warning=True):
         """
         Instantiate a HTTP client instance with some default parameters.
         These parameters are made accessible as properties to be modified at
@@ -79,6 +80,9 @@ class HTTPClient(object):
         self.tls_verify = tls_verify
         self.tls_cert = tls_cert
         self.log = log
+        
+        if not insecure_requests_warning:
+            self.silence_insecured_warnings()
 
     def request(self, method, uri, callback, body=None, params=None,
             headers=None, cookies=None, auth=None, timeout=None, proxies=None,
@@ -251,7 +255,22 @@ class HTTPClient(object):
         """
         raise NotImplementedError('TODO: implement in %s' \
                 % self.__class__.__name__)
+        
+    def silence_insecured_warnings(self):
+        """
+        Can be used to disable Insecure Requests Warnings
+        in "controlled" environment.
+        Use with care.
+        """
+        if self.log is not None:
+            self.log.warning('Disabling insecure requests warnings. Please use with care. Unverified HTTPS requests will be made. Adding Certificate verification is strongly advised.')
+        try:
+            import requests
+            from requests.packages.urllib3.exceptions import InsecureRequestWarning
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+        except ImportError:
+            raise
 
 class HTTPResponse(object):
     """

@@ -77,10 +77,19 @@ class BQLMixin(object):
     for Niagara clients
 
     """
+    def _get_bql(self, bql, callback, cache=False, **kwargs):
+        """
+        Perform a HTTP GET of a BQL Request.
+        """
+        op = self._BQL_OPERATION(self, bql,
+                cache=cache, **kwargs)
+        if callback is not None:
+            op.done_sig.connect(callback)
+        op.go()
+        return op
     
     def get_bql(self, bql): 
         """
-
-        """
-        
+        Helper to get a BQL sent to the Niagara device
+        """      
         return self._get_bql(bql, callback=lambda *a, **k: None)
