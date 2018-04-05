@@ -7,8 +7,9 @@ Tridium Niagara Client support (AX and N4)
 from .session import HaystackSession
 from .ops.vendor.niagara import NiagaraAXAuthenticateOperation
 from .ops.vendor.niagara_scram import Niagara4ScramAuthenticateOperation
+from .mixins.vendor.niagara.bql import BQLOperation, BQLMixin
 
-class NiagaraHaystackSession(HaystackSession):
+class NiagaraHaystackSession(HaystackSession, BQLMixin):
     """
     The NiagaraHaystackSession class implements some base support for
     NiagaraAX. This is mainly a convenience for
@@ -16,7 +17,8 @@ class NiagaraHaystackSession(HaystackSession):
     """
 
     _AUTH_OPERATION = NiagaraAXAuthenticateOperation
-
+    _BQL_OPERATION = BQLOperation
+    
     def __init__(self, uri, username, password, **kwargs):
         """
         Initialise a Nagara Project Haystack session handler.
@@ -29,6 +31,7 @@ class NiagaraHaystackSession(HaystackSession):
         self._username = username
         self._password = password
         self._authenticated = False
+        self._uri = uri
 
     @property
     def is_logged_in(self):
@@ -58,7 +61,7 @@ class NiagaraHaystackSession(HaystackSession):
         finally:
             self._auth_op = None
 
-class Niagara4HaystackSession(HaystackSession):
+class Niagara4HaystackSession(HaystackSession, BQLMixin):
     """
     The Niagara4HaystackSession class implements some base support for
     Niagara4. This is mainly a convenience for
@@ -66,6 +69,7 @@ class Niagara4HaystackSession(HaystackSession):
     """
 
     _AUTH_OPERATION = Niagara4ScramAuthenticateOperation
+    _BQL_OPERATION = BQLOperation
 
     def __init__(self, uri, username, password, **kwargs):
         """
@@ -79,6 +83,7 @@ class Niagara4HaystackSession(HaystackSession):
         self._username = username
         self._password = password
         self._authenticated = False
+        self._uri = uri
 
     @property
     def is_logged_in(self):
@@ -103,3 +108,5 @@ class Niagara4HaystackSession(HaystackSession):
             self._client.cookies = None
         finally:
             self._auth_op = None
+            
+

@@ -9,77 +9,40 @@ POST requests involving Haystack ZINC grids.
 import hszinc
 import fysom
 
-import shlex
 from ...util import state
 from ...exception import HaystackError, AuthenticationProblem
 from ...util.asyncexc import AsynchronousException
 from six import string_types
 from time import time
 
-class BaseGridOperation(state.HaystackOperation):
+class BaseAuthOperation(state.HaystackOperation):
     """
-    A base class for GET and POST operations involving grids.
+    A base class authentication operations.
     """
 
-    def __init__(self, session, uri, args=None,
-            expect_format=hszinc.MODE_ZINC, multi_grid=False,
-            raw_response=False, retries=2, cache=False, cache_key=None,
-            accept_status=None):
+    def __init__(self, session, uri, retries=2, cache=False,):
         """
-        Initialise a request for the grid with the given URI and arguments.
+        Initialise a request for the authenticating with the given URI and arguments.
+        
+        It also contains the state machine for reconnection if needed.
 
         :param session: Haystack HTTP session object.
         :param uri: Possibly partial URI relative to the server base address
                     to perform a query.  No arguments shall be given here.
-        :param expect_format: Request that the grid be sent in the given format.
-        :param args: Dictionary of key-value pairs to be given as arguments.
-        :param multi_grid: Boolean indicating if we are to expect multiple
-                           grids or not.  If True, then the operation will
-                           _always_ return a list, otherwise, it will _always_
-                           return a single grid.
-        :param raw_response: Boolean indicating if we should try to parse the
-                             result.  If True, then we should just pass back the
-                             raw HTTPResponse object.
         :param retries: Number of retries permitted in case of failure.
         :param cache: Whether or not to cache this result.  If True, the
                       result is cached by the session object.
-        :param cache_key: Name of the key to use when the object is cached.
-        :param accept_status: What status codes to accept, in addition to the
-                            usual ones?
         """
 
-        super(BaseGridOperation, self).__init__()
-        if args is not None:
-            # Convert scalars to strings
-            args = dict([(param, hszinc.dump_scalar(value) \
-                                    if not isinstance(value, string_types) \
-                                    else value)
-                            for param, value in args.items()])
+        super(BaseAuthOperation, self).__init__()
+
 
         self._retries = retries
         self._session = session
-        self._multi_grid = multi_grid
         self._uri = uri
-        self._args = args
-        self._expect_format = expect_format
-        self._raw_response = raw_response
         self._headers = {}
-        self._accept_status = accept_status
 
         self._cache = cache
-        if cache and (cache_key is None):
-            cache_key = uri
-        self._cache_key = cache_key
-
-        if not raw_response:
-            if expect_format == hszinc.MODE_ZINC:
-                self._headers[b'Accept'] = 'text/zinc'
-            elif expect_format == hszinc.MODE_JSON:
-                self._headers[b'Accept'] = 'application/json'
-            elif expect_format is not None:
-                raise ValueError(
-                        'expect_format must be one onf hszinc.MODE_ZINC '\
-                        'or hszinc.MODE_JSON')
 
         self._state_machine = fysom.Fysom(
                 initial='init', final='done',
@@ -141,6 +104,107 @@ class BaseGridOperation(state.HaystackOperation):
         """
         self._log.debug('Authenticated, trying again')
         self.go()
+
+    def _do_check_cache(self, event):
+        """
+        Implement if needed
+        """
+        self._state_machine.cache_miss()    # Nope
+        return
+
+    def _on_response(self, response):
+        raise NotImplementedError()
+        
+    def _do_fail_retry(self, event):
+        """
+        Determine whether we retry or fail outright.
+        """
+        if self._retries > 0:
+            self._retries -= 1
+            self._state_machine.retry()
+        else:
+            self._state_machine.abort(result=event.result)
+
+    def _do_auth_failed(self, event):
+        """
+        Raise and capture an authentication failure.
+        """
+        try:
+            raise AuthenticationProblem()
+        except:
+            self._state_machine.exception(result=AsynchronousException())
+
+    def _do_done(self, event):
+        """
+        Return the result from the state machine.
+        """
+        self._done(event.result)
+
+class BaseGridOperation(BaseAuthOperation):
+    """
+    A base class for GET and POST operations involving grids.
+    """
+
+    def __init__(self, session, uri, args=None,
+            expect_format=hszinc.MODE_ZINC, multi_grid=False,
+            raw_response=False, retries=2, cache=False, cache_key=None,
+            accept_status=None):
+        """
+        Initialise a request for the grid with the given URI and arguments.
+
+        :param session: Haystack HTTP session object.
+        :param uri: Possibly partial URI relative to the server base address
+                    to perform a query.  No arguments shall be given here.
+        :param expect_format: Request that the grid be sent in the given format.
+        :param args: Dictionary of key-value pairs to be given as arguments.
+        :param multi_grid: Boolean indicating if we are to expect multiple
+                           grids or not.  If True, then the operation will
+                           _always_ return a list, otherwise, it will _always_
+                           return a single grid.
+        :param raw_response: Boolean indicating if we should try to parse the
+                             result.  If True, then we should just pass back the
+                             raw HTTPResponse object.
+        :param retries: Number of retries permitted in case of failure.
+        :param cache: Whether or not to cache this result.  If True, the
+                      result is cached by the session object.
+        :param cache_key: Name of the key to use when the object is cached.
+        :param accept_status: What status codes to accept, in addition to the
+                            usual ones?
+        """
+
+        super(BaseGridOperation, self).__init__(session, uri)
+        if args is not None:
+            # Convert scalars to strings
+            args = dict([(param, hszinc.dump_scalar(value) \
+                                    if not isinstance(value, string_types) \
+                                    else value)
+                            for param, value in args.items()])
+
+        self._retries = retries
+        self._session = session
+        self._multi_grid = multi_grid
+        self._uri = uri
+        self._args = args
+        self._expect_format = expect_format
+        self._raw_response = raw_response
+        self._headers = {}
+        self._accept_status = accept_status
+
+        self._cache = cache
+        if cache and (cache_key is None):
+            cache_key = uri
+        self._cache_key = cache_key
+
+        if not raw_response:
+            if expect_format == hszinc.MODE_ZINC:
+                self._headers[b'Accept'] = 'text/zinc'
+            elif expect_format == hszinc.MODE_JSON:
+                self._headers[b'Accept'] = 'application/json'
+            elif expect_format is not None:
+                raise ValueError(
+                        'expect_format must be one onf hszinc.MODE_ZINC '\
+                        'or hszinc.MODE_JSON')
+
 
     def _do_check_cache(self, event):
         """
@@ -246,30 +310,6 @@ class BaseGridOperation(state.HaystackOperation):
             self._log.debug('Parse fails', exc_info=1)
             self._state_machine.exception(result=AsynchronousException())
 
-    def _do_fail_retry(self, event):
-        """
-        Determine whether we retry or fail outright.
-        """
-        if self._retries > 0:
-            self._retries -= 1
-            self._state_machine.retry()
-        else:
-            self._state_machine.abort(result=event.result)
-
-    def _do_auth_failed(self, event):
-        """
-        Raise and capture an authentication failure.
-        """
-        try:
-            raise AuthenticationProblem()
-        except:
-            self._state_machine.exception(result=AsynchronousException())
-
-    def _do_done(self, event):
-        """
-        Return the result from the state machine.
-        """
-        self._done(event.result)
 
 
 class GetGridOperation(BaseGridOperation):
