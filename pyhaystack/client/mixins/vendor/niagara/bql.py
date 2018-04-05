@@ -14,6 +14,12 @@ import pandas as pd
 from ....ops.grid import BaseAuthOperation
 from .....util.asyncexc import AsynchronousException
 
+try:
+    from urllib.parse import quote as quote_uri
+except ImportError:
+    # Python 2.7 dinosaur
+    from urllib import quote as quote_uri
+
 class BQLOperation(BaseAuthOperation):
        
     def __init__(self, session, bql, args=None, **kwargs):
@@ -25,8 +31,7 @@ class BQLOperation(BaseAuthOperation):
         :param args: Dictionary of key-value pairs to be given as arguments.
         """
         self._log = session._log.getChild('bql.%s' % bql)
-        bql_request = 'ord?' + bql + '%7Cview:file:ITableToCsv'
-        bql_request.replace(' ', '%20')
+        bql_request = 'ord?' + quote_uri(bql) + '%7Cview:file:ITableToCsv'
         self.uri = urljoin(session._uri, bql_request)
         self._file_like_object = None
         super(BQLOperation, self).__init__(
