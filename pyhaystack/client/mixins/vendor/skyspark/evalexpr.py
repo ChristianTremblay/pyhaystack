@@ -1,7 +1,7 @@
 #!python
 # -*- coding: utf-8 -*-
 """
-Skyspark allows custom functions to be calle by a eval op
+Skyspark allows custom functions to be called by a eval op
 
 This is a BETA function that will need to be tested by users
 

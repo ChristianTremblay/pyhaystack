@@ -3,8 +3,6 @@
 """
 Niagara allows BQL requests to browse the database
 
-This is a BETA function that will need to be tested by users
-
 """
 
 from requests.compat import urljoin

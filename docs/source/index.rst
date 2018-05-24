@@ -17,6 +17,7 @@ How to use it
   his
   quantity
   synchronous
+  niagara_plugin
 
 Modules documentation
 =====================

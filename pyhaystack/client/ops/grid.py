@@ -282,6 +282,9 @@ class BaseGridOperation(BaseAuthOperation):
             elif content_type == 'application/json':
                 # We have been given a grid in JSON format.
                 decoded = [hszinc.parse(body, mode=hszinc.MODE_JSON)]
+            elif content_type in ('text/html'):
+                # We probably fell back to a login screen after auto logoff.
+                self._state_machine.exception(AsynchronousException())
             else:
                 # We don't recognise this!
                 raise ValueError('Unrecognised content type %s' % content_type)
