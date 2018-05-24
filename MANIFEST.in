@@ -1,0 +1,15 @@
+recursive-include docs *
+recursive-include tests *.py
+recursive-include pyhaystack *.txt
+include *.txt *.rst license
+
+# Technically do not belong, but dpkg-buildpackage will moan unless I include
+# them.
+include .idea/*
+include .project
+include .pydevproject
+include .travis.yml
+include pyhaystack/mango/MangoClient.py
+include pyhaystack/mango/mango_api.py
+include MANIFEST
+include MANIFEST.in

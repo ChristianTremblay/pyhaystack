@@ -23,6 +23,17 @@ def _decode_str(s, enc='utf-8'):
         return s
 
 
+def _decode_str(s, enc='utf-8'):
+    """
+    Try to decode a 'str' object to a Unicode string.
+    """
+    try:
+        return s.decode(enc)
+    except AttributeError:
+        # This is probably already a Unicode string
+        return s
+
+
 class WideskyHaystackSession(crud.CRUDOpsMixin,
         multihis.MultiHisOpsMixin,
         HaystackSession):

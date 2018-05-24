@@ -1,0 +1,55 @@
+pyhaystack (0.9.0.5) unstable; urgency=low
+  * Pull in bugfixes for HTTP headers
+  * Pull in version detection updates for WideSky
+ -- Stuart Longland <stuartl@vrt.com.au>  Mon, 19 Sep 2016 14:17:33 +1000
+
+pyhaystack (0.9.0.4) unstable; urgency=low
+  * Fix dependencies on pandas.
+ -- Stuart Longland <stuartl@vrt.com.au>  Tue, 06 Sep 2016 14:56:03 +1000
+
+pyhaystack (0.9.0.3) unstable; urgency=low
+  * Fix handling of multiple entity read requests where IDs for non-existent
+    entities are given.  (VRT JIRA issue 366; upstream Github PR #26)
+ -- Stuart Longland <stuartl@vrt.com.au>  Tue, 30 Aug 2016 08:12:52 +1000
+
+pyhaystack (0.9.0.2) unstable; urgency=low
+  * Implement auto-detection of multi-point hisRead/hisWrite support
+ -- Stuart Longland <stuartl@vrt.com.au>  Fri, 29 Jul 2016 14:37:23 +1000
+
+pyhaystack (0.9.0.1) unstable; urgency=low
+  * Bugfixes for multi-point hisRead/hisWrite
+ -- Stuart Longland <stuartl@vrt.com.au>  Wed, 27 Jul 2016 10:57:52 +1000
+
+pyhaystack (0.9) unstable; urgency=low
+  * Pull upstream release 0.9
+  * Add bugfix for POST handling
+ -- Stuart Longland <stuartl@vrt.com.au>  Sat, 16 Jul 2016 08:47:52 +1000
+
+pyhaystack (0.71.1.8.2-6) unstable; urgency=low
+  * Fix to handle empty series when writing frames.
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 02 Jun 2016 16:19:00 +1000
+
+pyhaystack (0.71.1.8.2-5) unstable; urgency=low
+  * Re-build using latest sources
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 12 May 2016 12:34:02 +1000
+
+pyhaystack (0.71.1.8.2-4) unstable; urgency=low
+  * Throw out unused mixins that drag in pandas library unnecessarily.
+ -- Stuart Longland <stuartl@vrt.com.au>  Fri, 29 Apr 2016 06:02:27 +1000
+
+pyhaystack (0.71.1.8.2-3) unstable; urgency=low
+  * Further fixes.
+  * Clean up now dead and non-functional legacy client.
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 28 Apr 2016 14:25:00 +1000
+
+pyhaystack (0.71.1.8.2-2) unstable; urgency=low
+
+  * Additional fixes and improvements.
+
+ -- Stuart Longland <stuartl@vrt.com.au>  Thu, 21 Apr 2016 14:14:04 +1000
+
+pyhaystack (0.71.1.8.2-1) unstable; urgency=low
+
+  * Initial package built on 'widesky' branch.
+
+ -- Stuart Longland <stuartl@vrt.com.au>  Wed, 20 Apr 2016 02:19:27 +0000
