@@ -253,6 +253,8 @@ class Niagara4ScramAuthenticateOperation(state.HaystackOperation):
         Retrieve the response and set authenticated status
         """
         try:
+            if isinstance(response, AsynchronousException):
+                response.reraise()
             if response.status_code == 200:
                 self._state_machine.login_done(result={'authenticated': True})
             else:
