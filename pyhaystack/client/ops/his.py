@@ -67,6 +67,12 @@ class HisReadSeriesOperation(state.HaystackOperation):
         if (series_format == self.FORMAT_SERIES) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
 
+        if isinstance(rng, slice):
+            rng = ','.join([
+                hszinc.dump_scalar(p, mode=hszinc.MODE_ZINC)
+                for p in (rng.start, rng.stop)
+            ])
+
         self._session = session
         self._point = point
         self._range = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
@@ -173,6 +179,12 @@ class HisReadFrameOperation(state.HaystackOperation):
 
         if (frame_format == self.FORMAT_FRAME) and (not HAVE_PANDAS):
             raise NotImplementedError('pandas not available.')
+
+        if isinstance(rng, slice):
+            rng = ','.join([
+                hszinc.dump_scalar(p, mode=hszinc.MODE_ZINC)
+                for p in (rng.start, rng.stop)
+            ])
 
         # Convert the columns to a list of tuples.
         strip_ref = lambda r : r.name if isinstance(r, hszinc.Ref) else r
