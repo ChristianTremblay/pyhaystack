@@ -13,6 +13,7 @@ from ....util.asyncexc import AsynchronousException
 from ...http.auth import BasicAuthenticationCredentials
 from ...http.exceptions import HTTPStatusError
 
+
 class NiagaraAXAuthenticateOperation(state.HaystackOperation):
     """
     An implementation of the log-in procedure for Niagara AX.  The procedure
@@ -27,7 +28,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
     Future requests should include the basic authentication credentials.
     """
 
-    _LOGIN_RE = re.compile('login', re.IGNORECASE)
+    _LOGIN_RE = re.compile("login", re.IGNORECASE)
 
     def __init__(self, session, retries=0):
         """
@@ -52,25 +53,29 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         self._retries = retries
         self._session = session
         self._cookies = {}
-        self._auth = BasicAuthenticationCredentials(session._username,
-                                                    session._password)
+        self._auth = BasicAuthenticationCredentials(
+            session._username, session._password
+        )
 
         self._state_machine = fysom.Fysom(
-                initial='init', final='done',
-                events=[
-                    # Event             Current State       New State
-                    ('get_new_session', 'init',             'newsession'),
-                    ('do_login',        'newsession',       'login'),
-                    ('login_done',      'login',            'done'),
-                    ('exception',       '*',                'failed'),
-                    ('retry',           'failed',           'newsession'),
-                    ('abort',           'failed',           'done'),
-                ], callbacks={
-                    'onenternewsession':    self._do_new_session,
-                    'onenterlogin':         self._do_login,
-                    'onenterfailed':        self._do_fail_retry,
-                    'onenterdone':          self._do_done,
-                })
+            initial="init",
+            final="done",
+            events=[
+                # Event             Current State       New State
+                ("get_new_session", "init", "newsession"),
+                ("do_login", "newsession", "login"),
+                ("login_done", "login", "done"),
+                ("exception", "*", "failed"),
+                ("retry", "failed", "newsession"),
+                ("abort", "failed", "done"),
+            ],
+            callbacks={
+                "onenternewsession": self._do_new_session,
+                "onenterlogin": self._do_login,
+                "onenterfailed": self._do_fail_retry,
+                "onenterdone": self._do_done,
+            },
+        )
 
     def go(self):
         """
@@ -79,7 +84,7 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         # Are we logged in?
         try:
             self._state_machine.get_new_session()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_new_session(self, event):
@@ -87,10 +92,16 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
         Request the log-in cookie.
         """
         try:
-            self._session._get('login', self._on_new_session,
-                    cookies={}, headers={}, exclude_cookies=True,
-                    exclude_headers=True, api=False)
-        except: # Catch all exceptions to pass to caller.
+            self._session._get(
+                "login",
+                self._on_new_session,
+                cookies={},
+                headers={},
+                exclude_cookies=True,
+                exclude_headers=True,
+                api=False,
+            )
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_new_session(self, response):
@@ -109,30 +120,36 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
 
             self._cookies = response.cookies.copy()
             self._state_machine.do_login()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_login(self, event):
         try:
             # Cover Niagara AX 3.7 where cookies are handled differently...
             try:
-                niagara_session = self._cookies['niagara_session']
+                niagara_session = self._cookies["niagara_session"]
             except KeyError:
                 niagara_session = ""
-            self._session._post('login', self._on_login,
-                    params={
-                        'token':'',
-                        'scheme':'cookieDigest',
-                        'absPathBase':'/',
-                        'content-type':'application/x-niagara-login-support',
-                        'Referer':self._session._client.uri+'login/',
-                        'accept':'text/zinc; charset=utf-8',
-                        'cookiePostfix' : niagara_session,
-                    },
-                    headers={}, cookies=self._cookies,
-                    exclude_cookies=True, exclude_proxies=True,
-                    api=False, auth=self._auth)
-        except: # Catch all exceptions to pass to caller.
+            self._session._post(
+                "login",
+                self._on_login,
+                params={
+                    "token": "",
+                    "scheme": "cookieDigest",
+                    "absPathBase": "/",
+                    "content-type": "application/x-niagara-login-support",
+                    "Referer": self._session._client.uri + "login/",
+                    "accept": "text/zinc; charset=utf-8",
+                    "cookiePostfix": niagara_session,
+                },
+                headers={},
+                cookies=self._cookies,
+                exclude_cookies=True,
+                exclude_proxies=True,
+                api=False,
+                auth=self._auth,
+            )
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_login(self, response):
@@ -152,10 +169,10 @@ class NiagaraAXAuthenticateOperation(state.HaystackOperation):
             else:
                 if self._LOGIN_RE.match(response.text):
                     # No good.
-                    raise IOError('Login failed')
+                    raise IOError("Login failed")
 
             self._state_machine.login_done(result=(self._auth, self._cookies))
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_fail_retry(self, event):

@@ -27,7 +27,8 @@ class EntityRetrieveOperation(state.HaystackOperation):
         single = bool(single)
 
         super(EntityRetrieveOperation, self).__init__(
-                result_deepcopy=False, result_copy=not single)
+            result_deepcopy=False, result_copy=not single
+        )
         self._session = session
         self._entities = {}
         self._single = single
@@ -39,16 +40,16 @@ class EntityRetrieveOperation(state.HaystackOperation):
         try:
             # See if the read succeeded.
             grid = operation.result
-            self._log.debug('Received grid: %s', grid)
+            self._log.debug("Received grid: %s", grid)
 
             # Iterate over each row:
             for row in grid:
                 # Ignore rows that don't specify an ID.
-                if 'id' not in row:
+                if "id" not in row:
                     continue
 
                 row = row.copy()
-                entity_ref = row.pop('id')
+                entity_ref = row.pop("id")
 
                 # This entity does not exist
                 if entity_ref is None:
@@ -65,7 +66,8 @@ class EntityRetrieveOperation(state.HaystackOperation):
                         entity._update_tags(row)
                     except KeyError:
                         entity = self._session._tagging_model.create_entity(
-                                entity_id, row)
+                            entity_id, row
+                        )
 
                 # Stash/update entity references.
                 self._session._entities[entity_id] = entity
@@ -75,11 +77,11 @@ class EntityRetrieveOperation(state.HaystackOperation):
                 try:
                     result = list(self._entities.values())[0]
                 except IndexError:
-                    raise NameError('No matching entity found')
+                    raise NameError("No matching entity found")
             else:
                 result = self._entities
             self._state_machine.read_done(result=result)
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_done(self, event):
@@ -116,7 +118,6 @@ class GetEntityOperation(EntityRetrieveOperation):
 
     """
 
-
     def __init__(self, session, entity_ids, refresh_all, single):
         """
         Initialise a request for the named IDs.
@@ -126,24 +127,25 @@ class GetEntityOperation(EntityRetrieveOperation):
         :param refresh_all: Refresh all entities, ignore existing content.
         """
 
-        self._log = session._log.getChild('get_entity')
+        self._log = session._log.getChild("get_entity")
         super(GetEntityOperation, self).__init__(session, single)
-        self._entity_ids = set(map(lambda r : r.name \
-                if isinstance(r, hszinc.Ref) else r, entity_ids))
+        self._entity_ids = set(
+            map(lambda r: r.name if isinstance(r, hszinc.Ref) else r, entity_ids)
+        )
         self._todo = self._entity_ids.copy()
         self._refresh_all = refresh_all
 
         self._state_machine = fysom.Fysom(
-                initial='init', final='done',
-                events=[
-                    # Event             Current State       New State
-                    ('cache_checked',   'init',             'read'),
-                    ('read_done',       'read',             'done'),
-                    ('exception',       '*',                'done'),
-                ], callbacks={
-                    'onenterread':          self._do_read,
-                    'onenterdone':          self._do_done,
-                })
+            initial="init",
+            final="done",
+            events=[
+                # Event             Current State       New State
+                ("cache_checked", "init", "read"),
+                ("read_done", "read", "done"),
+                ("exception", "*", "done"),
+            ],
+            callbacks={"onenterread": self._do_read, "onenterdone": self._do_done},
+        )
 
     def go(self):
         """
@@ -155,8 +157,7 @@ class GetEntityOperation(EntityRetrieveOperation):
                 entity_id = entity_id.name
 
             try:
-                self._entities[entity_id] = \
-                        self._session._entities[entity_id]
+                self._entities[entity_id] = self._session._entities[entity_id]
             except KeyError:
                 pass
 
@@ -171,19 +172,18 @@ class GetEntityOperation(EntityRetrieveOperation):
         """
         try:
             if bool(self._todo):
-                self._session.read(ids=list(self._todo),
-                        callback=self._on_read)
+                self._session.read(ids=list(self._todo), callback=self._on_read)
             else:
                 # Nothing needed to read.
                 if self._single:
                     try:
                         result = list(self._entities.values())[0]
                     except IndexError:
-                        raise NameError('No matching entity found')
+                        raise NameError("No matching entity found")
                 else:
                     result = self._entities
                 self._state_machine.read_done(result=result)
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
 
@@ -213,26 +213,28 @@ class FindEntityOperation(EntityRetrieveOperation):
         :param limit: Maximum number of entities to fetch.
         """
 
-        self._log = session._log.getChild('find_entity')
+        self._log = session._log.getChild("find_entity")
         super(FindEntityOperation, self).__init__(session, single)
         self._filter_expr = filter_expr
         self._limit = limit
 
         self._state_machine = fysom.Fysom(
-                initial='init', final='done',
-                events=[
-                    # Event             Current State       New State
-                    ('go',              'init',             'read'),
-                    ('read_done',       'read',             'done'),
-                    ('exception',       '*',                'done'),
-                ], callbacks={
-                    'onenterdone':          self._do_done,
-                })
+            initial="init",
+            final="done",
+            events=[
+                # Event             Current State       New State
+                ("go", "init", "read"),
+                ("read_done", "read", "done"),
+                ("exception", "*", "done"),
+            ],
+            callbacks={"onenterdone": self._do_done},
+        )
 
     def go(self):
         """
         Start the request, check cache for existing entities.
         """
         self._state_machine.go()
-        self._session.read(filter_expr=self._filter_expr, limit=self._limit,
-                callback=self._on_read)
+        self._session.read(
+            filter_expr=self._filter_expr, limit=self._limit, callback=self._on_read
+        )

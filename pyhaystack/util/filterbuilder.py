@@ -20,6 +20,7 @@ Typical usage::
 
 import hszinc
 
+
 class Base(object):
     def __and__(self, other):
         return And(self, other)
@@ -37,32 +38,32 @@ class Field(Base):
 
     def __eq__(self, other):
         if not isinstance(other, Scalar):
-            raise TypeError('not a scalar: %r' % other)
+            raise TypeError("not a scalar: %r" % other)
         return Equal(self, other)
 
     def __ne__(self, other):
         if not isinstance(other, Scalar):
-            raise TypeError('not a scalar: %r' % other)
+            raise TypeError("not a scalar: %r" % other)
         return NotEqual(self, other)
 
     def __lt__(self, other):
         if not isinstance(other, Scalar):
-            raise TypeError('not a scalar: %r' % other)
+            raise TypeError("not a scalar: %r" % other)
         return LessThan(self, other)
 
     def __le__(self, other):
         if not isinstance(other, Scalar):
-            raise TypeError('not a scalar: %r' % other)
+            raise TypeError("not a scalar: %r" % other)
         return LessThanOrEqual(self, other)
 
     def __gt__(self, other):
         if not isinstance(other, Scalar):
-            raise TypeError('not a scalar: %r' % other)
+            raise TypeError("not a scalar: %r" % other)
         return GreaterThan(self, other)
 
     def __ge__(self, other):
         if not isinstance(other, Scalar):
-            raise TypeError('not a scalar: %r' % other)
+            raise TypeError("not a scalar: %r" % other)
         return GreaterThanOrEqual(self, other)
 
     def __str__(self):
@@ -84,16 +85,16 @@ class Binary(Base):
 
     def __str__(self):
         if isinstance(self.x, Binary):
-            x = '( %s )' % self.x
+            x = "( %s )" % self.x
         else:
             x = str(self.x)
 
         if isinstance(self.y, Binary):
-            y = '( %s )' % self.y
+            y = "( %s )" % self.y
         else:
             y = str(self.y)
 
-        return '%s %s %s' % (x, self.OP, y)
+        return "%s %s %s" % (x, self.OP, y)
 
 
 class Unary(Base):
@@ -102,42 +103,42 @@ class Unary(Base):
 
     def __str__(self):
         if isinstance(self.value, Binary):
-            return '%s ( %s )' % (self.OP, self.value)
+            return "%s ( %s )" % (self.OP, self.value)
         else:
-            return '%s %s' % (self.OP, self.value)
+            return "%s %s" % (self.OP, self.value)
 
 
 class Equal(Binary):
-    OP = '=='
+    OP = "=="
 
 
 class NotEqual(Binary):
-    OP = '!='
+    OP = "!="
 
 
 class LessThan(Binary):
-    OP = '<'
+    OP = "<"
 
 
 class LessThanOrEqual(Binary):
-    OP = '<='
+    OP = "<="
 
 
 class GreaterThan(Binary):
-    OP = '>'
+    OP = ">"
 
 
 class GreaterThanOrEqual(Binary):
-    OP = '>='
+    OP = ">="
 
 
 class And(Binary):
-    OP = 'and'
+    OP = "and"
 
 
 class Or(Binary):
-    OP = 'or'
+    OP = "or"
 
 
 class Not(Unary):
-    OP = 'not'
+    OP = "not"

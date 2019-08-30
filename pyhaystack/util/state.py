@@ -15,6 +15,7 @@ class NotReadyError(Exception):
     Exception raised when an attempt is made to retrieve the result of an
     operation before it is ready.
     """
+
     pass
 
 
@@ -23,6 +24,7 @@ class HaystackOperation(object):
     A core state machine object.  This implements the basic interface presented
     for all operations in pyhaystack.
     """
+
     def __init__(self, result_copy=True, result_deepcopy=True):
         """
         Initialisation.  This should be overridden by subclasses to accept and
@@ -38,7 +40,7 @@ class HaystackOperation(object):
         self._done_evt = Event()
 
         # Signal emitted when the operation is "done"
-        self.done_sig = Signal(name='done', threadsafe=True)
+        self.done_sig = Signal(name="done", threadsafe=True)
 
         # Result returned by operation
         self._result = None
@@ -52,8 +54,9 @@ class HaystackOperation(object):
         operation.
         """
         # This needs to be implemented in the subclass.
-        raise NotImplementedError("To be implemented in subclass %s" \
-                % self.__class__.__name__)
+        raise NotImplementedError(
+            "To be implemented in subclass %s" % self.__class__.__name__
+        )
 
     def wait(self, timeout=None):
         """
@@ -111,11 +114,11 @@ class HaystackOperation(object):
         Return a representation of this object's state.
         """
         if self.is_failed:
-            return '<%s failed>' % self.__class__.__name__
+            return "<%s failed>" % self.__class__.__name__
         elif self.is_done:
-            return '<%s done: %s>' % (self.__class__.__name__, self._result)
+            return "<%s done: %s>" % (self.__class__.__name__, self._result)
         else:
-            return '<%s %s>' % (self.__class__.__name__, self.state)
+            return "<%s %s>" % (self.__class__.__name__, self.state)
 
     def _done(self, result):
         """

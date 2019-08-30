@@ -2,11 +2,12 @@
 import json
 import re
 
+
 def isfloat(value):
     """
     Helper function to detect if a value is a float
     """
-    if value != '':
+    if value != "":
         try:
             float(value)
             return True
@@ -15,11 +16,12 @@ def isfloat(value):
     else:
         return False
 
+
 def isBool(value):
     """
     Helper function to detect if a value is boolean
     """
-    if value != '':
+    if value != "":
         if isinstance(value, bool):
             return True
         else:
@@ -27,11 +29,13 @@ def isBool(value):
     else:
         return False
 
+
 def prettyprint(jsonData):
     """
     Pretty print json object
     """
-    print('%s' % json.dumps(jsonData, sort_keys=True, indent=4))
+    print("%s" % json.dumps(jsonData, sort_keys=True, indent=4))
+
 
 def niagara_unescape(s):
     """
@@ -44,7 +48,7 @@ def niagara_unescape(s):
     "H.Client.Labo/222-BA/PC_Débit_Alim"
     """
     _s = s
-    escape = re.compile(r'~(\w\w)')
+    escape = re.compile(r"~(\w\w)")
     for each in escape.finditer(_s):
-        _s = re.sub(each[0],chr(int(each[1], base=16)),_s)
+        _s = re.sub(each[0], chr(int(each[1], base=16)), _s)
     return _s

@@ -10,6 +10,7 @@ from ...util.asyncexc import AsynchronousException
 from ...util import state
 import fysom
 
+
 class HasFeaturesOperation(state.HaystackOperation):
     """
     A base class to detect if a given set of features is present.
@@ -24,7 +25,7 @@ class HasFeaturesOperation(state.HaystackOperation):
         :param cache: Whether or not to use cache for this check.
         """
         super(HasFeaturesOperation, self).__init__()
-        self._log = session._log.getChild('has_features')
+        self._log = session._log.getChild("has_features")
         self._session = session
         self._features = set(features)
         self._cache = cache
@@ -33,8 +34,7 @@ class HasFeaturesOperation(state.HaystackOperation):
         # compare the features to the op names to see if they're present.
         self._need_about = False
         self._need_formats = False
-        self._need_ops = any([('/' not in feature) \
-                for feature in self._features])
+        self._need_ops = any([("/" not in feature) for feature in self._features])
 
         # Retrieved feature data
         self._about = None
@@ -45,29 +45,36 @@ class HasFeaturesOperation(state.HaystackOperation):
         self._ops_data = {}
 
         self._state_machine = fysom.Fysom(
-                initial='init', final='done',
-                events=[
-                    # Event             Current State       New State
-                    ('go',              'init',             'get_about'),
-                    ('about_done',      'get_about',        'get_formats'),
-                    ('formats_done',    'get_formats',      'get_ops'),
-                    ('ops_done',        'get_ops',          'check_features'),
-                    ('checked',         'check_features',   'done'),
-                    ('exception',       '*',                'done'),
-                ], callbacks={
-                    'onenterget_about':     self._do_get_about,
-                    'onenterget_formats':   self._do_get_formats,
-                    'onenterget_ops':       self._do_get_ops,
-                    'onentercheck_features':self._do_check_features,
-                    'onenterdone':          self._do_done,
-                })
+            initial="init",
+            final="done",
+            events=[
+                # Event             Current State       New State
+                ("go", "init", "get_about"),
+                ("about_done", "get_about", "get_formats"),
+                ("formats_done", "get_formats", "get_ops"),
+                ("ops_done", "get_ops", "check_features"),
+                ("checked", "check_features", "done"),
+                ("exception", "*", "done"),
+            ],
+            callbacks={
+                "onenterget_about": self._do_get_about,
+                "onenterget_formats": self._do_get_formats,
+                "onenterget_ops": self._do_get_ops,
+                "onentercheck_features": self._do_check_features,
+                "onenterdone": self._do_done,
+            },
+        )
 
     def go(self):
         """
         Start the request.
         """
-        self._log.debug('Needed: about=%s, formats=%s, ops=%s',
-                self._need_about, self._need_formats, self._need_ops)
+        self._log.debug(
+            "Needed: about=%s, formats=%s, ops=%s",
+            self._need_about,
+            self._need_formats,
+            self._need_ops,
+        )
         self._state_machine.go()
 
     def _do_get_about(self, event):
@@ -76,13 +83,12 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         try:
             if self._need_about:
-                self._log.debug('Retrieving about data')
-                self._session.about(callback=self._on_got_about,
-                        cache=self._cache)
+                self._log.debug("Retrieving about data")
+                self._session.about(callback=self._on_got_about, cache=self._cache)
             else:
-                self._log.debug('Skipping about data')
+                self._log.debug("Skipping about data")
                 self._state_machine.about_done()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_got_about(self, operation, **kwargs):
@@ -92,9 +98,9 @@ class HasFeaturesOperation(state.HaystackOperation):
         try:
             self._about = operation.result
             self._about_data = self._about[0]
-            self._log.debug('Got about data: %s', self._about_data)
+            self._log.debug("Got about data: %s", self._about_data)
             self._state_machine.about_done()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_get_formats(self, event):
@@ -103,13 +109,12 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         try:
             if self._need_formats:
-                self._log.debug('Retrieving formats data')
-                self._session.formats(callback=self._on_got_formats,
-                        cache=self._cache)
+                self._log.debug("Retrieving formats data")
+                self._session.formats(callback=self._on_got_formats, cache=self._cache)
             else:
-                self._log.debug('Skipping formats data')
+                self._log.debug("Skipping formats data")
                 self._state_machine.formats_done()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_got_formats(self, operation, **kwargs):
@@ -119,10 +124,10 @@ class HasFeaturesOperation(state.HaystackOperation):
         try:
             self._formats = operation.result
             for row in self._formats:
-                self._formats_data[row['mime']] = row
-            self._log.debug('Got formats data: ', self._formats_data)
+                self._formats_data[row["mime"]] = row
+            self._log.debug("Got formats data: ", self._formats_data)
             self._state_machine.formats_done()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_get_ops(self, event):
@@ -131,13 +136,12 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         try:
             if self._need_ops:
-                self._log.debug('Retrieving ops data')
-                self._session.ops(callback=self._on_got_ops,
-                        cache=self._cache)
+                self._log.debug("Retrieving ops data")
+                self._session.ops(callback=self._on_got_ops, cache=self._cache)
             else:
-                self._log.debug('Skipping ops data')
+                self._log.debug("Skipping ops data")
                 self._state_machine.ops_done()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _on_got_ops(self, operation, **kwargs):
@@ -147,10 +151,10 @@ class HasFeaturesOperation(state.HaystackOperation):
         try:
             self._ops = operation.result
             for row in self._ops:
-                self._ops_data[row['name']] = row
-            self._log.debug('Got ops data: %s', self._ops_data)
+                self._ops_data[row["name"]] = row
+            self._log.debug("Got ops data: %s", self._ops_data)
             self._state_machine.ops_done()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
 
     def _do_check_features(self, event):
@@ -159,7 +163,7 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         try:
             result = self._check_features()
-        except: # Catch all exceptions to pass to caller.
+        except:  # Catch all exceptions to pass to caller.
             self._state_machine.exception(result=AsynchronousException())
             return
         self._state_machine.checked(result=result)
@@ -171,7 +175,7 @@ class HasFeaturesOperation(state.HaystackOperation):
         """
         res = {}
         for feature in self._features:
-            if '/' in feature:
+            if "/" in feature:
                 # This is an extension
                 res[feature] = False
             elif feature in self._ops_data:

@@ -9,8 +9,8 @@ from .ops.vendor.skyspark import SkysparkAuthenticateOperation
 from .ops.vendor.skyspark_scram import SkysparkScramAuthenticateOperation
 from .mixins.vendor.skyspark import evalexpr
 
-class SkysparkHaystackSession(HaystackSession,
-                              evalexpr.EvalOpsMixin):
+
+class SkysparkHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
     """
     The SkysparkHaystackSession class implements some base support for
     Skyspark servers.
@@ -18,7 +18,7 @@ class SkysparkHaystackSession(HaystackSession,
 
     _AUTH_OPERATION = SkysparkAuthenticateOperation
 
-    def __init__(self, uri, username, password, project = '', **kwargs):
+    def __init__(self, uri, username, password, project="", **kwargs):
         """
         Initialise a Skyspark Project Haystack session handler.
 
@@ -27,8 +27,7 @@ class SkysparkHaystackSession(HaystackSession,
         :param password: Authentication password.
         :param project: Skyspark project name
         """
-        super(SkysparkHaystackSession, self).__init__(uri,
-                'api/%s' % project, **kwargs)
+        super(SkysparkHaystackSession, self).__init__(uri, "api/%s" % project, **kwargs)
         self._project = project
         self._username = username
         self._password = password
@@ -60,8 +59,8 @@ class SkysparkHaystackSession(HaystackSession,
         finally:
             self._auth_op = None
 
-class SkysparkScramHaystackSession(HaystackSession,
-                              evalexpr.EvalOpsMixin):
+
+class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
     """
     The SkysparkHaystackSession class implements some base support for
     Skyspark servers.
@@ -78,8 +77,9 @@ class SkysparkScramHaystackSession(HaystackSession,
         :param password: Authentication password.
         :param project: Skyspark project name
         """
-        super(SkysparkScramHaystackSession, self).__init__(uri,
-             'api/%s' % project,**kwargs)
+        super(SkysparkScramHaystackSession, self).__init__(
+            uri, "api/%s" % project, **kwargs
+        )
 
         self._username = username
         self._password = password
@@ -104,7 +104,7 @@ class SkysparkScramHaystackSession(HaystackSession,
         """
         try:
             op_result = operation.result
-            header = op_result['header']
+            header = op_result["header"]
             self._authenticated = True
             self._client.cookies = None
             self._client.headers = header

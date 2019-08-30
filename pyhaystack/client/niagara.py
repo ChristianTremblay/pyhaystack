@@ -9,6 +9,7 @@ from .ops.vendor.niagara import NiagaraAXAuthenticateOperation
 from .ops.vendor.niagara_scram import Niagara4ScramAuthenticateOperation
 from .mixins.vendor.niagara.bql import BQLOperation, BQLMixin
 
+
 class NiagaraHaystackSession(HaystackSession, BQLMixin):
     """
     The NiagaraHaystackSession class implements some base support for
@@ -18,7 +19,7 @@ class NiagaraHaystackSession(HaystackSession, BQLMixin):
 
     _AUTH_OPERATION = NiagaraAXAuthenticateOperation
     _BQL_OPERATION = BQLOperation
-    
+
     def __init__(self, uri, username, password, **kwargs):
         """
         Initialise a Nagara Project Haystack session handler.
@@ -27,7 +28,7 @@ class NiagaraHaystackSession(HaystackSession, BQLMixin):
         :param username: Authentication user name.
         :param password: Authentication password.
         """
-        super(NiagaraHaystackSession, self).__init__(uri, 'haystack', **kwargs)
+        super(NiagaraHaystackSession, self).__init__(uri, "haystack", **kwargs)
         self._username = username
         self._password = password
         self._authenticated = False
@@ -61,6 +62,7 @@ class NiagaraHaystackSession(HaystackSession, BQLMixin):
         finally:
             self._auth_op = None
 
+
 class Niagara4HaystackSession(HaystackSession, BQLMixin):
     """
     The Niagara4HaystackSession class implements some base support for
@@ -79,7 +81,7 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin):
         :param username: Authentication user name.
         :param password: Authentication password.
         """
-        super(Niagara4HaystackSession, self).__init__(uri, 'haystack', **kwargs)
+        super(Niagara4HaystackSession, self).__init__(uri, "haystack", **kwargs)
         self._username = username
         self._password = password
         self._authenticated = False
@@ -100,7 +102,7 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin):
         """
         try:
             op_result = operation.result
-            self._authenticated = op_result['authenticated']
+            self._authenticated = op_result["authenticated"]
 
         except:
             self._authenticated = False
@@ -108,5 +110,3 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin):
             self._client.cookies = None
         finally:
             self._auth_op = None
-            
-

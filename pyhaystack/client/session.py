@@ -19,6 +19,7 @@ from .ops import his as his_ops
 from .ops import feature as feature_ops
 from .entity.models.haystack import HaystackTaggingModel
 
+
 class HaystackSession(object):
     """
     The Haystack Session handler is responsible for presenting an API for
@@ -56,10 +57,18 @@ class HaystackSession(object):
 
     _HAS_FEATURES_OPERATION = feature_ops.HasFeaturesOperation
 
-    def __init__(self, uri, api_dir, grid_format=hszinc.MODE_ZINC,
-                http_client=sync.SyncHttpClient, http_args=None,
-                tagging_model=HaystackTaggingModel, log=None,
-                pint=False, cache_expiry=3600.0):
+    def __init__(
+        self,
+        uri,
+        api_dir,
+        grid_format=hszinc.MODE_ZINC,
+        http_client=sync.SyncHttpClient,
+        http_args=None,
+        tagging_model=HaystackTaggingModel,
+        log=None,
+        pint=False,
+        cache_expiry=3600.0,
+    ):
         """
         Initialise a base Project Haystack session handler.
 
@@ -76,23 +85,22 @@ class HaystackSession(object):
         See : https://pint.readthedocs.io/ for details about pint
         """
         if log is None:
-            log = logging.getLogger('pyhaystack.client.%s' \
-                    % self.__class__.__name__)
+            log = logging.getLogger("pyhaystack.client.%s" % self.__class__.__name__)
         self._log = log
 
         if http_args is None:
             http_args = {}
 
-        #Configure hszinc to use pint or not for Quantity definition
+        # Configure hszinc to use pint or not for Quantity definition
         self.config_pint(pint)
 
         if grid_format not in (hszinc.MODE_ZINC, hszinc.MODE_JSON):
-            raise ValueError('Unrecognised grid format %s' % grid_format)
+            raise ValueError("Unrecognised grid format %s" % grid_format)
         self._grid_format = grid_format
 
         # Create the HTTP client object
-        if bool(http_args.pop('debug',None)) and ('log' not in http_args):
-            http_args['log'] = log.getChild('http_client')
+        if bool(http_args.pop("debug", None)) and ("log" not in http_args):
+            http_args["log"] = log.getChild("http_client")
         self._client = http_client(uri=uri, **http_args)
         self._api_dir = api_dir
 
@@ -108,7 +116,7 @@ class HaystackSession(object):
         # Grid cache
         self._grid_lk = Lock()
         self._grid_expiry = cache_expiry
-        self._grid_cache = {}   # 'op' -> (op, expiry, grid)
+        self._grid_cache = {}  # 'op' -> (op, expiry, grid)
 
     # Public methods/properties
 
@@ -145,19 +153,19 @@ class HaystackSession(object):
         """
         Retrieve the version information of this Project Haystack server.
         """
-        return self._get_grid('about', callback, cache=cache)
+        return self._get_grid("about", callback, cache=cache)
 
     def ops(self, cache=True, callback=None):
         """
         Retrieve the operations supported by this Project Haystack server.
         """
-        return self._get_grid('ops', callback, cache=cache)
+        return self._get_grid("ops", callback, cache=cache)
 
     def formats(self, cache=True, callback=None):
         """
         Retrieve the grid formats supported by this Project Haystack server.
         """
-        return self._get_grid('formats', callback, cache=cache)
+        return self._get_grid("formats", callback, cache=cache)
 
     def read(self, ids=None, filter_expr=None, limit=None, callback=None):
         """
@@ -180,25 +188,25 @@ class HaystackSession(object):
 
         if bool(ids):
             if filter_expr is not None:
-                raise ValueError('Either specify ids or filter_expr, not both')
+                raise ValueError("Either specify ids or filter_expr, not both")
 
             ids = [self._obj_to_ref(r) for r in ids]
 
             if len(ids) == 1:
                 # Reading a single entity
-                return self._get_grid('read', callback, args={'id': ids[0]})
+                return self._get_grid("read", callback, args={"id": ids[0]})
             else:
                 # Reading several entities
                 grid = hszinc.Grid()
-                grid.column['id'] = {}
-                grid.extend([{'id': r} for r in ids])
-                return self._post_grid('read', grid, callback)
+                grid.column["id"] = {}
+                grid.extend([{"id": r} for r in ids])
+                return self._post_grid("read", grid, callback)
         else:
-            args = {'filter': filter_expr}
+            args = {"filter": filter_expr}
             if limit is not None:
-                args['limit'] = int(limit)
+                args["limit"] = int(limit)
 
-            return self._get_grid('read', callback, args=args)
+            return self._get_grid("read", callback, args=args)
 
     def nav(self, nav_id=None, callback=None):
         """
@@ -206,25 +214,26 @@ class HaystackSession(object):
         operation allows servers to expose the database in a human-friendly
         tree (or graph) that can be explored.
         """
-        return self._get_grid('nav', callback, args={'navId': nav_id})
+        return self._get_grid("nav", callback, args={"navId": nav_id})
 
-    def watch_sub(self, points, watch_id=None, watch_dis=None,
-            lease=None, callback=None):
+    def watch_sub(
+        self, points, watch_id=None, watch_dis=None, lease=None, callback=None
+    ):
         """
         This creates a new watch with debug string watch_dis, identifier
         watch_id (string) and a lease time of lease (integer) seconds.  points
         is a list of strings, Entity objects or hszinc.Ref objects.
         """
         grid = hszinc.Grid()
-        grid.column['id'] = {}
-        grid.extend([{'id': self._obj_to_ref(p)} for p in points])
+        grid.column["id"] = {}
+        grid.extend([{"id": self._obj_to_ref(p)} for p in points])
         if watch_id is not None:
-            grid.metadata['watchId'] = watch_id
+            grid.metadata["watchId"] = watch_id
         if watch_dis is not None:
-            grid.metadata['watchDis'] = watch_dis
+            grid.metadata["watchDis"] = watch_dis
         if lease is not None:
-            grid.metadata['lease'] = lease
-        return self._post_grid('watchSub', grid, callback)
+            grid.metadata["lease"] = lease
+        return self._post_grid("watchSub", grid, callback)
 
     def watch_unsub(self, watch, points=None, callback=None):
         """
@@ -236,17 +245,17 @@ class HaystackSession(object):
         Otherwise, it closes the Watch object.
         """
         grid = hszinc.Grid()
-        grid.column['id'] = {}
+        grid.column["id"] = {}
 
         if not isinstance(watch, string_types):
             watch = watch.id
-        grid.metadata['watchId'] = watch
+        grid.metadata["watchId"] = watch
 
         if points is not None:
-            grid.extend([{'id': self._obj_to_ref(p)} for p in points])
+            grid.extend([{"id": self._obj_to_ref(p)} for p in points])
         else:
-            grid.metadata['close'] = hszinc.MARKER
-        return self._post_grid('watchSub', grid, callback)
+            grid.metadata["close"] = hszinc.MARKER
+        return self._post_grid("watchSub", grid, callback)
 
     def watch_poll(self, watch, refresh=False, callback=None):
         """
@@ -257,19 +266,20 @@ class HaystackSession(object):
         just those that have changed since the last poll.
         """
         grid = hszinc.Grid()
-        grid.column['empty'] = {}
+        grid.column["empty"] = {}
 
         if not isinstance(watch, string_types):
             watch = watch.id
-        grid.metadata['watchId'] = watch
+        grid.metadata["watchId"] = watch
 
         if refresh:
-            grid.metadata['refresh'] = hszinc.MARKER
+            grid.metadata["refresh"] = hszinc.MARKER
 
-        return self._post_grid('watchPoll', grid, callback)
+        return self._post_grid("watchPoll", grid, callback)
 
-    def point_write(self, point, level=None, val=None, who=None,
-            duration=None, callback=None):
+    def point_write(
+        self, point, level=None, val=None, who=None, duration=None, callback=None
+    ):
         """
         point is either the ID of the writeable point entity, or an instance of
         the writeable point entity to retrieve the write status of or write a
@@ -279,24 +289,19 @@ class HaystackSession(object):
         write status of the point is retrieved.  Otherwise, a write is
         performed to the nominated point.
         """
-        args = {
-                'id': self._obj_to_ref(point),
-        }
+        args = {"id": self._obj_to_ref(point)}
         if level is None:
             if (val is not None) or (who is not None) or (duration is not None):
                 raise ValueError(
-                        'If level is None, val, who and duration must '\
-                        'be None too.')
+                    "If level is None, val, who and duration must " "be None too."
+                )
         else:
-            args.update({
-                    'level': level,
-                    'val': val,
-            })
+            args.update({"level": level, "val": val})
             if who is not None:
-                args['who'] = who
+                args["who"] = who
             if duration is not None:
-                args['duration'] = duration
-        return self._get_grid('pointWrite', callback, args=args)
+                args["duration"] = duration
+        return self._get_grid("pointWrite", callback, args=args)
 
     def his_read(self, point, rng, callback=None):
         """
@@ -308,18 +313,16 @@ class HaystackSession(object):
         slice of datetime.dates or datetime.datetimes.
         """
         if isinstance(rng, slice):
-            str_rng = ','.join([hszinc.dump_scalar(p) for p in
-                (rng.start, rng.stop)])
+            str_rng = ",".join([hszinc.dump_scalar(p) for p in (rng.start, rng.stop)])
         elif not isinstance(rng, string_types):
             str_rng = hszinc.dump_scalar(rng)
         else:
             # Better be valid!
             str_rng = rng
 
-        return self._get_grid('hisRead', callback, args={
-            'id': self._obj_to_ref(point),
-            'range': str_rng,
-        })
+        return self._get_grid(
+            "hisRead", callback, args={"id": self._obj_to_ref(point), "range": str_rng}
+        )
 
     def his_write(self, point, timestamp_records, callback=None):
         """
@@ -330,19 +333,19 @@ class HaystackSession(object):
         Pandas Series object.
         """
         grid = hszinc.Grid()
-        grid.metadata['id'] = self._obj_to_ref(point)
-        grid.column['ts'] = {}
-        grid.column['val'] = {}
+        grid.metadata["id"] = self._obj_to_ref(point)
+        grid.column["ts"] = {}
+        grid.column["val"] = {}
 
-        if hasattr(timestamp_records, 'to_dict'):
+        if hasattr(timestamp_records, "to_dict"):
             timestamp_records = timestamp_records.to_dict()
 
         timestamp_records = list(timestamp_records.items())
-        timestamp_records.sort(key=lambda rec : rec[0])
+        timestamp_records.sort(key=lambda rec: rec[0])
         for (ts, val) in timestamp_records:
-            grid.append({'ts': ts, 'val': val})
+            grid.append({"ts": ts, "val": val})
 
-        return self._post_grid('hisWrite', grid, callback)
+        return self._post_grid("hisWrite", grid, callback)
 
     def invoke_action(self, entity, action, callback=None, **kwargs):
         """
@@ -351,13 +354,13 @@ class HaystackSession(object):
         parameters required for the user action.
         """
         grid = hszinc.Grid()
-        grid.metadata['id'] = self._obj_to_ref(entity)
-        grid.metadata['action'] = action
+        grid.metadata["id"] = self._obj_to_ref(entity)
+        grid.metadata["action"] = action
         for arg in kwargs.keys():
             grid.column[arg] = {}
         grid.append(kwargs)
 
-        return self._post_grid('invokeAction', grid, callback)
+        return self._post_grid("invokeAction", grid, callback)
 
     def get_entity(self, ids, refresh=False, single=None, callback=None):
         """
@@ -399,8 +402,7 @@ class HaystackSession(object):
         op.go()
         return op
 
-    def his_read_series(self, point, rng, tz=None,
-            series_format=None, callback=None):
+    def his_read_series(self, point, rng, tz=None, series_format=None, callback=None):
         """
         Read the historical data of the given point and return it as a series.
 
@@ -415,8 +417,7 @@ class HaystackSession(object):
             else:
                 series_format = self._HIS_READ_SERIES_OPERATION.FORMAT_LIST
 
-        op = self._HIS_READ_SERIES_OPERATION(self, point,
-                rng, tz, series_format)
+        op = self._HIS_READ_SERIES_OPERATION(self, point, rng, tz, series_format)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
@@ -436,8 +437,7 @@ class HaystackSession(object):
         op.go()
         return op
 
-    def his_read_frame(self, columns, rng, tz=None,
-            frame_format=None, callback=None):
+    def his_read_frame(self, columns, rng, tz=None, frame_format=None, callback=None):
         """
         Read the historical data of multiple given points and return
         them as a data frame.
@@ -454,8 +454,7 @@ class HaystackSession(object):
             else:
                 frame_format = self._HIS_READ_FRAME_OPERATION.FORMAT_LIST
 
-        op = self._HIS_READ_FRAME_OPERATION(self, columns,
-                rng, tz, frame_format)
+        op = self._HIS_READ_FRAME_OPERATION(self, columns, rng, tz, frame_format)
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
@@ -478,14 +477,14 @@ class HaystackSession(object):
             op.done_sig.connect(callback)
         op.go()
         return op
-    
+
     @property
     def site(self):
         """
         This helper will return the first site found on the server.
         This case is typical : having one site per server.
         """
-        sites = self.find_entity('site').result
+        sites = self.find_entity("site").result
         return sites[list(sites.keys())[0]]
 
     @property
@@ -493,12 +492,13 @@ class HaystackSession(object):
         """
         This helper will return all sites found on the server.
         """
-        sites = self.find_entity('site').result
+        sites = self.find_entity("site").result
         return sites
 
     # Extension feature support.
-    FEATURE_HISREAD_MULTI = 'hisRead/multi'   # Multi-point hisRead
-    FEATURE_HISWRITE_MULTI = 'hisWrite/multi'   # Multi-point hisWrite
+    FEATURE_HISREAD_MULTI = "hisRead/multi"  # Multi-point hisRead
+    FEATURE_HISWRITE_MULTI = "hisWrite/multi"  # Multi-point hisWrite
+
     def has_features(self, features, cache=True, callback=None):
         """
         Determine if a given feature is supported.  This is a helper function
@@ -524,47 +524,69 @@ class HaystackSession(object):
         the session instance.
         """
         if api:
-            uri = '%s/%s' % (self._api_dir, uri)
+            uri = "%s/%s" % (self._api_dir, uri)
         return self._client.get(uri, callback, **kwargs)
 
-    def _get_grid(self, uri, callback, expect_format=None,
-            cache=False, **kwargs):
+    def _get_grid(self, uri, callback, expect_format=None, cache=False, **kwargs):
         """
         Perform a HTTP GET of a grid.
         """
         if expect_format is None:
-            expect_format=self._grid_format
-        op = self._GET_GRID_OPERATION(self, uri,
-                expect_format=expect_format, cache=cache, **kwargs)
+            expect_format = self._grid_format
+        op = self._GET_GRID_OPERATION(
+            self, uri, expect_format=expect_format, cache=cache, **kwargs
+        )
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
         return op
 
-    def _post(self, uri, callback, body=None, body_type=None, body_size=None,
-            headers=None, api=True, **kwargs):
+    def _post(
+        self,
+        uri,
+        callback,
+        body=None,
+        body_type=None,
+        body_size=None,
+        headers=None,
+        api=True,
+        **kwargs
+    ):
         """
         Perform a raw HTTP POST operation.  This is a convenience wrapper around
         the HTTP client class that allows pre/post processing of the request by
         the session instance.
         """
         if api:
-            uri = '%s/%s' % (self._api_dir, uri)
-        return self._client.post(uri=uri, callback=callback,
-                body=body, body_type=body_type, body_size=body_size,
-                headers=headers, **kwargs)
+            uri = "%s/%s" % (self._api_dir, uri)
+        return self._client.post(
+            uri=uri,
+            callback=callback,
+            body=body,
+            body_type=body_type,
+            body_size=body_size,
+            headers=headers,
+            **kwargs
+        )
 
-    def _post_grid(self, uri, grid, callback, post_format=None,
-            expect_format=None, **kwargs):
+    def _post_grid(
+        self, uri, grid, callback, post_format=None, expect_format=None, **kwargs
+    ):
         """
         Perform a HTTP POST of a grid.
         """
         if expect_format is None:
-            expect_format=self._grid_format
+            expect_format = self._grid_format
         if post_format is None:
-            post_format=self._grid_format
-        op = self._POST_GRID_OPERATION(self, uri, grid,
-                expect_format=expect_format, post_format=post_format, **kwargs)
+            post_format = self._grid_format
+        op = self._POST_GRID_OPERATION(
+            self,
+            uri,
+            grid,
+            expect_format=expect_format,
+            post_format=post_format,
+            **kwargs
+        )
         if callback is not None:
             op.done_sig.connect(callback)
         op.go()
@@ -579,10 +601,11 @@ class HaystackSession(object):
             return obj
         if isinstance(obj, string_types):
             return hszinc.Ref(obj)
-        if hasattr(obj, 'id'):
+        if hasattr(obj, "id"):
             return obj.id
-        raise NotImplementedError('Don\'t know how to get the ID from a %s' \
-                % obj.__class__.__name__)
+        raise NotImplementedError(
+            "Don't know how to get the ID from a %s" % obj.__class__.__name__
+        )
 
     # Private methods/properties
 
@@ -593,8 +616,7 @@ class HaystackSession(object):
         subclass to indicate the authentication state and clear the _auth_op
         attribute on the base class.
         """
-        raise NotImplementedError('To be implemented in %s' % \
-                self.__class__.__name__)
+        raise NotImplementedError("To be implemented in %s" % self.__class__.__name__)
 
     def config_pint(self, value=False):
         if value:
