@@ -11,7 +11,7 @@ import hszinc
 try:
     import collections.abc as col
 except ImportError:
-    import collection as col
+    import collections as col
 import weakref
 from ...util.asyncexc import AsynchronousException
 from .ops.crud import EntityTagUpdateOperation
