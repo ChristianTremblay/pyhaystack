@@ -27,17 +27,6 @@ def _decode_str(s, enc="utf-8"):
         return s
 
 
-def _decode_str(s, enc="utf-8"):
-    """
-    Try to decode a 'str' object to a Unicode string.
-    """
-    try:
-        return s.decode(enc)
-    except AttributeError:
-        # This is probably already a Unicode string
-        return s
-
-
 class WideskyHaystackSession(
     crud.CRUDOpsMixin, multihis.MultiHisOpsMixin, HaystackSession
 ):
@@ -90,6 +79,11 @@ class WideskyHaystackSession(
         return (self._auth_result.get("expires_in") or 0.0) > (1000.0 * time())
 
     # Private methods/properties
+
+    def _on_read(self, ids, filter_expr, limit, callback, **kwargs):
+        return super(WideskyHaystackSession, self)._on_read(
+            ids, filter_expr, limit, callback, accept_status=(200, 404)
+        )
 
     def _on_http_grid_response(self, response):
         # If there's a '401' error, then we've lost the token.

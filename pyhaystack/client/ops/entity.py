@@ -11,6 +11,7 @@ import fysom
 
 from ...util import state
 from ...util.asyncexc import AsynchronousException
+from ...exception import HaystackError
 
 
 class EntityRetrieveOperation(state.HaystackOperation):
@@ -39,7 +40,14 @@ class EntityRetrieveOperation(state.HaystackOperation):
         """
         try:
             # See if the read succeeded.
-            grid = operation.result
+            try:
+                grid = operation.result
+            except HaystackError as e:
+                # Is this a "not found" error?
+                if str(e).startswith("HNotFoundError"):
+                    raise NameError("No matching entity found")
+                raise
+
             self._log.debug("Received grid: %s", grid)
 
             # Iterate over each row:

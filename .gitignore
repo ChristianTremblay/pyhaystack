@@ -10,3 +10,4 @@ tests/haystackClient/HaystackClientTest.py
 /docs/build
 /.cache
 /pyhaystack/client/ops/vendor/niagara4
+.idea

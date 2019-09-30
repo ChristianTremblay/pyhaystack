@@ -15,7 +15,7 @@ Actually, connection can be established with :
 
 * Niagara4_ by Tridium
 * NiagaraAX_ by Tridium
-* Widesky_ by VRT_
+* Widesky_ by Widesky.cloud_
 * Skyspark_ by SkyFoundry (version 2 and 3+)
 
 Connection to Niagara AX or Niagara 4 requires the nHaystack_ module by J2 Innovations to be installed
@@ -88,7 +88,7 @@ Pyhaystack is robust and will be ready for asynchronous development.
 We have chosen a state machine approach with observer pattern. See the docs for
 more informations.
 
-This implementation has been mostly supported by VRT_ and Servisys_. We are hoping 
+This implementation has been mostly supported by Widesky.cloud_ and Servisys_. We are hoping 
 that more people will join us in our effort to build a well working open-source software
 that will open the door of building data analysis to Python users.
 
@@ -123,7 +123,7 @@ to pyhaystack (ex. unit conversion)
 
 .. _Niagara4 : https://www.tridium.com/en/products-services/niagara4
 
-.. _VRT : http://www.vrt.com.au/
+.. _Widesky.cloud : http://widesky.cloud/
 
 .. _Servisys : http://www.servisys.com
 
