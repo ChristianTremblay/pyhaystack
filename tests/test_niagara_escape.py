@@ -7,6 +7,7 @@ import sys
 
 from pyhaystack.client.niagara import Niagara4HaystackSession
 
+
 @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3 or higher")
 def test_conversion_of_str():
     unescape = Niagara4HaystackSession.unescape
