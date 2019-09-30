@@ -7,6 +7,7 @@ to access and store tags of an entity.
 """
 
 import hszinc
+
 try:
     import collections.abc as col
 except ImportError:
