@@ -7,10 +7,15 @@ to access and store tags of an entity.
 """
 
 import hszinc
-import collections
+
+try:
+    import collections.abc as col
+except ImportError:
+    import collections as col
 import weakref
 from ...util.asyncexc import AsynchronousException
 from .ops.crud import EntityTagUpdateOperation
+
 
 class BaseEntityTags(object):
     """
@@ -32,17 +37,19 @@ class BaseEntityTags(object):
         """
         Dump a string representation of the tags.
         """
+
         def _dump_tag(ti):
             (t, v) = ti
             if v is hszinc.MARKER:
                 return t
             elif v is hszinc.REMOVE:
-                return 'R(%s)' % t
+                return "R(%s)" % t
             else:
-                return '%s=%r' % (t, v)
+                return "%s=%r" % (t, v)
+
         tags = list(map(_dump_tag, self.items()))
         tags.sort()
-        return '{%s}' % ', '.join(tags)
+        return "{%s}" % ", ".join(tags)
 
     def __iter__(self):
         """
@@ -104,7 +111,7 @@ class BaseMutableEntityTags(BaseEntityTags):
         """
         entity = self._entity()
         updates = self._tag_updates.copy()
-        updates['id'] = entity.id
+        updates["id"] = entity.id
         for tag in self._tag_deletions:
             updates[tag] = hszinc.REMOVE
 
@@ -173,13 +180,14 @@ class BaseMutableEntityTags(BaseEntityTags):
         """
         Return a set of tag names present.
         """
-        return (set(self._tags.keys()) | set(self._tag_updates.keys())) \
-                - self._tag_deletions
+        return (
+            set(self._tags.keys()) | set(self._tag_updates.keys())
+        ) - self._tag_deletions
 
 
-class ReadOnlyEntityTags(BaseEntityTags, collections.Mapping):
+class ReadOnlyEntityTags(BaseEntityTags, col.Mapping):
     pass
 
 
-class MutableEntityTags(BaseMutableEntityTags, collections.MutableMapping):
+class MutableEntityTags(BaseMutableEntityTags, col.MutableMapping):
     pass

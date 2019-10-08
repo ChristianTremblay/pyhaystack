@@ -12,18 +12,19 @@ from six import string_types
 # IMPLEMENTATION ALIASES: These help map short-hand aliases to full session
 # instances.  Further aliases can be added here.
 IMPLEMENTATION_ALIAS = {
-        'niagara-ax':   'niagara.NiagaraHaystackSession',
-        'ax':           'niagara.NiagaraHaystackSession',
-        'niagara4':     'niagara.Niagara4HaystackSession',
-        'n4':           'niagara.Niagara4HaystackSession',
-        'skyspark2':    'skyspark.SkysparkHaystackSession',
-        'skyspark':     'skyspark.SkysparkScramHaystackSession',
-        'widesky':      'widesky.WideskyHaystackSession',
+    "niagara-ax": "niagara.NiagaraHaystackSession",
+    "ax": "niagara.NiagaraHaystackSession",
+    "niagara4": "niagara.Niagara4HaystackSession",
+    "n4": "niagara.Niagara4HaystackSession",
+    "skyspark2": "skyspark.SkysparkHaystackSession",
+    "skyspark": "skyspark.SkysparkScramHaystackSession",
+    "widesky": "widesky.WideskyHaystackSession",
 }
 
 # KNOWN IMPLEMENTATIONS: This is populated at run time with instances of session
 # classes as they are loaded.  It should be empty at first.
 _known_implementations = {}
+
 
 def get_implementation(implementation):
     """
@@ -41,14 +42,13 @@ def get_implementation(implementation):
         pass
 
     # Extract class name from implementation
-    implementation_parts = implementation.split('.')
+    implementation_parts = implementation.split(".")
     implementation_class = implementation_parts.pop()
-    implementation_mod = '.'.join(implementation_parts)
+    implementation_mod = ".".join(implementation_parts)
 
     # Try short name, e.g. widesky.WideskySession
     try:
-        mod = import_module('.%s' % implementation_mod,
-                package='pyhaystack.client')
+        mod = import_module(".%s" % implementation_mod, package="pyhaystack.client")
     except ImportError:
         # Nope, not a short name, try the absolute full name.
         mod = import_module(implementation_mod)
@@ -58,14 +58,14 @@ def get_implementation(implementation):
         impl = getattr(mod, implementation_class)
     except AttributeError:
         # Is it aliased?
-        if hasattr(mod, 'IMPLEMENTATIONS'):
-            impl_alias = getattr(mod, 'IMPLEMENTATIONS')
+        if hasattr(mod, "IMPLEMENTATIONS"):
+            impl_alias = getattr(mod, "IMPLEMENTATIONS")
             try:
                 impl = impl_alias[implementation_class]
             except KeyError:
-                raise ImportError('No implementation named %s' % implementation)
+                raise ImportError("No implementation named %s" % implementation)
         else:
-            raise ImportError('No implementation named %s' % implementation)
+            raise ImportError("No implementation named %s" % implementation)
     _known_implementations[implementation] = impl
     return impl
 

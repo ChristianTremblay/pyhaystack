@@ -20,6 +20,7 @@ Typical usage::
 from sys import exc_info
 from six import reraise
 
+
 class AsynchronousException(object):
     def __init__(self):
         self._exc_info = exc_info()

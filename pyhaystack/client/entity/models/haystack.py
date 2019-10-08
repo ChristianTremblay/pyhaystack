@@ -9,6 +9,7 @@ import hszinc
 from ..model import TaggingModel
 from ..mixins import tz, site, equip, point
 
+
 class HaystackTaggingModel(TaggingModel):
     """
     An implementation of the Project Haystack tagging model.
@@ -24,33 +25,33 @@ class HaystackTaggingModel(TaggingModel):
         """
         types = []
         names = []
-        if 'tz' in tags:
+        if "tz" in tags:
             # We have a timezone
             types.append(tz.TzMixin)
-            names.append('Tz')
+            names.append("Tz")
 
-        if 'site' in tags:
+        if "site" in tags:
             # This is a site
             types.append(site.SiteMixin)
-            names.append('Site')
-        elif 'siteRef' in tags:
+            names.append("Site")
+        elif "siteRef" in tags:
             # This links to a site
             types.append(site.SiteRefMixin)
-            names.append('SiteRef')
+            names.append("SiteRef")
 
-        if 'equip' in tags:
+        if "equip" in tags:
             # This is a site
             types.append(equip.EquipMixin)
-            names.append('Equip')
-        elif 'equipRef' in tags:
+            names.append("Equip")
+        elif "equipRef" in tags:
             # This links to an equip
             types.append(equip.EquipRefMixin)
-            names.append('EquipRef')
+            names.append("EquipRef")
 
-        if 'point' in tags:
+        if "point" in tags:
             types.append(point.PointMixin)
-            if 'his' in tags:
+            if "his" in tags:
                 types.append(point.HisMixin)
-                names.append('His')
+                names.append("His")
 
-        return ('%sEntity' % ''.join(sorted(names)), types)
+        return ("%sEntity" % "".join(sorted(names)), types)

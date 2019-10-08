@@ -1,10 +1,10 @@
 # Simple application that uses the pyhaystack library
 # For this program to work you will need to have;
 # 1) the API server up and running at port 3000
-# 2) Insert the point AUTH_Site.1.Equip.multiPt04 and AUTH_Site.1.Equip.multiPt05 
+# 2) Insert the point AUTH_Site.1.Equip.multiPt04 and AUTH_Site.1.Equip.multiPt05
 #      - You can the API system test to insert these points
 
-# Expected output: 
+# Expected output:
 # Setup Widesky session. Object= <pyhaystack.client.widesky.WideskyHaystackSession object at 0x7f144f9e79d0>
 # Written some data using multi hisWrite. response should be blank =  []
 # Read the written data using multi hisRead. response is =
@@ -30,37 +30,45 @@ import datetime
 import pytz
 
 # Edit the following parameters to suit your system
-WS_URI='http://localhost:3000'
-WS_USERNAME='youruser@example.com'
-WS_PASSWORD='yourpassword'
-WS_CLIENT_ID='xxxx'
-WS_CLIENT_SECRET='yyyy'
+WS_URI = "http://localhost:3000"
+WS_USERNAME = "youruser@example.com"
+WS_PASSWORD = "yourpassword"
+WS_CLIENT_ID = "xxxx"
+WS_CLIENT_SECRET = "yyyy"
+
 
 def doStuff():
     session = WideskyHaystackSession(
-                  uri=WS_URI,
-                  username=WS_USERNAME,
-                  password=WS_PASSWORD,
-                  client_id=WS_CLIENT_ID,
-                  client_secret=WS_CLIENT_SECRET)
+        uri=WS_URI,
+        username=WS_USERNAME,
+        password=WS_PASSWORD,
+        client_id=WS_CLIENT_ID,
+        client_secret=WS_CLIENT_SECRET,
+    )
 
-    print "Setup Widesky session. Object=", session
+    print("Setup Widesky session. Object=", session)
     result = session.multi_his_write(
-              timestamp_records= {
-                      datetime.datetime.now(tz=pytz.timezone('Australia/Brisbane')).replace(microsecond=0): 
-                            {
-                                        'AUTH_Site.1.Equip.1.multiPt04': 800.8, 
-                                        'AUTH_Site.1.Equip.1.multiPt05': 123
-                            }}).result[:]
+        timestamp_records={
+            datetime.datetime.now(tz=pytz.timezone("Australia/Brisbane")).replace(
+                microsecond=0
+            ): {
+                "AUTH_Site.1.Equip.1.multiPt04": 800.8,
+                "AUTH_Site.1.Equip.1.multiPt05": 123,
+            }
+        }
+    ).result[:]
 
-    print "Written some data using multi hisWrite. response should be blank = ", result
+    print("Written some data using multi hisWrite. response should be blank = ", result)
 
-    result = session.multi_his_read(points=['AUTH_Site.1.Equip.1.multiPt04', 'AUTH_Site.1.Equip.1.multiPt05'], rng='today')
-    print "Read the written data using multi hisRead. response is = ", result
+    result = session.multi_his_read(
+        points=["AUTH_Site.1.Equip.1.multiPt04", "AUTH_Site.1.Equip.1.multiPt05"],
+        rng="today",
+    )
+    print("Read the written data using multi hisRead. response is = ", result)
+
 
 if __name__ == "__main__":
     try:
         doStuff()
     except KeyboardInterrupt:
         sys.exit(0)
-

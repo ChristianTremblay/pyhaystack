@@ -11,6 +11,7 @@ At present, this has not been adopted by other implementations.
 import hszinc
 from six import string_types
 
+
 class CRUDOpsMixin(object):
     """
     The CRUD operations mix-in implements low-level support for entity
@@ -31,7 +32,9 @@ class CRUDOpsMixin(object):
 
         :param entities: The entities to be inserted.
         """
-        return self._crud_op('createRec', entities, callback)
+        return self._crud_op(
+            "createRec", entities, callback, accept_status=(200, 400, 404)
+        )
 
     def create_entity(self, entities, single=None, callback=None):
         """
@@ -65,7 +68,9 @@ class CRUDOpsMixin(object):
 
         :param entities: The entities to be updated.
         """
-        return self._crud_op('updateRec', entities, callback)
+        return self._crud_op(
+            "updateRec", entities, callback, accept_status=(200, 400, 404)
+        )
 
     def delete(self, ids=None, filter_expr=None, callback=None):
         """
@@ -86,27 +91,28 @@ class CRUDOpsMixin(object):
 
         if bool(ids):
             if filter_expr is not None:
-                raise ValueError('Either specify ids or filter_expr, not both')
+                raise ValueError("Either specify ids or filter_expr, not both")
 
             ids = [self._obj_to_ref(r) for r in ids]
 
             if len(ids) == 1:
                 # Reading a single entity
-                return self._get_grid('deleteRec', callback,
-                        args={'id': ids[0]})
+                return self._get_grid("deleteRec", callback, args={"id": ids[0]})
             else:
                 # Reading several entities
                 grid = hszinc.Grid()
-                grid.column['id'] = {}
-                grid.extend([{'id': r} for r in ids])
-                return self._post_grid('deleteRec', grid, callback)
+                grid.column["id"] = {}
+                grid.extend([{"id": r} for r in ids])
+                return self._post_grid("deleteRec", grid, callback)
         else:
-            args = {'filter': filter_expr}
-            return self._get_grid('deleteRec', callback, args=args)
+            args = {"filter": filter_expr}
+            return self._get_grid(
+                "deleteRec", callback, args=args, accept_status=(200, 400, 404)
+            )
 
     # Private methods
 
-    def _crud_op(self, op, entities, callback):
+    def _crud_op(self, op, entities, callback, **kwargs):
         """
         Perform a repeated operation on the given entities with the given
         values for each entity.  `entities` should be a list of dicts, each
@@ -123,8 +129,11 @@ class CRUDOpsMixin(object):
         all_columns = set()
         list(map(all_columns.update, [e.keys() for e in entities]))
         # We'll put 'id' first sort the others.
-        all_columns.discard('id')
-        all_columns = ['id'] + sorted(all_columns)
+        if "id" in all_columns:
+            all_columns.discard("id")
+            all_columns = ["id"] + sorted(all_columns)
+        else:
+            all_columns = sorted(all_columns)
 
         # Construct the grid
         grid = hszinc.Grid()
@@ -136,7 +145,8 @@ class CRUDOpsMixin(object):
             entity = entity.copy()
 
             # Ensure 'id' is a ref
-            entity['id'] = self._obj_to_ref(entity['id'])
+            if "id" in entity:
+                entity["id"] = self._obj_to_ref(entity["id"])
 
             # Ensure all other columns are present
             for column in all_columns:
@@ -147,4 +157,4 @@ class CRUDOpsMixin(object):
             grid.append(entity)
 
         # Post the grid
-        return self._post_grid(op, grid, callback)
+        return self._post_grid(op, grid, callback, **kwargs)

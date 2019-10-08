@@ -8,6 +8,7 @@ High-level Entity interface.
 from hszinc import Ref
 from .tags import ReadOnlyEntityTags, MutableEntityTags
 
+
 class Entity(object):
     """
     A base class for Project Haystack entities.  This is a base class that is
@@ -30,7 +31,7 @@ class Entity(object):
         self._session = session
         self._entity_id = entity_id
 
-        if hasattr(session, 'update'):
+        if hasattr(session, "update"):
             tags = MutableEntityTags(self)
         else:
             tags = ReadOnlyEntityTags(self)
@@ -50,7 +51,7 @@ class Entity(object):
         """
         Return the description field of the entity.
         """
-        return self._tags['dis']
+        return self._tags["dis"]
 
     @property
     def tags(self):
@@ -63,15 +64,16 @@ class Entity(object):
         """
         Return a string representation of the entity.
         """
-        return '<%s: %s>' % (self.id, self.tags)
+        return "<%s: %s>" % (self.id, self.tags)
 
     def _update_tags(self, tags):
         """
         Update the value of given tags.
         """
         self._tags._update_tags(tags)
-        if hasattr(self._session, '_check_entity_type') \
-                and (not self._session._check_entity_type(self)):
+        if hasattr(self._session, "_check_entity_type") and (
+            not self._session._check_entity_type(self)
+        ):
             self._invalidate()
 
     def _invalidate(self):
@@ -96,7 +98,7 @@ class DeletableEntity(Entity):
         """
         if not self._valid:
             raise StaleEntityInstanceError()
-        raise NotImplementedError('TODO: implement CRUD ops')
+        raise NotImplementedError("TODO: implement CRUD ops")
 
 
 class StaleEntityInstanceError(Exception):
@@ -104,4 +106,5 @@ class StaleEntityInstanceError(Exception):
     Exception thrown when an entity instance is "stale", that is, the
     entity class type no longer matches the tag set present in the entity.
     """
+
     pass

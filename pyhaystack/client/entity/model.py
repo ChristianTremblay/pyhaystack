@@ -8,6 +8,7 @@ Tagging Model Interface.
 import weakref
 from .entity import Entity, DeletableEntity
 
+
 class TaggingModel(object):
     """
     A base class for representing tagging models.  The tagging model
@@ -34,7 +35,7 @@ class TaggingModel(object):
 
         # Does the session instance support CRUD?  Add the appropriate base
         # class to the end of the types list.
-        if hasattr(session, 'delete'):
+        if hasattr(session, "delete"):
             types += [DeletableEntity]
         else:
             types += [Entity]
@@ -57,5 +58,4 @@ class TaggingModel(object):
         - a list of class instances that represent the add-on types for
           that object.
         """
-        raise NotImplementedError('To be implemented in %s' \
-                % self.__class__.__name__)
+        raise NotImplementedError("To be implemented in %s" % self.__class__.__name__)

@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 
 import shlex
 import re
+
 try:
     from urllib.parse import quote_plus
 except ImportError:
@@ -22,6 +23,7 @@ except ImportError:
 
 from .auth import AuthenticationCredentials
 
+
 class HTTPClient(object):
     """
     The base HTTP client interface.  This class defines methods for making
@@ -29,14 +31,25 @@ class HTTPClient(object):
     asynchronous one, even for synchronous implementations.
     """
 
-    PROTO_RE    = re.compile(r'^[a-z]+://')
-    CONTENT_TYPE_HDR    = b'Content-Type'
-    CONTENT_LENGTH_HDR  = b'Content-Length'
+    PROTO_RE = re.compile(r"^[a-z]+://")
+    CONTENT_TYPE_HDR = b"Content-Type"
+    CONTENT_LENGTH_HDR = b"Content-Length"
 
-    def __init__(self, uri=None, params=None, headers=None, cookies=None,
-            auth=None, timeout=None, proxies=None, tls_verify=None,
-            tls_cert=None, accept_status=None, log=None,
-            insecure_requests_warning=True):
+    def __init__(
+        self,
+        uri=None,
+        params=None,
+        headers=None,
+        cookies=None,
+        auth=None,
+        timeout=None,
+        proxies=None,
+        tls_verify=None,
+        tls_cert=None,
+        accept_status=None,
+        log=None,
+        insecure_requests_warning=True,
+    ):
         """
         Instantiate a HTTP client instance with some default parameters.
         These parameters are made accessible as properties to be modified at
@@ -80,15 +93,30 @@ class HTTPClient(object):
         self.tls_verify = tls_verify
         self.tls_cert = tls_cert
         self.log = log
-        
+
         if not insecure_requests_warning:
             self.silence_insecured_warnings()
 
-    def request(self, method, uri, callback, body=None, params=None,
-            headers=None, cookies=None, auth=None, timeout=None, proxies=None,
-            tls_verify=None, tls_cert=None, exclude_params=None,
-            exclude_headers=None, exclude_cookies=None, exclude_proxies=None,
-            accept_status=None):
+    def request(
+        self,
+        method,
+        uri,
+        callback,
+        body=None,
+        params=None,
+        headers=None,
+        cookies=None,
+        auth=None,
+        timeout=None,
+        proxies=None,
+        tls_verify=None,
+        tls_cert=None,
+        exclude_params=None,
+        exclude_headers=None,
+        exclude_cookies=None,
+        exclude_proxies=None,
+        accept_status=None,
+    ):
         """
         Perform a request with this client.  Most parameters here exist to either
         add to or override the defaults given by the client attributes.  The
@@ -146,8 +174,7 @@ class HTTPClient(object):
         if not self.PROTO_RE.match(uri):
             # Do we have a base URL?
             if self.uri is None:
-                raise ValueError('uri must be absolute or base '\
-                        'set in uri attribute')
+                raise ValueError("uri must be absolute or base " "set in uri attribute")
             # Prepend our base URL
             uri = urljoin(self.uri, uri)
 
@@ -164,8 +191,13 @@ class HTTPClient(object):
                 result.update(given)
 
             if self.log is not None:
-                self.log.debug('Merging %r with %r, exclude %s -> %r',
-                        given, defaults, exclude, result)
+                self.log.debug(
+                    "Merging %r with %r, exclude %s -> %r",
+                    given,
+                    defaults,
+                    exclude,
+                    result,
+                )
             return result
 
         # Merge our parameters, headers and cookies together
@@ -177,48 +209,71 @@ class HTTPClient(object):
         timeout = timeout or self.timeout or None
 
         if not ((auth is None) or isinstance(auth, AuthenticationCredentials)):
-            raise TypeError('%s is not a subclass of the '\
-                    'AuthenticationCredentials class.' \
-                    % auth.__class__.__name__)
+            raise TypeError(
+                "%s is not a subclass of the "
+                "AuthenticationCredentials class." % auth.__class__.__name__
+            )
 
         if tls_verify is None:
             tls_verify = self.tls_verify
-            if (tls_verify is None) and uri.startswith('https://'):
+            if (tls_verify is None) and uri.startswith("https://"):
                 # If we're dealing with a https:// URL, turn on verification
                 # by default for user safety.
                 tls_verify = True
         tls_cert = tls_cert or self.tls_cert or None
 
         # Convert parameters to a query string
-        query_str = u'&'.join([
-            '%s=%s' % (key, quote_plus(value))
-            for key, value in params.items()
-        ])
+        query_str = "&".join(
+            ["%s=%s" % (key, quote_plus(value)) for key, value in params.items()]
+        )
 
         # Tack query string onto URL
         if query_str:
-            uri += u'?' + query_str
+            uri += "?" + query_str
 
         # Perform the actual request.
         if self.log is not None:
-            self.log.debug( 'Performing operation %s of %s, headers: %r, '\
-                            'cookies: %r, body: %r', method, uri, headers,
-                            cookies, body)
-        self._request(method=method, uri=uri, callback=callback, body=body,
-                headers=headers, cookies=cookies, auth=auth,
-                timeout=timeout, proxies=proxies, tls_verify=tls_verify,
-                tls_cert=tls_cert, accept_status=accept_status)
+            self.log.debug(
+                "Performing operation %s of %s, headers: %r, " "cookies: %r, body: %r",
+                method,
+                uri,
+                headers,
+                cookies,
+                body,
+            )
+        self._request(
+            method=method,
+            uri=uri,
+            callback=callback,
+            body=body,
+            headers=headers,
+            cookies=cookies,
+            auth=auth,
+            timeout=timeout,
+            proxies=proxies,
+            tls_verify=tls_verify,
+            tls_cert=tls_cert,
+            accept_status=accept_status,
+        )
 
     def get(self, uri, callback, **kwargs):
         """
         Convenience function: perform a HTTP GET operation.  Arguments are the
         same as for request.
         """
-        kwargs.pop('body',None)
-        self.request('GET', uri, callback, **kwargs)
+        kwargs.pop("body", None)
+        self.request("GET", uri, callback, **kwargs)
 
-    def post(self, uri, callback, body=None, body_type=None, body_size=None,
-            headers=None, **kwargs):
+    def post(
+        self,
+        uri,
+        callback,
+        body=None,
+        body_type=None,
+        body_size=None,
+        headers=None,
+        **kwargs
+    ):
         """
         Convenience function: perform a HTTP POST operation.  Arguments are the
         same as for request.
@@ -242,20 +297,37 @@ class HTTPClient(object):
             if body_type is not None:
                 headers[self.CONTENT_TYPE_HDR] = body_type
 
-        self.request(method='POST', uri=uri, callback=callback,
-                body=body, headers=headers, **kwargs)
+        self.request(
+            method="POST",
+            uri=uri,
+            callback=callback,
+            body=body,
+            headers=headers,
+            **kwargs
+        )
 
-    def _request(self, method, uri, callback, body,
-            headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert, accept_status):
+    def _request(
+        self,
+        method,
+        uri,
+        callback,
+        body,
+        headers,
+        cookies,
+        auth,
+        timeout,
+        proxies,
+        tls_verify,
+        tls_cert,
+        accept_status,
+    ):
         """
         Perform a HTTP request using the underlying implementation.  This is
         expected to take the arguments given, perform a query, then return the
         result via a callback.
         """
-        raise NotImplementedError('TODO: implement in %s' \
-                % self.__class__.__name__)
-        
+        raise NotImplementedError("TODO: implement in %s" % self.__class__.__name__)
+
     def silence_insecured_warnings(self):
         """
         Can be used to disable Insecure Requests Warnings
@@ -263,19 +335,24 @@ class HTTPClient(object):
         Use with care.
         """
         if self.log is not None:
-            self.log.warning('Disabling insecure requests warnings. Please use with care. Unverified HTTPS requests will be made. Adding Certificate verification is strongly advised.')
+            self.log.warning(
+                "Disabling insecure requests warnings. Please use with care. Unverified HTTPS requests will be made. Adding Certificate verification is strongly advised."
+            )
         try:
             import requests
             from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
         except ImportError:
             raise
 
+
 class HTTPResponse(object):
     """
     A class that represents the raw response from a HTTP request.
     """
+
     def __init__(self, status_code, headers, body, cookies=None):
         self.status_code = status_code
         self.headers = CaseInsensitiveDict(headers or {})
@@ -310,11 +387,11 @@ class HTTPResponse(object):
         """
         if self._text is None:
             body = self.body
-            if not hasattr(body, 'decode'):
+            if not hasattr(body, "decode"):
                 # It probably is a str/unicode
                 return body
 
-            content_encoding = self.content_type_args.get('charset')
+            content_encoding = self.content_type_args.get("charset")
             if content_encoding is None:
                 self._text = self.body.decode()
             else:
@@ -322,14 +399,15 @@ class HTTPResponse(object):
         return self._text
 
     def _parse_content_type(self):
-        content_type = self.headers['content-type']
+        content_type = self.headers["content-type"]
 
         # Is content encoding shoehorned in there?
-        if ';' in content_type:
-            (content_type, content_type_args) = content_type.split(';',1)
+        if ";" in content_type:
+            (content_type, content_type_args) = content_type.split(";", 1)
             content_type = content_type.strip()
-            content_type_args = dict([tuple(kv.split('=',1)) for kv in
-                    shlex.split(content_type_args)])
+            content_type_args = dict(
+                [tuple(kv.split("=", 1)) for kv in shlex.split(content_type_args)]
+            )
         else:
             content_type_args = {}
         self._content_type = content_type
@@ -340,11 +418,12 @@ class CaseInsensitiveDict(dict):
     """
     A dict object that maps keys in a case-insensitive manner.
     """
+
     @classmethod
     def _key_to_str(cls, key):
         # Handle bytes
         if isinstance(key, bytes):
-            key = key.decode('utf-8')
+            key = key.decode("utf-8")
         return str(key).lower()
 
     def __init__(self, *args, **kwargs):
@@ -356,15 +435,12 @@ class CaseInsensitiveDict(dict):
             key = self._key_map[self._key_to_str(key)]
         except KeyError:
             pass
-        return super(CaseInsensitiveDict, self).__getitem__(
-                key, *args, **kwargs)
+        return super(CaseInsensitiveDict, self).__getitem__(key, *args, **kwargs)
 
     def __setitem__(self, key, *args, **kwargs):
         self._key_map[self._key_to_str(key)] = key
-        return super(CaseInsensitiveDict, self).__setitem__(
-                key, *args, **kwargs)
+        return super(CaseInsensitiveDict, self).__setitem__(key, *args, **kwargs)
 
     def __delitem__(self, key, *args, **kwargs):
         self._key_map.pop(str(key).lower(), None)
-        return super(CaseInsensitiveDict, self).__delitem__(
-                key, *args, **kwargs)
+        return super(CaseInsensitiveDict, self).__delitem__(key, *args, **kwargs)

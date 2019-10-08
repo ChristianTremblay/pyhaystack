@@ -8,6 +8,7 @@ Mix-ins for entities exposing a 'tz' tag
 import hszinc
 import pytz
 
+
 class TzMixin(object):
     """
     A mix-in used for entities that carry the 'tz' tag.
@@ -18,7 +19,7 @@ class TzMixin(object):
         """
         Return the Project Haystack timezone type.
         """
-        return self.tags['tz']
+        return self.tags["tz"]
 
     @property
     def iana_tz(self):
@@ -26,8 +27,8 @@ class TzMixin(object):
         Return the IANA (Olson) database timezone name.
         """
         hs_tz = self.hs_tz
-        if '/' in hs_tz:
-            return hs_tz    # This is the IANA zone name.
+        if "/" in hs_tz:
+            return hs_tz  # This is the IANA zone name.
 
         tz_map = hszinc.zoneinfo.get_tz_map()
         return tz_map[hs_tz]

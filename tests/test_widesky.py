@@ -26,11 +26,13 @@ import time
 
 # Logging setup so we can see what's going on
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 
 from pyhaystack.client import widesky
 
-BASE_URI = 'https://myserver/api/'
+BASE_URI = "https://myserver/api/"
+
 
 class TestIsLoggedIn(object):
     """
@@ -44,12 +46,13 @@ class TestIsLoggedIn(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Straight off the bat, this should be None
         assert session._auth_result is None
@@ -61,12 +64,13 @@ class TestIsLoggedIn(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Inject our own auth result, empty dict.
         session._auth_result = {}
@@ -78,17 +82,19 @@ class TestIsLoggedIn(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Inject our own auth result, expiry in the past.
         session._auth_result = {
-                # Milliseconds here!
-                'expires_in': (time.time() - 1.0) * 1000.0
+            # Milliseconds here!
+            "expires_in": (time.time() - 1.0)
+            * 1000.0
         }
 
         # We should see a False result here
@@ -98,17 +104,19 @@ class TestIsLoggedIn(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Inject our own auth result, expiry in the future.
         session._auth_result = {
-                # Milliseconds here!
-                'expires_in': (time.time() + 1.0) * 1000.0
+            # Milliseconds here!
+            "expires_in": (time.time() + 1.0)
+            * 1000.0
         }
 
         # We should see a True result here
@@ -127,33 +135,36 @@ class TestOnHTTPGridResponse(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Seed this with parameters
         auth_result = {
-                'expires_in': (time.time() + 3600.0) * 1000.0,
-                'access_token': 'abcdefgh',
-                'refresh_token': '12345678',
+            "expires_in": (time.time() + 3600.0) * 1000.0,
+            "access_token": "abcdefgh",
+            "refresh_token": "12345678",
         }
         session._auth_result = auth_result
 
         # A dummy response, we don't care much about the content.
-        res = HTTPResponse(status_code=200, headers={}, body='')
+        res = HTTPResponse(status_code=200, headers={}, body="")
 
         # This should do nothing
         session._on_http_grid_response(res)
 
         # Same keys
-        assert set(auth_result.keys()) == set(session._auth_result.keys()), \
-                'Keys mismatch'
+        assert set(auth_result.keys()) == set(
+            session._auth_result.keys()
+        ), "Keys mismatch"
         for key in auth_result.keys():
-            assert auth_result[key] == session._auth_result[key], \
-                    'Mismatching key %s' % key
+            assert auth_result[key] == session._auth_result[key], (
+                "Mismatching key %s" % key
+            )
 
     def test_logout_if_response_401(self):
         """
@@ -162,23 +173,24 @@ class TestOnHTTPGridResponse(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Seed this with parameters
         auth_result = {
-                'expires_in': (time.time() + 3600.0) * 1000.0,
-                'access_token': 'abcdefgh',
-                'refresh_token': '12345678',
+            "expires_in": (time.time() + 3600.0) * 1000.0,
+            "access_token": "abcdefgh",
+            "refresh_token": "12345678",
         }
         session._auth_result = auth_result
 
         # A dummy response, we don't care much about the content.
-        res = HTTPResponse(status_code=401, headers={}, body='')
+        res = HTTPResponse(status_code=401, headers={}, body="")
 
         # This should drop our session
         session._on_http_grid_response(res)
@@ -191,24 +203,25 @@ class TestOnHTTPGridResponse(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Seed this with parameters
         auth_result = {
-                'expires_in': (time.time() + 3600.0) * 1000.0,
-                'access_token': 'abcdefgh',
-                'refresh_token': '12345678',
+            "expires_in": (time.time() + 3600.0) * 1000.0,
+            "access_token": "abcdefgh",
+            "refresh_token": "12345678",
         }
         session._auth_result = auth_result
 
         # Generate a HTTPStatusError, wrap it up in an AsynchronousException
         try:
-            raise HTTPStatusError('Unauthorized', 401)
+            raise HTTPStatusError("Unauthorized", 401)
         except HTTPStatusError:
             res = AsynchronousException()
 
@@ -223,18 +236,19 @@ class TestOnHTTPGridResponse(object):
         server = dummy_http.DummyHttpServer()
         session = widesky.WideskyHaystackSession(
             uri=BASE_URI,
-            username='testuser',
-            password='testpassword',
-            client_id='testclient',
-            client_secret='testclientsecret',
+            username="testuser",
+            password="testpassword",
+            client_id="testclient",
+            client_secret="testclientsecret",
             http_client=dummy_http.DummyHttpClient,
-            http_args={'server': server, 'debug': True})
+            http_args={"server": server, "debug": True},
+        )
 
         # Seed this with parameters
         auth_result = {
-                'expires_in': (time.time() + 3600.0) * 1000.0,
-                'access_token': 'abcdefgh',
-                'refresh_token': '12345678',
+            "expires_in": (time.time() + 3600.0) * 1000.0,
+            "access_token": "abcdefgh",
+            "refresh_token": "12345678",
         }
         session._auth_result = auth_result
 
@@ -243,7 +257,7 @@ class TestOnHTTPGridResponse(object):
             pass
 
         try:
-            raise DummyError('Testing')
+            raise DummyError("Testing")
         except DummyError:
             res = AsynchronousException()
 
@@ -251,8 +265,10 @@ class TestOnHTTPGridResponse(object):
         session._on_http_grid_response(res)
 
         # Same keys
-        assert set(auth_result.keys()) == set(session._auth_result.keys()), \
-                'Keys mismatch'
+        assert set(auth_result.keys()) == set(
+            session._auth_result.keys()
+        ), "Keys mismatch"
         for key in auth_result.keys():
-            assert auth_result[key] == session._auth_result[key], \
-                    'Mismatching key %s' % key
+            assert auth_result[key] == session._auth_result[key], (
+                "Mismatching key %s" % key
+            )

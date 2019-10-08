@@ -4,10 +4,14 @@ Asynchronous Dummy HTTP client.
 """
 
 from .base import HTTPClient, HTTPResponse
-from .auth import BasicAuthenticationCredentials, \
-                    DigestAuthenticationCredentials
-from .exceptions import HTTPConnectionError, HTTPTimeoutError, \
-        HTTPRedirectError, HTTPStatusError, HTTPBaseError
+from .auth import BasicAuthenticationCredentials, DigestAuthenticationCredentials
+from .exceptions import (
+    HTTPConnectionError,
+    HTTPTimeoutError,
+    HTTPRedirectError,
+    HTTPStatusError,
+    HTTPBaseError,
+)
 
 from ...util.asyncexc import AsynchronousException
 
@@ -29,18 +33,42 @@ class DummyHttpServer(object):
         self._rq_order = []
         self._next_id = 0
 
-    def submit_request(self, method, uri, callback,
-                body, headers, cookies, auth, timeout, proxies,
-                tls_verify, tls_cert, accept_status):
+    def submit_request(
+        self,
+        method,
+        uri,
+        callback,
+        body,
+        headers,
+        cookies,
+        auth,
+        timeout,
+        proxies,
+        tls_verify,
+        tls_cert,
+        accept_status,
+    ):
         """
         Submit a request.
         """
         rq_id = self._next_id
         self._next_id += 1
 
-        rq = DummyHttpClientRequest(rq_id, method, uri, callback,
-                body, headers, cookies, auth, timeout, proxies,
-                tls_verify, tls_cert, accept_status)
+        rq = DummyHttpClientRequest(
+            rq_id,
+            method,
+            uri,
+            callback,
+            body,
+            headers,
+            cookies,
+            auth,
+            timeout,
+            proxies,
+            tls_verify,
+            tls_cert,
+            accept_status,
+        )
         self._requests[rq_id] = rq
         self._rq_order.append(rq_id)
 
@@ -78,12 +106,35 @@ class DummyHttpClient(HTTPClient):
         super(DummyHttpClient, self).__init__(**kwargs)
         self._server = server
 
-    def _request(self, method, uri, callback, body,
-            headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert, accept_status):
-        self._server.submit_request(method,
-                uri, callback, body, headers, cookies, auth,
-                timeout, proxies, tls_verify, tls_cert, accept_status)
+    def _request(
+        self,
+        method,
+        uri,
+        callback,
+        body,
+        headers,
+        cookies,
+        auth,
+        timeout,
+        proxies,
+        tls_verify,
+        tls_cert,
+        accept_status,
+    ):
+        self._server.submit_request(
+            method,
+            uri,
+            callback,
+            body,
+            headers,
+            cookies,
+            auth,
+            timeout,
+            proxies,
+            tls_verify,
+            tls_cert,
+            accept_status,
+        )
 
 
 class DummyHttpClientRequest(object):
@@ -94,9 +145,22 @@ class DummyHttpClientRequest(object):
     response to the waiting client.
     """
 
-    def __init__(self, rq_id, method, uri, callback, body,
-            headers, cookies, auth, timeout, proxies,
-            tls_verify, tls_cert, accept_status):
+    def __init__(
+        self,
+        rq_id,
+        method,
+        uri,
+        callback,
+        body,
+        headers,
+        cookies,
+        auth,
+        timeout,
+        proxies,
+        tls_verify,
+        tls_cert,
+        accept_status,
+    ):
         """
         Collect all the parameters supplied in the request.
         """
@@ -166,10 +230,11 @@ class DummyHttpClientRequest(object):
         """
         Return a string representation for debugging purposes.
         """
-        return 'Request %d: %s of %s\n'\
-                '\tHeaders: %s\n'\
-                '\tBody:\n%s' % (self.rq_id, self.method, self.uri,
-                        self.headers, self.body)
+        return (
+            "Request %d: %s of %s\n"
+            "\tHeaders: %s\n"
+            "\tBody:\n%s" % (self.rq_id, self.method, self.uri, self.headers, self.body)
+        )
 
     def __hash__(self):
         """
@@ -186,14 +251,15 @@ class DummyHttpClientRequest(object):
         if cookies is None:
             cookies = {}
 
-        if ((self._accept_status is None) and (status < 400)) \
-                or (status in self._accept_status):
-            result = HTTPResponse(status, headers.copy(), content,
-                    cookies.copy())
+        if ((self._accept_status is None) and (status < 400)) or (
+            status in self._accept_status
+        ):
+            result = HTTPResponse(status, headers.copy(), content, cookies.copy())
         else:
             try:
-                raise HTTPStatusError('HTTP Status %d' % status,
-                        status, headers.copy(), content)
+                raise HTTPStatusError(
+                    "HTTP Status %d" % status, status, headers.copy(), content
+                )
             except:
                 # Catch it for the callback
                 result = AsynchronousException()
