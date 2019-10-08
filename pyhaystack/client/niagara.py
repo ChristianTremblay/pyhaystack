@@ -10,6 +10,7 @@ from .ops.vendor.niagara_scram import Niagara4ScramAuthenticateOperation
 from .mixins.vendor.niagara.bql import BQLOperation, BQLMixin
 from .mixins.vendor.niagara.encoding import EncodingMixin
 
+import hszinc
 
 class NiagaraHaystackSession(HaystackSession, BQLMixin, EncodingMixin):
     """
