@@ -12,6 +12,7 @@ from .mixins.vendor.niagara.encoding import EncodingMixin
 
 import hszinc
 
+
 class NiagaraHaystackSession(HaystackSession, BQLMixin, EncodingMixin):
     """
     The NiagaraHaystackSession class implements some base support for
