@@ -8,9 +8,12 @@ from .session import HaystackSession
 from .ops.vendor.niagara import NiagaraAXAuthenticateOperation
 from .ops.vendor.niagara_scram import Niagara4ScramAuthenticateOperation
 from .mixins.vendor.niagara.bql import BQLOperation, BQLMixin
+from .mixins.vendor.niagara.encoding import EncodingMixin
+
+import hszinc
 
 
-class NiagaraHaystackSession(HaystackSession, BQLMixin):
+class NiagaraHaystackSession(HaystackSession, BQLMixin, EncodingMixin):
     """
     The NiagaraHaystackSession class implements some base support for
     NiagaraAX. This is mainly a convenience for
@@ -63,7 +66,7 @@ class NiagaraHaystackSession(HaystackSession, BQLMixin):
             self._auth_op = None
 
 
-class Niagara4HaystackSession(HaystackSession, BQLMixin):
+class Niagara4HaystackSession(HaystackSession, BQLMixin, EncodingMixin):
     """
     The Niagara4HaystackSession class implements some base support for
     Niagara4. This is mainly a convenience for
@@ -81,7 +84,10 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin):
         :param username: Authentication user name.
         :param password: Authentication password.
         """
-        super(Niagara4HaystackSession, self).__init__(uri, "haystack", **kwargs)
+
+        super(Niagara4HaystackSession, self).__init__(
+            uri, "haystack", grid_format=hszinc.MODE_JSON, **kwargs
+        )
         self._username = username
         self._password = password
         self._authenticated = False

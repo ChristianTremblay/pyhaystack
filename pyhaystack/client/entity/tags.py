@@ -7,7 +7,11 @@ to access and store tags of an entity.
 """
 
 import hszinc
-import collections
+
+try:
+    import collections.abc as col
+except ImportError:
+    import collections as col
 import weakref
 from ...util.asyncexc import AsynchronousException
 from .ops.crud import EntityTagUpdateOperation
@@ -181,9 +185,9 @@ class BaseMutableEntityTags(BaseEntityTags):
         ) - self._tag_deletions
 
 
-class ReadOnlyEntityTags(BaseEntityTags, collections.Mapping):
+class ReadOnlyEntityTags(BaseEntityTags, col.Mapping):
     pass
 
 
-class MutableEntityTags(BaseMutableEntityTags, collections.MutableMapping):
+class MutableEntityTags(BaseMutableEntityTags, col.MutableMapping):
     pass
