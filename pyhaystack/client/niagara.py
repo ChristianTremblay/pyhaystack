@@ -82,7 +82,8 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin, EncodingMixin):
         :param username: Authentication user name.
         :param password: Authentication password.
         """
-        super(Niagara4HaystackSession, self).__init__(uri, "haystack", **kwargs)
+        
+        super(Niagara4HaystackSession, self).__init__(uri, "haystack", grid_format=hszinc.MODE_JSON, **kwargs)
         self._username = username
         self._password = password
         self._authenticated = False
