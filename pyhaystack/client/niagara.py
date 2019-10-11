@@ -76,7 +76,7 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin, EncodingMixin):
     _AUTH_OPERATION = Niagara4ScramAuthenticateOperation
     _BQL_OPERATION = BQLOperation
 
-    def __init__(self, uri, username, password, **kwargs):
+    def __init__(self, uri, username, password, grid_format=None, **kwargs):
         """
         Initialise a Nagara 4 Project Haystack session handler.
 
@@ -84,9 +84,13 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin, EncodingMixin):
         :param username: Authentication user name.
         :param password: Authentication password.
         """
+        if grid_format:
+            grid_format = grid_format
+        else:
+            grid_format = hszinc.MODE_JSON
 
         super(Niagara4HaystackSession, self).__init__(
-            uri, "haystack", grid_format=hszinc.MODE_JSON, **kwargs
+            uri, "haystack", grid_format=grid_format, **kwargs
         )
         self._username = username
         self._password = password
