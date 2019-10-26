@@ -24,7 +24,7 @@ class BaseAuthOperation(state.HaystackOperation):
     def __init__(self, session, uri, retries=2, cache=False):
         """
         Initialise a request for the authenticating with the given URI and arguments.
-        
+
         It also contains the state machine for reconnection if needed.
 
         :param session: Haystack HTTP session object.
