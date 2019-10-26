@@ -215,16 +215,15 @@ class BaseGridOperation(BaseAuthOperation):
             cache_key = uri
         self._cache_key = cache_key
 
-        if not raw_response:
-            if expect_format == hszinc.MODE_ZINC:
-                self._headers[b"Accept"] = "text/zinc"
-            elif expect_format == hszinc.MODE_JSON:
-                self._headers[b"Accept"] = "application/json"
-            elif expect_format is not None:
-                raise ValueError(
-                    "expect_format must be one onf hszinc.MODE_ZINC "
-                    "or hszinc.MODE_JSON"
-                )
+        if expect_format == hszinc.MODE_ZINC:
+            self._headers[b"Accept"] = "text/zinc"
+        elif expect_format == hszinc.MODE_JSON:
+            self._headers[b"Accept"] = "application/json"
+        elif expect_format is not None:
+            raise ValueError(
+                "expect_format must be one onf hszinc.MODE_ZINC "
+                "or hszinc.MODE_JSON"
+            )
 
     def _do_check_cache(self, event):
         """
