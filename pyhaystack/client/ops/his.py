@@ -124,18 +124,28 @@ class HisReadSeriesOperation(state.HaystackOperation):
             # Convert grid to list of tuples
             data = [(conv_ts(row["ts"]), row["val"]) for row in grid]
 
+            units = ""
+            values = []
             if self._series_format == self.FORMAT_DICT:
                 data = dict(data)
             elif self._series_format == self.FORMAT_SERIES:
                 # Split into index and data.
                 try:
                     (index, data) = zip(*data)
-                    if isinstance(data[0], hszinc.Quantity):
-                        values = [each.value for each in data]
-                        units = data[0].unit
+                    if isinstance(data[0], hszinc.Quantity) or isinstance(
+                        data[-1], hszinc.Quantity
+                    ):
+                        for each in data:
+                            try:
+                                values.append(each.value)
+                                if units == "":
+                                    units = each.unit
+                            except AttributeError:
+                                if isinstance(each, float):
+                                    values.append(each)
+                                continue
                     else:
                         values = data
-                        units = ""
                 except ValueError:
                     values = []
                     index = []

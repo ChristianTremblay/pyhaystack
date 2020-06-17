@@ -93,7 +93,7 @@ arguments, so all should be usable.
 
 * ``grid_format``: This selects the grid serialisation format for the Project
   Haystack server.  Some (e.g. nHaystack/Niagara AX) only support ZINC
-  serialisation, where as others (such as WideSky) work better with JSON.
+  serialisation, where as others (such as WideSky and Niagara4) work better with JSON.
   Most of the time, the default here will be selected appropriate for the
   underlying server implementation.  Valid values are ``zinc`` and ``json``.
 
