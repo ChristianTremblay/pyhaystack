@@ -221,8 +221,7 @@ class BaseGridOperation(BaseAuthOperation):
             self._headers[b"Accept"] = "application/json"
         elif expect_format is not None:
             raise ValueError(
-                "expect_format must be one onf hszinc.MODE_ZINC "
-                "or hszinc.MODE_JSON"
+                "expect_format must be one onf hszinc.MODE_ZINC " "or hszinc.MODE_JSON"
             )
 
     def _do_check_cache(self, event):

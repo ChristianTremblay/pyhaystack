@@ -116,3 +116,17 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin, EncodingMixin):
             self._client.cookies = None
         finally:
             self._auth_op = None
+
+    def logout(self):
+        def callback(response):
+            try:
+                status_code = response.status_code
+
+            except AttributeError as error:
+                status_code = -1
+
+            if status_code != 200:
+                print("Warning: failed to close nhaystack session, ", end="")
+                print("status_code={}".format(status_code))
+
+        self._get("/logout", callback, api=False)

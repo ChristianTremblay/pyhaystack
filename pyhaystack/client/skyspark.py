@@ -114,27 +114,15 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
         finally:
             self._auth_op = None
 
-    def __enter__(self):
-        """Entering context manager
-
-        usage:
-        with SkysparkScramHaystackSession(uri, username, password, project, **kwargs) as session:
-            # do whatever with session
-
-        """
-
-        return self
-
-    def __exit__(self, _type, value, traceback):
+    def logout(self):
         """close session when leaving context by trick given by Brian Frank
 
-           https://www.skyfoundry.com/forum/topic/5282#c1
+        https://www.skyfoundry.com/forum/topic/5282#c1
 
-           but beware that this is not standard!"""
+        but beware that this is not standard!"""
 
-            # TODO: Rewrite this when a standard way to close sessions is
-            #       implemented in Skyspark.
-
+        # TODO: Rewrite this when a standard way to close sessions is
+        #       implemented in Skyspark.
         def callback(response):
             try:
                 status_code = response.status_code
@@ -143,7 +131,7 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
                 status_code = -1
 
             if status_code != 200:
-                print('Warning: failed to close skyspark session, ', end='')
-                print('status_code={}'.format(status_code))
+                print("Warning: failed to close skyspark session, ", end="")
+                print("status_code={}".format(status_code))
 
-        self._get('/user/logout', callback, api=False)
+        self._get("/user/logout", callback, api=False)

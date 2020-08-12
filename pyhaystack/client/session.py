@@ -679,3 +679,21 @@ class HaystackSession(object):
         else:
             self._use_pint = False
         hszinc.use_pint(self._use_pint)
+
+    def logout(self):
+        raise NotImplementedError("Must be defined depending on each implementation")
+
+    def __enter__(self):
+        """Entering context manager
+
+        usage:
+        with WhateverSession(uri, username, password, **kwargs) as session:
+            # do whatever with session
+
+        """
+
+        return self
+
+    def __exit__(self, _type, value, traceback):
+        """On exit, call the logout procedure defined in the class"""
+        self.logout()
