@@ -131,7 +131,9 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
                 status_code = -1
 
             if status_code != 200:
-                print("Warning: failed to close skyspark session, ", end="")
-                print("status_code={}".format(status_code))
+                self._log.warning("Failed to close skyspark session")
+                self._log.warning("status_code={}".format(status_code))
+            else:
+                self._log.info("You've been properly disconnected")
 
         self._get("/user/logout", callback, api=False)
