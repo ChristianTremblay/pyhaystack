@@ -161,6 +161,8 @@ class BaseGridOperation(BaseAuthOperation):
         cache=False,
         cache_key=None,
         accept_status=None,
+        headers=None,
+        exclude_cookies=None,
     ):
         """
         Initialise a request for the grid with the given URI and arguments.
@@ -207,8 +209,9 @@ class BaseGridOperation(BaseAuthOperation):
         self._args = args
         self._expect_format = expect_format
         self._raw_response = raw_response
-        self._headers = {}
+        self._headers = headers if headers else {}
         self._accept_status = accept_status
+        self._exclude_cookies = exclude_cookies
 
         self._cache = cache
         if cache and (cache_key is None):
@@ -373,6 +376,7 @@ class GetGridOperation(BaseGridOperation):
                 headers=self._headers,
                 callback=self._on_response,
                 accept_status=self._accept_status,
+                exclude_cookies=self._exclude_cookies,
             )
         except:  # Catch all exceptions to pass to caller.
             self._log.debug("Get fails", exc_info=1)
@@ -406,6 +410,7 @@ class PostGridOperation(BaseGridOperation):
 
         # Convert the grids to their native format
         self._body = hszinc.dump(grid, mode=post_format).encode("utf-8")
+
         if post_format == hszinc.MODE_ZINC:
             self._content_type = "text/zinc"
         else:
@@ -413,9 +418,10 @@ class PostGridOperation(BaseGridOperation):
 
     def _do_submit(self, event):
         """
-        Submit the GET request to the haystack server.
+        Submit the POST request to the haystack server.
         """
         try:
+            print("HEADERS :", self._headers)
             self._session._post(
                 self._uri,
                 body=self._body,
@@ -424,6 +430,7 @@ class PostGridOperation(BaseGridOperation):
                 headers=self._headers,
                 callback=self._on_response,
                 accept_status=self._accept_status,
+                exclude_cookies=self._exclude_cookies,
             )
         except:  # Catch all exceptions to pass to caller.
             self._log.debug("Post fails", exc_info=1)
