@@ -98,6 +98,47 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
         return self._authenticated
 
     # Private methods/properties
+    # For _get_grid, _post_grid, wrap the superclass version with a version
+    # that defaults to exclude_cookies=True.  This is because SkySpark gets
+    # confused and demands an attestation key if we round-trip its cookies.
+
+    def _get_grid(
+        self,
+        uri,
+        callback,
+        expect_format=None,
+        cache=False,
+        exclude_cookies=True,
+        **kwargs
+    ):
+        return super(SkysparkScramHaystackSession, self)._get_grid(
+            uri=uri,
+            callback=callback,
+            expect_format=expect_format,
+            cache=cache,
+            exclude_cookies=exclude_cookies,
+            **kwargs
+        )
+
+    def _post_grid(
+        self,
+        uri,
+        grid,
+        callback,
+        expect_format=None,
+        cache=False,
+        exclude_cookies=True,
+        **kwargs
+    ):
+        return super(SkysparkScramHaystackSession, self)._post_grid(
+            uri=uri,
+            grid=grid,
+            callback=callback,
+            expect_format=expect_format,
+            cache=cache,
+            exclude_cookies=exclude_cookies,
+            **kwargs
+        )
 
     def _on_authenticate_done(self, operation, **kwargs):
         """
@@ -110,14 +151,9 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
 
             op_result = operation.result
             header = op_result["header"]
-            # self._key = op_result["key"]
-            # self._authToken = header['Authorization'].split('=')[-1]
-            # print(self._authToken)
-            # print('KEY :', self._key)
             self._authenticated = True
             self._client.cookies = None
             self._client.headers = header
-            print(self._client.headers)
         except:
             self._authenticated = False
             self._client.cookies = None
@@ -177,18 +213,15 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
             # Better be valid!
             str_rng = rng
 
-        col_list = [("id", []), ("range", [])]
-        his_grid = hszinc.grid.Grid(columns=col_list)
-        his_grid.insert(0, {"id": self._obj_to_ref(point), "range": str_rng})
-        # his_grid = {"meta": {"ver":"2.0"},"cols":[{"name":"id"},{"name":"range"}],"rows":[{"id":"r:p:demo:r:255873a0-68a48b9f","range":"s:today"}]}
-        headers = self._client.headers
-        # headers[b"SkyArc-Attest-Key"] = self._key
-        print(his_grid)
+        his_grid = hszinc.Grid()
+        his_grid.metadata["id"] = self._obj_to_ref(point)
+        his_grid.column["id"] = {}
+        his_grid.column["range"] = {}
+        his_grid.append({"id": self._obj_to_ref(point), "range": str_rng})
+
         return self._post_grid(
             "hisRead",
             his_grid,
             callback,
-            headers=headers,
-            exclude_cookies=True,
             **kwargs
         )

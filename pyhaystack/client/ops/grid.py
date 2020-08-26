@@ -185,6 +185,10 @@ class BaseGridOperation(BaseAuthOperation):
         :param cache_key: Name of the key to use when the object is cached.
         :param accept_status: What status codes to accept, in addition to the
                             usual ones?
+        :param exclude_cookies:
+                        If True, exclude all default cookies and use only
+                        the cookies given.  Otherwise, this is an iterable
+                        of cookie names to be excluded.
         """
 
         super(BaseGridOperation, self).__init__(session, uri)
@@ -421,7 +425,6 @@ class PostGridOperation(BaseGridOperation):
         Submit the POST request to the haystack server.
         """
         try:
-            print("HEADERS :", self._headers)
             self._session._post(
                 self._uri,
                 body=self._body,

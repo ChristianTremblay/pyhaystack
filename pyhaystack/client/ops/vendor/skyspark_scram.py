@@ -120,8 +120,6 @@ class SkysparkScramAuthenticateOperation(state.HaystackOperation):
         Retrieve the log-in parameters.
         """
         try:
-            # if isinstance(response, AsynchronousException):
-            #    response.reraise()
             self._nonce = scram.get_nonce()
             self._salt_username = scram.base64_no_padding(self._session._username)
             self.client_first_message = "HELLO username=%s" % (self._salt_username)
@@ -149,7 +147,6 @@ class SkysparkScramAuthenticateOperation(state.HaystackOperation):
             if e.status != 401 and e.status != 303:
                 raise
             try:
-                print("EHEADERS :", e.headers)
                 server_response = e.headers["WWW-Authenticate"]
                 header_response = server_response.split(",")
                 algorithm = scram.regex_after_equal(header_response[1])
@@ -194,7 +191,6 @@ class SkysparkScramAuthenticateOperation(state.HaystackOperation):
             if e.status != 401 and e.status != 303:
                 raise
             try:
-                print("EHEADERS #2:", e.headers)
                 header_response = e.headers["WWW-Authenticate"]
                 tab_header = header_response.split(",")
                 server_data = scram.regex_after_equal(tab_header[0])
@@ -264,15 +260,11 @@ class SkysparkScramAuthenticateOperation(state.HaystackOperation):
 
     def _validate_server_token(self, response):
         try:
-            # print('RESPONSEHEADERS : ', response.headers)
-            # print('RESPONSEBODY : ', response.body)
-            # print('RESPONSCOOKIE : ', response.cookies)
             server_response = response.headers["Authentication-Info"]
             tab_response = server_response.split(",")
             self._auth_token = scram.regex_after_equal(tab_response[0])
             self._key = scram.regex_after_equal(tab_response[1])
             self._auth = "Bearer authToken=%s" % self._auth_token
-            # self._cookies = response.headers["Set-Cookie"]
             self._state_machine.login_done(
                 result={"header": {b"Authorization": self._auth}, "key": self._key}
             )
