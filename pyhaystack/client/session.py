@@ -537,7 +537,8 @@ class HaystackSession(object):
             str_rng = hszinc.dump_scalar(rng)
         else:
             # Better be valid!
-            str_rng = rng
+            # str_rng = rng
+            str_rng = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
 
         return self._get_grid(
             "hisRead",
