@@ -25,6 +25,10 @@ except ImportError:
 
 
 class SyncHttpClient(HTTPClient):
+    def __init__(self, **kwargs):
+        super(SyncHttpClient, self).__init__(**kwargs)
+        self._session = requests.Session() if self.requests_session else requests
+
     def _request(
         self,
         method,
@@ -55,7 +59,7 @@ class SyncHttpClient(HTTPClient):
         try:
             try:
                 try:
-                    response = requests.request(
+                    response = self._session.request(
                         method=method,
                         url=uri,
                         data=body,

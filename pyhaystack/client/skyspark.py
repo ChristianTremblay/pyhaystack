@@ -210,7 +210,7 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
         elif not isinstance(rng, string_types):
             str_rng = hszinc.dump_scalar(rng)
         else:
-            # Better be valid!
+            # No conversion here as this will be added to the grid as-is
             str_rng = rng
 
         his_grid = hszinc.Grid()
