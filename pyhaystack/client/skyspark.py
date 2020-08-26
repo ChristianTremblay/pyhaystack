@@ -70,7 +70,7 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
 
     _AUTH_OPERATION = SkysparkScramAuthenticateOperation
 
-    def __init__(self, uri, username, password, project, **kwargs):
+    def __init__(self, uri, username, password, project, http_args=None, **kwargs):
         """
         Initialise a Skyspark Project Haystack session handler.
 
@@ -79,8 +79,12 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
         :param password: Authentication password.
         :param project: Skyspark project name
         """
+        # Skyspark is allergic to requests.Session we must turn it off.
+        http_args = http_args or {}
+        http_args["requests_session"] = False
+
         super(SkysparkScramHaystackSession, self).__init__(
-            uri, "api/%s" % project, **kwargs
+            uri, "api/%s" % project, http_args=http_args, **kwargs
         )
 
         self._username = username
