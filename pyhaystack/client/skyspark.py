@@ -219,9 +219,4 @@ class SkysparkScramHaystackSession(HaystackSession, evalexpr.EvalOpsMixin):
         his_grid.column["range"] = {}
         his_grid.append({"id": self._obj_to_ref(point), "range": str_rng})
 
-        return self._post_grid(
-            "hisRead",
-            his_grid,
-            callback,
-            **kwargs
-        )
+        return self._post_grid("hisRead", his_grid, callback, **kwargs)
