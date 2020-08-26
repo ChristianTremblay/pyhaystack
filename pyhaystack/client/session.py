@@ -243,6 +243,7 @@ class HaystackSession(object):
         write status of the point is retrieved.  Otherwise, a write is
         performed to the nominated point.
         """
+        who = who or self._username
         return self._on_point_write(
             point=point,
             level=level,
@@ -529,6 +530,8 @@ class HaystackSession(object):
             if duration is not None:
                 args["duration"] = duration
         return self._get_grid("pointWrite", callback, args=args, **kwargs)
+        # Won't work in for nhaystack... putting that on old
+        # return self._post_grid("pointWrite", grid_ops.dict_to_grid(args), callback, expect_format=hszinc.MODE_ZINC, args=args, **kwargs)
 
     def _on_his_read(self, point, rng, callback, **kwargs):
         if isinstance(rng, slice):

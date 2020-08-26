@@ -16,6 +16,17 @@ from six import string_types
 from time import time
 
 
+def dict_to_grid(d):
+    if not "id" in d.keys():
+        raise ValueError('Dict must contain an "id" key.')
+    new_grid = hszinc.Grid()
+    new_grid.metadata["id"] = d["id"]
+    for k, v in d.items():
+        new_grid.column[k] = {}
+    new_grid.append(d)
+    return new_grid
+
+
 class BaseAuthOperation(state.HaystackOperation):
     """
     A base class authentication operations.
