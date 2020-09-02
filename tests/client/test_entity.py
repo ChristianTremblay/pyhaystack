@@ -194,9 +194,8 @@ class TestSession(object):
         assert rq.headers[b"Content-Type"] == "text/zinc"
 
         # Body shall be a single grid:
-        rq_grid = hszinc.parse(rq.body.decode("utf-8"), mode=hszinc.MODE_ZINC)
-        assert len(rq_grid) == 1
-        rq_grid = rq_grid[0]
+        rq_grid = hszinc.parse(rq.body.decode("utf-8"),
+                mode=hszinc.MODE_ZINC, single=True)
 
         # It shall have one column; id
         assert set(rq_grid.column.keys()) == set(["id"])
@@ -284,9 +283,8 @@ class TestSession(object):
         assert rq.headers[b"Content-Type"] == "text/zinc"
 
         # Body shall be a single grid:
-        rq_grid = hszinc.parse(rq.body.decode("utf-8"), mode=hszinc.MODE_ZINC)
-        assert len(rq_grid) == 1
-        rq_grid = rq_grid[0]
+        rq_grid = hszinc.parse(rq.body.decode("utf-8"),
+                mode=hszinc.MODE_ZINC, single=True)
 
         # It shall have one column; id
         assert set(rq_grid.column.keys()) == set(["id"])
