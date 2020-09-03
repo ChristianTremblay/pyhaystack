@@ -550,7 +550,7 @@ class HaystackSession(object):
             **kwargs
         )
 
-    def _on_his_write(self, point, timestamp_records, callback, **kwargs):
+    def _on_his_write(self, point, timestamp_records, callback, post_format=hszinc.MODE_ZINC, **kwargs):
         grid = hszinc.Grid()
         grid.metadata["id"] = self._obj_to_ref(point)
         grid.column["ts"] = {}
@@ -564,9 +564,9 @@ class HaystackSession(object):
         for (ts, val) in timestamp_records:
             grid.append({"ts": ts, "val": val})
 
-        return self._post_grid("hisWrite", grid, callback, **kwargs)
+        return self._post_grid("hisWrite", grid, callback, post_format=post_format, **kwargs)
 
-    def _on_invoke_action(self, entity, action, callback, action_args, **kwargs):
+    def _on_invoke_action(self, entity, action, callback, action_args, post_format=hszinc.MODE_ZINC, **kwargs):
         grid = hszinc.Grid()
         grid.metadata["id"] = self._obj_to_ref(entity)
         grid.metadata["action"] = action
@@ -574,7 +574,7 @@ class HaystackSession(object):
             grid.column[arg] = {}
         grid.append(action_args)
 
-        return self._post_grid("invokeAction", grid, callback, **kwargs)
+        return self._post_grid("invokeAction", grid, callback, post_format=post_format, **kwargs)
 
     def _get(self, uri, callback, api=True, **kwargs):
         """
