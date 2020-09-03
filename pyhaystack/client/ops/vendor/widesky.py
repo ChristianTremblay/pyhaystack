@@ -264,7 +264,7 @@ class WideSkyPasswordChangeOperation(BaseAuthOperation):
                 ("update_done", "update", "done"),
                 ("exception", "*", "done"),
             ],
-            callbacks={"onsend_update": self._do_submit, "onenterdone": self._do_done,},
+            callbacks={"onsend_update": self._do_submit, "onenterdone": self._do_done},
         )
 
     def go(self):

@@ -71,6 +71,7 @@ class SyncHttpClient(HTTPClient):
                         verify=tls_verify,
                         cert=tls_cert,
                     )
+
                     if (accept_status is None) or (
                         response.status_code not in accept_status
                     ):

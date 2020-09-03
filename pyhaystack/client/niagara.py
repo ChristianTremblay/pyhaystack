@@ -142,7 +142,7 @@ class Niagara4HaystackSession(HaystackSession, BQLMixin, EncodingMixin):
                 status_code = -1
 
             if status_code != 200:
-                self._log.warning("Failed to close nhaystack session, ", end="")
+                self._log.warning("Failed to close nhaystack session, ")
                 self._log.warning("status_code={}".format(status_code))
             else:
                 self._log.info("You've been properly disconnected")
