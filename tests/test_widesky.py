@@ -12,7 +12,6 @@ from pyhaystack.client.http import dummy as dummy_http
 from pyhaystack.client.http.base import HTTPResponse
 from pyhaystack.client.http.exceptions import HTTPStatusError
 from pyhaystack.util.asyncexc import AsynchronousException
-from .util import grid_cmp
 
 from pyhaystack.client import widesky
 
@@ -20,8 +19,6 @@ from pyhaystack.client import widesky
 import hszinc
 
 # For date/time generation
-import datetime
-import pytz
 import time
 
 # JSON encoding/decoding
@@ -31,8 +28,6 @@ import json
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-
-from pyhaystack.client import widesky
 
 BASE_URI = "https://myserver/api/"
 
@@ -113,6 +108,7 @@ class TestImpersonateParam(object):
         assert session._client.headers["X-IMPERSONATE"] is user_id
 
 
+@pytest.mark.usefixtures("server_session")
 class TestUpdatePassword(object):
     """
     Test the update_password op
@@ -123,6 +119,9 @@ class TestUpdatePassword(object):
 
         # Issue the request
         op = session.update_password("hello123X")
+
+        # Make sure there's no error during set-up.
+        assert (not op.is_done) or (op.result is None)
 
         # Pop the request off the stack and inspect it
         rq = server.next_request()

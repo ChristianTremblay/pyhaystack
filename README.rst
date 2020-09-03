@@ -15,7 +15,7 @@ Actually, connection can be established with :
 
 * Niagara4_ by Tridium
 * NiagaraAX_ by Tridium
-* Widesky_ by Widesky.cloud_
+* WideSky_ by Widesky.cloud_
 * Skyspark_ by SkyFoundry (version 2 and 3+)
 
 Connection to Niagara AX or Niagara 4 requires the nHaystack_ module by J2 Innovations to be installed
@@ -123,11 +123,11 @@ to pyhaystack (ex. unit conversion)
 
 .. _Niagara4 : https://www.tridium.com/en/products-services/niagara4
 
-.. _Widesky.cloud : http://widesky.cloud/
+.. _WideSky.cloud : http://widesky.cloud/
 
 .. _Servisys : http://www.servisys.com
 
-.. _Widesky : http://widesky.cloud/ 
+.. _WideSky : http://widesky.cloud/
 
 .. _nHaystack : https://bitbucket.org/jasondbriggs/nhaystack
 
