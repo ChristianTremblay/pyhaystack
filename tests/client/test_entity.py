@@ -12,7 +12,6 @@ import pytest
 
 from pyhaystack.client.http import dummy as dummy_http
 from pyhaystack.client.entity.entity import Entity
-from ..util import grid_cmp
 
 # For simplicity's sake, we'll just use the WideSky client.
 # Pretend we're version 0.0.1.
@@ -22,8 +21,6 @@ from pyhaystack.client import widesky
 import hszinc
 
 # For date/time generation
-import datetime
-import pytz
 import time
 
 # Logging setup so we can see what's going on
@@ -242,8 +239,9 @@ class TestSession(object):
         # State machine should now be done
         assert op.is_done
         entities = op.result
+
         # Response should be a dict
-        assert isinstance(entities, dict), "%r not a dict" % entity
+        assert isinstance(entities, dict), "%r not a dict" % entities
         # Response should have these keys
         assert set(entities.keys()) == set(["my.entity.id1", "my.entity.id2"])
 
@@ -331,8 +329,9 @@ class TestSession(object):
         # State machine should now be done
         assert op.is_done
         entities = op.result
+
         # Response should be a dict
-        assert isinstance(entities, dict), "%r not a dict" % entity
+        assert isinstance(entities, dict), "%r not a dict" % entities
         # Response should have these keys
         assert set(entities.keys()) == set(["my.entity.id1", "my.entity.id2"])
 
