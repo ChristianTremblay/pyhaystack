@@ -24,7 +24,6 @@ setup(
         "requests",
         "setuptools",
         "pandas",
-        "parsimonious",
         "iso8601",
         "hszinc",
         "six",

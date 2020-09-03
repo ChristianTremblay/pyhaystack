@@ -10,8 +10,9 @@ from .ops.vendor.widesky import (
     WideskyAuthenticateOperation,
     CreateEntityOperation,
     WideSkyHasFeaturesOperation,
+    WideSkyPasswordChangeOperation,
 )
-from .mixins.vendor.widesky import crud, multihis
+from .mixins.vendor.widesky import crud, multihis, password
 from ..util.asyncexc import AsynchronousException
 from .http.exceptions import HTTPStatusError
 
@@ -28,7 +29,10 @@ def _decode_str(s, enc="utf-8"):
 
 
 class WideskyHaystackSession(
-    crud.CRUDOpsMixin, multihis.MultiHisOpsMixin, HaystackSession
+    crud.CRUDOpsMixin,
+    multihis.MultiHisOpsMixin,
+    password.PasswordOpsMixin,
+    HaystackSession,
 ):
     """
     The WideskyHaystackSession class implements some base support for
@@ -39,6 +43,7 @@ class WideskyHaystackSession(
     _AUTH_OPERATION = WideskyAuthenticateOperation
     _CREATE_ENTITY_OPERATION = CreateEntityOperation
     _HAS_FEATURES_OPERATION = WideSkyHasFeaturesOperation
+    _PASSWORD_CHANGE_OPERATION = WideSkyPasswordChangeOperation
 
     def __init__(
         self,
@@ -49,6 +54,7 @@ class WideskyHaystackSession(
         client_secret,
         api_dir="api",
         auth_dir="oauth2/token",
+        impersonate=None,
         **kwargs
     ):
         """
@@ -59,6 +65,7 @@ class WideskyHaystackSession(
         :param password: Authentication password.
         :param client_id: Authentication client ID.
         :param client_secret: Authentication client secret.
+        :param impersonate: A widesky user ID to impersonate (or None)
         """
         super(WideskyHaystackSession, self).__init__(uri, api_dir, **kwargs)
         self._auth_dir = auth_dir
@@ -67,6 +74,7 @@ class WideskyHaystackSession(
         self._client_id = client_id
         self._client_secret = client_secret
         self._auth_result = None
+        self._impersonate = impersonate
 
     @property
     def is_logged_in(self):
@@ -121,6 +129,9 @@ class WideskyHaystackSession(
                     )
                 ).encode("us-ascii")
             }
+
+            if self._impersonate:
+                self._client.headers["X-IMPERSONATE"] = self._impersonate
         except:
             self._auth_result = None
             self._client.headers = {}
