@@ -81,7 +81,7 @@ class HisReadSeriesOperation(state.HaystackOperation):
 
         self._session = session
         self._point = point
-        self._range = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
+        self._range = rng
         self._tz = _resolve_tz(tz)
         self._series_format = series_format
 
@@ -114,6 +114,7 @@ class HisReadSeriesOperation(state.HaystackOperation):
         """
         try:
             # See if the read succeeded.
+            operation.wait
             grid = operation.result
 
             if self._tz is None:
@@ -329,8 +330,6 @@ class HisReadFrameOperation(state.HaystackOperation):
         self._log.debug("Response back for column %s", col)
         try:
             grid = operation.result
-            # print(grid)
-            # print('===========')
 
             if self._tz is None:
                 conv_ts = lambda ts: ts

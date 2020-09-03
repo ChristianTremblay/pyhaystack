@@ -349,6 +349,9 @@ arguments are supported:
   WideSky.
 * ``client_secret``: The OAuth2 client secret to use when authenticating with
   WideSky.
+* ``impersonate``: This is an optional parameter. If this is set and the caller
+ has the required permission to act as the target user. Then all subsequent
+ requests coming from this HTTP session will be based on the target user's READ/WRITE permissions.
 
 ``Direct approach``
 ^^^^^^^^^^^^^^^^^^^
@@ -360,7 +363,7 @@ arguments are supported:
                     uri='https://yourtenant.on.widesky.cloud/reference',
                     username='user', password='my_password',
                     client_id='my_id', client_secret='my_secret'
-                    pint=True)
+                    pint=True, impersonate='user_id')
 
 ``connect()`` approach
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -371,8 +374,8 @@ arguments are supported:
     session = pyhaystack.connect(implementation='widesky',
             uri='https://yourtenant.on.widesky.cloud/reference',
             username='user', password='my_password',
-            client_id='my_id', client_secret='my_secret'
-            pint=True)
+            client_id='my_id', client_secret='my_secret',
+            pint=True, impersonate='user_id')
 
 Skyspark
 """"""""
