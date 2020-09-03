@@ -369,8 +369,9 @@ class TestSession(object):
                 {"id": hszinc.Ref("my.entity.id3")},
             ]
         )
-        actual = hszinc.parse(rq.body.decode("utf-8"),
-                mode=hszinc.MODE_ZINC, single=True)
+        actual = hszinc.parse(
+            rq.body.decode("utf-8"), mode=hszinc.MODE_ZINC, single=True
+        )
         grid_cmp(expected, actual)
 
         # Accept header shall be given
