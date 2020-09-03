@@ -292,7 +292,8 @@ class BaseGridOperation(BaseAuthOperation):
         """
         Process the response given back by the HTTP server.
         """
-        print("RESPONSE", response.__dict__)
+        # When problems occur :
+        #     print("RESPONSE", response.__dict__)
         try:
             # Does the session want to invoke any relevant hooks?
             # This allows a session to detect problems in the session and

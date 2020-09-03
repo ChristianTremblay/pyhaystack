@@ -330,8 +330,6 @@ class HisReadFrameOperation(state.HaystackOperation):
         self._log.debug("Response back for column %s", col)
         try:
             grid = operation.result
-            # print(grid)
-            # print('===========')
 
             if self._tz is None:
                 conv_ts = lambda ts: ts
