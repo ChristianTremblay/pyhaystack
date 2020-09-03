@@ -292,6 +292,7 @@ class BaseGridOperation(BaseAuthOperation):
         """
         Process the response given back by the HTTP server.
         """
+        print("RESPONSE", response.__dict__)
         try:
             # Does the session want to invoke any relevant hooks?
             # This allows a session to detect problems in the session and
@@ -316,10 +317,10 @@ class BaseGridOperation(BaseAuthOperation):
             if content_type in ("text/zinc", "text/plain"):
                 # We have been given a grid in ZINC format.
                 decoded = hszinc.parse(body, mode=hszinc.MODE_ZINC, single=False)
-            elif content_type == 'application/json':
+            elif content_type == "application/json":
                 # We have been given a grid in JSON format.
                 decoded = hszinc.parse(body, mode=hszinc.MODE_JSON, single=False)
-            elif content_type in ('text/html'):
+            elif content_type in ("text/html"):
                 # We probably fell back to a login screen after auto logoff.
                 self._state_machine.exception(AsynchronousException())
             else:
@@ -422,10 +423,8 @@ class PostGridOperation(BaseGridOperation):
         super(PostGridOperation, self).__init__(
             session=session, uri=uri, args=args, **kwargs
         )
-
         # Convert the grids to their native format
         self._body = hszinc.dump(grid, mode=post_format).encode("utf-8")
-
         if post_format == hszinc.MODE_ZINC:
             self._content_type = "text/zinc"
         else:
