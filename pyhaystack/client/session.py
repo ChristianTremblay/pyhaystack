@@ -514,6 +514,10 @@ class HaystackSession(object):
         if not isinstance(watch, string_types):
             watch = watch.id
         grid.metadata["watchId"] = watch
+
+        if refresh:
+            grid.metadata["refresh"] = hszinc.MARKER
+
         return self._post_grid("watchPoll", grid, callback, **kwargs)
 
     def _on_point_write(self, point, level, val, who, duration, callback, **kwargs):
