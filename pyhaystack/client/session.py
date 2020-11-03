@@ -523,7 +523,8 @@ class HaystackSession(object):
     def _on_point_write(self, point, level, val, who, duration, callback, **kwargs):
         args = {"id": self._obj_to_ref(point)}
         if level is None:
-            if (val is not None) or (who is not None) or (duration is not None):
+            who = None  # as it may be username
+            if (val is not None) or (duration is not None):
                 raise ValueError(
                     "If level is None, val, who and duration must " "be None too."
                 )
