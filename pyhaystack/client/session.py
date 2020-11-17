@@ -479,7 +479,7 @@ class HaystackSession(object):
             return self._get_grid("read", callback, args=args, **kwargs)
 
     def _on_nav(self, nav_id, callback, **kwargs):
-        return self._get_grid("nav", callback, args={"nav_id": nav_id}, **kwargs)
+        return self._get_grid("nav", callback, args={"navId": nav_id}, **kwargs)
 
     def _on_watch_sub(self, points, watch_id, watch_dis, lease, callback, **kwargs):
         grid = hszinc.Grid()
