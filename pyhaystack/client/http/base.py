@@ -49,6 +49,7 @@ class HTTPClient(object):
         accept_status=None,
         log=None,
         insecure_requests_warning=True,
+        requests_session=True,
     ):
         """
         Instantiate a HTTP client instance with some default parameters.
@@ -79,6 +80,11 @@ class HTTPClient(object):
                         by the client to authenticate itself with the server.
         :param log:     If not None, then it's a logging object that will be
                         used for debugging HTTP operations.
+        :param requests_session: 
+                        Request sessions handles a lot of things
+                        inclusding cookies and it is problematic with some
+                        implementations like Skyspark. This flag allows to 
+                        disable this Session and eliminate cookies round-trip.
         """
 
         # Stash these defaults for later.  These can be modified at any time
@@ -96,6 +102,7 @@ class HTTPClient(object):
 
         if not insecure_requests_warning:
             self.silence_insecured_warnings()
+        self.requests_session = requests_session
 
     def request(
         self,

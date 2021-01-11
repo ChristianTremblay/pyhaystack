@@ -120,8 +120,6 @@ class SkysparkScramAuthenticateOperation(state.HaystackOperation):
         Retrieve the log-in parameters.
         """
         try:
-            # if isinstance(response, AsynchronousException):
-            #    response.reraise()
             self._nonce = scram.get_nonce()
             self._salt_username = scram.base64_no_padding(self._session._username)
             self.client_first_message = "HELLO username=%s" % (self._salt_username)
@@ -265,9 +263,10 @@ class SkysparkScramAuthenticateOperation(state.HaystackOperation):
             server_response = response.headers["Authentication-Info"]
             tab_response = server_response.split(",")
             self._auth_token = scram.regex_after_equal(tab_response[0])
-            self._auth = "BEARER authToken=%s" % self._auth_token
+            self._key = scram.regex_after_equal(tab_response[1])
+            self._auth = "Bearer authToken=%s" % self._auth_token
             self._state_machine.login_done(
-                result={"header": {"Authorization": self._auth}}
+                result={"header": {b"Authorization": self._auth}, "key": self._key}
             )
 
         except Exception as e:

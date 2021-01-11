@@ -26,8 +26,8 @@ except ImportError:
 
 class SyncHttpClient(HTTPClient):
     def __init__(self, **kwargs):
-        self._session = requests.Session()
         super(SyncHttpClient, self).__init__(**kwargs)
+        self._session = requests.Session() if self.requests_session else requests
 
     def _request(
         self,
@@ -71,6 +71,7 @@ class SyncHttpClient(HTTPClient):
                         verify=tls_verify,
                         cert=tls_cert,
                     )
+
                     if (accept_status is None) or (
                         response.status_code not in accept_status
                     ):

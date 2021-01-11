@@ -243,6 +243,7 @@ class HaystackSession(object):
         write status of the point is retrieved.  Otherwise, a write is
         performed to the nominated point.
         """
+        who = who or self._username
         return self._on_point_write(
             point=point,
             level=level,
@@ -529,6 +530,8 @@ class HaystackSession(object):
             if duration is not None:
                 args["duration"] = duration
         return self._get_grid("pointWrite", callback, args=args, **kwargs)
+        # Won't work in for nhaystack... putting that on old
+        # return self._post_grid("pointWrite", grid_ops.dict_to_grid(args), callback, expect_format=hszinc.MODE_ZINC, args=args, **kwargs)
 
     def _on_his_read(self, point, rng, callback, **kwargs):
         if isinstance(rng, slice):
@@ -537,7 +540,8 @@ class HaystackSession(object):
             str_rng = hszinc.dump_scalar(rng)
         else:
             # Better be valid!
-            str_rng = rng
+            # str_rng = rng
+            str_rng = hszinc.dump_scalar(rng, mode=hszinc.MODE_ZINC)
 
         return self._get_grid(
             "hisRead",
@@ -546,7 +550,9 @@ class HaystackSession(object):
             **kwargs
         )
 
-    def _on_his_write(self, point, timestamp_records, callback, **kwargs):
+    def _on_his_write(
+        self, point, timestamp_records, callback, post_format=hszinc.MODE_ZINC, **kwargs
+    ):
         grid = hszinc.Grid()
         grid.metadata["id"] = self._obj_to_ref(point)
         grid.column["ts"] = {}
@@ -560,9 +566,19 @@ class HaystackSession(object):
         for (ts, val) in timestamp_records:
             grid.append({"ts": ts, "val": val})
 
-        return self._post_grid("hisWrite", grid, callback, **kwargs)
+        return self._post_grid(
+            "hisWrite", grid, callback, post_format=post_format, **kwargs
+        )
 
-    def _on_invoke_action(self, entity, action, callback, action_args, **kwargs):
+    def _on_invoke_action(
+        self,
+        entity,
+        action,
+        callback,
+        action_args,
+        post_format=hszinc.MODE_ZINC,
+        **kwargs
+    ):
         grid = hszinc.Grid()
         grid.metadata["id"] = self._obj_to_ref(entity)
         grid.metadata["action"] = action
@@ -570,7 +586,9 @@ class HaystackSession(object):
             grid.column[arg] = {}
         grid.append(action_args)
 
-        return self._post_grid("invokeAction", grid, callback, **kwargs)
+        return self._post_grid(
+            "invokeAction", grid, callback, post_format=post_format, **kwargs
+        )
 
     def _get(self, uri, callback, api=True, **kwargs):
         """
@@ -679,3 +697,21 @@ class HaystackSession(object):
         else:
             self._use_pint = False
         hszinc.use_pint(self._use_pint)
+
+    def logout(self):
+        raise NotImplementedError("Must be defined depending on each implementation")
+
+    def __enter__(self):
+        """Entering context manager
+
+        usage:
+        with WhateverSession(uri, username, password, **kwargs) as session:
+            # do whatever with session
+
+        """
+
+        return self
+
+    def __exit__(self, _type, value, traceback):
+        """On exit, call the logout procedure defined in the class"""
+        self.logout()

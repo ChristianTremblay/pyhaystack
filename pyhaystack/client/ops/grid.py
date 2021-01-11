@@ -16,6 +16,17 @@ from six import string_types
 from time import time
 
 
+def dict_to_grid(d):
+    if not "id" in d.keys():
+        raise ValueError('Dict must contain an "id" key.')
+    new_grid = hszinc.Grid()
+    new_grid.metadata["id"] = d["id"]
+    for k, v in d.items():
+        new_grid.column[k] = {}
+    new_grid.append(d)
+    return new_grid
+
+
 class BaseAuthOperation(state.HaystackOperation):
     """
     A base class authentication operations.
@@ -161,6 +172,8 @@ class BaseGridOperation(BaseAuthOperation):
         cache=False,
         cache_key=None,
         accept_status=None,
+        headers=None,
+        exclude_cookies=None,
     ):
         """
         Initialise a request for the grid with the given URI and arguments.
@@ -183,6 +196,10 @@ class BaseGridOperation(BaseAuthOperation):
         :param cache_key: Name of the key to use when the object is cached.
         :param accept_status: What status codes to accept, in addition to the
                             usual ones?
+        :param exclude_cookies:
+                        If True, exclude all default cookies and use only
+                        the cookies given.  Otherwise, this is an iterable
+                        of cookie names to be excluded.
         """
 
         super(BaseGridOperation, self).__init__(session, uri)
@@ -207,8 +224,9 @@ class BaseGridOperation(BaseAuthOperation):
         self._args = args
         self._expect_format = expect_format
         self._raw_response = raw_response
-        self._headers = {}
+        self._headers = headers if headers else {}
         self._accept_status = accept_status
+        self._exclude_cookies = exclude_cookies
 
         self._cache = cache
         if cache and (cache_key is None):
@@ -221,8 +239,7 @@ class BaseGridOperation(BaseAuthOperation):
             self._headers[b"Accept"] = "application/json"
         elif expect_format is not None:
             raise ValueError(
-                "expect_format must be one onf hszinc.MODE_ZINC "
-                "or hszinc.MODE_JSON"
+                "expect_format must be one onf hszinc.MODE_ZINC " "or hszinc.MODE_JSON"
             )
 
     def _do_check_cache(self, event):
@@ -275,6 +292,8 @@ class BaseGridOperation(BaseAuthOperation):
         """
         Process the response given back by the HTTP server.
         """
+        # When problems occur :
+        # print("RESPONSE", response.__dict__)
         try:
             # Does the session want to invoke any relevant hooks?
             # This allows a session to detect problems in the session and
@@ -298,10 +317,10 @@ class BaseGridOperation(BaseAuthOperation):
 
             if content_type in ("text/zinc", "text/plain"):
                 # We have been given a grid in ZINC format.
-                decoded = hszinc.parse(body, mode=hszinc.MODE_ZINC)
+                decoded = hszinc.parse(body, mode=hszinc.MODE_ZINC, single=False)
             elif content_type == "application/json":
                 # We have been given a grid in JSON format.
-                decoded = [hszinc.parse(body, mode=hszinc.MODE_JSON)]
+                decoded = hszinc.parse(body, mode=hszinc.MODE_JSON, single=False)
             elif content_type in ("text/html"):
                 # We probably fell back to a login screen after auto logoff.
                 self._state_machine.exception(AsynchronousException())
@@ -374,6 +393,7 @@ class GetGridOperation(BaseGridOperation):
                 headers=self._headers,
                 callback=self._on_response,
                 accept_status=self._accept_status,
+                exclude_cookies=self._exclude_cookies,
             )
         except:  # Catch all exceptions to pass to caller.
             self._log.debug("Get fails", exc_info=1)
@@ -404,7 +424,6 @@ class PostGridOperation(BaseGridOperation):
         super(PostGridOperation, self).__init__(
             session=session, uri=uri, args=args, **kwargs
         )
-
         # Convert the grids to their native format
         self._body = hszinc.dump(grid, mode=post_format).encode("utf-8")
         if post_format == hszinc.MODE_ZINC:
@@ -414,7 +433,7 @@ class PostGridOperation(BaseGridOperation):
 
     def _do_submit(self, event):
         """
-        Submit the GET request to the haystack server.
+        Submit the POST request to the haystack server.
         """
         try:
             self._session._post(
@@ -425,6 +444,7 @@ class PostGridOperation(BaseGridOperation):
                 headers=self._headers,
                 callback=self._on_response,
                 accept_status=self._accept_status,
+                exclude_cookies=self._exclude_cookies,
             )
         except:  # Catch all exceptions to pass to caller.
             self._log.debug("Post fails", exc_info=1)
