@@ -18,6 +18,7 @@ from ...util.asyncexc import AsynchronousException
 
 try:
     from pandas import Series, DataFrame
+    import numpy as np
 
     HAVE_PANDAS = True
 except ImportError:  # pragma: no cover
@@ -144,6 +145,8 @@ class HisReadSeriesOperation(state.HaystackOperation):
                             except AttributeError:
                                 if isinstance(each, float):
                                     values.append(each)
+                                else:
+                                    values.append(np.nan)
                                 continue
                     else:
                         values = data
