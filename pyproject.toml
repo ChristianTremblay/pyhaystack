@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyhaystack"
+version = "3.0.0"
+authors = [
+    {name="Christian Tremblay", email="christian.tremblay@servisys.com"},
+    {name="Stuart Longland"},
+    {name="@sudo-Whateverman"},
+    {name="Igor"},
+]
+description = "Bob the SI-WG Builder. Tool for building RDF graphs of HVAC systems"
+readme = "README.md"
+license = {text = "Apache 2.0"}
+dependencies = [
+    "requests",
+    "setuptools",
+    "pandas",
+    "iso8601",
+    "hszinc",
+    "six",
+    "fysom",
+    "semver",
+    "certifi",
+]
+copyright = "Christian Tremblay / SERVISYS inc. | Stuart Longland / VRT | 2016"
+
+[project.optional-dependencies]
+test = ["pytest", "pyshacl", "ontoenv"]
+lint = [ "black", "flake8", "isort"]
+cov = ["pytest < 5.0.0", "pytest-cov[all]"]
+
+[tool.setuptools]
+packages = [
+    "pyhaystack",
+    ]

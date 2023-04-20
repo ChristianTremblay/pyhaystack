@@ -6,6 +6,5 @@ six
 parsimonious
 hszinc>=1.3.0
 fysom
-signalslot
 semver
 certifi
