@@ -9,6 +9,12 @@
 .. image:: https://readthedocs.org/projects/signalslot/badge/?version=latest
     :target: https://signalslot.readthedocs.org/en/latest
 
+This package has been included in our repository to assure availability and 
+provide a stable version of the signalslot package for our projects. We did 
+some modification to the original code to make it compatible with Python 3.11+.
+
+Thanks to the original author.
+
 signalslot: simple Signal/Slot implementation for Python
 ========================================================
 
