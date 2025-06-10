@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyhaystack"
-version = "3.1.0"
+version = "3.1.1"
 authors = [
     {name="Christian Tremblay", email="christian.tremblay@servisys.com"},
     {name="Stuart Longland"},
@@ -22,7 +22,7 @@ dependencies = [
     "hszinc",
     "six",
     "fysom",
-    "semver",
+    "semver >=3.0.0",
     "certifi",
 ]
 keywords=["tags", "hvac", "project-haystack", "building", "automation", "analytic"]

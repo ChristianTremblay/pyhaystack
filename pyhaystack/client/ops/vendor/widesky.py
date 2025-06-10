@@ -5,18 +5,19 @@
 VRT WideSky operation implementations.
 """
 
-import hszinc
-import fysom
-import json
 import base64
+import json
+
+import fysom
+import hszinc
 import semver
 
 from ....util import state
 from ....util.asyncexc import AsynchronousException
-from ..grid import BaseAuthOperation
+from ...session import HaystackSession
 from ..entity import EntityRetrieveOperation
 from ..feature import HasFeaturesOperation
-from ...session import HaystackSession
+from ..grid import BaseAuthOperation
 
 
 class WideskyAuthenticateOperation(state.HaystackOperation):
@@ -55,7 +56,7 @@ class WideskyAuthenticateOperation(state.HaystackOperation):
         super(WideskyAuthenticateOperation, self).__init__()
         self._auth_headers = {
             "Authorization": (
-                u"Basic %s"
+                "Basic %s"
                 % base64.b64encode(
                     ":".join([session._client_id, session._client_secret]).encode(
                         "utf-8"
@@ -188,6 +189,7 @@ class CreateEntityOperation(EntityRetrieveOperation):
         Start the request, preprocess and submit create request.
         """
         self._state_machine.send_create()
+
         # Ensure IDs are basenames.
         def _preprocess_entity(e):
             if not isinstance(e, dict):
@@ -232,13 +234,13 @@ class WideSkyHasFeaturesOperation(HasFeaturesOperation):
                 HaystackSession.FEATURE_HISWRITE_MULTI,
             ):
                 try:
-                    res[feature] = semver.match(ver, ">=0.5.0")
+                    res[feature] = semver.Version.match(ver, ">=0.5.0")
                 except ValueError:
                     # Unrecognised version string
                     return res
             elif feature == HaystackSession.FEATURE_ID_UUID:
                 try:
-                    res[feature] = semver.match(ver, ">=0.8.0")
+                    res[feature] = semver.Version.match(ver, ">=0.8.0")
                 except ValueError:
                     return res
         return res
