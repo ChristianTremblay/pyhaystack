@@ -18,7 +18,7 @@ Actually, connection can be established with :
 * WideSky_ by Widesky.cloud_
 * Skyspark_ by SkyFoundry (version 2 and 3+)
 
-Connection to Niagara AX or Niagara 4 requires the nHaystack_ module by J2 Innovations to be installed
+Connection to Niagara AX or Niagara 4 requires the nHaystack_ module to be installed
 and properly configured on your Jace. Refer to documentation of nHaystack for details.
 
 How do I install pyhaystack ?
@@ -129,7 +129,7 @@ to pyhaystack (ex. unit conversion)
 
 .. _WideSky : http://widesky.cloud/
 
-.. _nHaystack : https://bitbucket.org/jasondbriggs/nhaystack
+.. _nHaystack : https://github.com/ci-richard-mcelhinney/nhaystack
 
 .. _project-haystack : http://www.project-haystack.org
 
