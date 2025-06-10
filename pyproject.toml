@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyhaystack"
-version = "3.0.0"
+version = "3.1.0"
 authors = [
     {name="Christian Tremblay", email="christian.tremblay@servisys.com"},
     {name="Stuart Longland"},
@@ -25,8 +25,7 @@ dependencies = [
     "semver",
     "certifi",
 ]
-copyright = "Christian Tremblay / SERVISYS inc. | Stuart Longland / VRT | 2016"
-
+keywords=["tags", "hvac", "project-haystack", "building", "automation", "analytic"]
 [project.optional-dependencies]
 test = ["pytest", "pyshacl", "ontoenv"]
 lint = [ "black", "flake8", "isort"]

@@ -4,7 +4,7 @@ State machine interface.  This is a base class for implementing state machines.
 """
 
 from copy import deepcopy
-from ..signalslot import Signal
+from ..signalslot.signalslot import Signal
 from threading import Event
 
 from .asyncexc import AsynchronousException
