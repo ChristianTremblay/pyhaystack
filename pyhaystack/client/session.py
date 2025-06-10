@@ -7,17 +7,18 @@ maintaining a session with the server.
 """
 
 import logging
-import hszinc
 import weakref
 from threading import Lock
+
+import hszinc
 from six import string_types
 
-from .http import sync
-from .ops import grid as grid_ops
-from .ops import entity as entity_ops
-from .ops import his as his_ops
-from .ops import feature as feature_ops
 from .entity.models.haystack import HaystackTaggingModel
+from .http import sync
+from .ops import entity as entity_ops
+from .ops import feature as feature_ops
+from .ops import grid as grid_ops
+from .ops import his as his_ops
 
 
 class HaystackSession(object):
@@ -239,9 +240,8 @@ class HaystackSession(object):
         the writeable point entity to retrieve the write status of or write a
         value to.
 
-        If level is None, the other parameters are required to be None too, the
-        write status of the point is retrieved.  Otherwise, a write is
-        performed to the nominated point.
+        To retrieve the write status of the point, value, duration and level are required to be None.
+        To write to a point, value and level are required and duration is optional.
         """
         who = who or self._username
         return self._on_point_write(
@@ -479,7 +479,7 @@ class HaystackSession(object):
             return self._get_grid("read", callback, args=args, **kwargs)
 
     def _on_nav(self, nav_id, callback, **kwargs):
-        return self._get_grid("nav", callback, args={"nav_id": nav_id}, **kwargs)
+        return self._get_grid("nav", callback, args={"navId": nav_id}, **kwargs)
 
     def _on_watch_sub(self, points, watch_id, watch_dis, lease, callback, **kwargs):
         grid = hszinc.Grid()
@@ -514,14 +514,18 @@ class HaystackSession(object):
         if not isinstance(watch, string_types):
             watch = watch.id
         grid.metadata["watchId"] = watch
+
+        if refresh:
+            grid.metadata["refresh"] = hszinc.MARKER
+
         return self._post_grid("watchPoll", grid, callback, **kwargs)
 
     def _on_point_write(self, point, level, val, who, duration, callback, **kwargs):
         args = {"id": self._obj_to_ref(point)}
         if level is None:
-            if (val is not None) or (who is not None) or (duration is not None):
+            if (val is not None) or (duration is not None):
                 raise ValueError(
-                    "If level is None, val, who and duration must " "be None too."
+                    "You tried writing a value without specifying a level (or specified a duration without providing a level neither a value. Please provide required level. If trying to retrieve write status of the point, provide None as value, duration and level"
                 )
         else:
             args.update({"level": level, "val": val})
@@ -563,7 +567,7 @@ class HaystackSession(object):
 
         timestamp_records = list(timestamp_records.items())
         timestamp_records.sort(key=lambda rec: rec[0])
-        for (ts, val) in timestamp_records:
+        for ts, val in timestamp_records:
             grid.append({"ts": ts, "val": val})
 
         return self._post_grid(

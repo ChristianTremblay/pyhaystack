@@ -415,6 +415,48 @@ arguments are supported:
                                     project='my_project'
                                     pint=True)
 
+SkyFoundry Demo Server
+""""""""""""""""""""""
+
+For basic testing, SkyFoundry has a simple server written in Java that can be used as a Hello-World style setup.
+The Skyfoundry Java server does not support authenication, so we have an "authless" session that can be used.
+
+Setup
+^^^^^
+Install the haystack-java_ package from GitHub and follow its build instructions. 
+That will leave you with a ".war" file that you can run with Tomcat. 
+
+For a lightweight approach to run the Haystack server, the Heroku webapp-runner_ is a simple way to run the resulting ".war" file
+Clone it from Github and build it with Maven and then run it with
+
+::
+
+  java -jar assembly/target/webapp-runner.jar ../haystack-java/build/libs/haystack-java-3.0.5.war
+
+
+
+Specific arguments
+^^^^^^^^^^^^^^^^^^
+
+This class takes no new arguments. 
+
+``Direct approach``
+^^^^^^^^^^^^^^^^^^^
+
+::
+
+    from pyhaystack.client.authless import AuthlessHaystackSession
+    session = AuthlessHaystackSession(uri='http://localhost:8080')
+
+``connect()`` approach
+^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    import pyhaystack
+    session = pyhaystack.connect(implementation='authless',
+                                    uri='http://localhost:8080')
+
 ----------
 Next steps
 ----------
@@ -424,3 +466,5 @@ which is covered in the next section.
 
 .. _certifi : https://github.com/certifi/python-certifi
 .. _urllib3_issue523 : https://github.com/shazow/urllib3/issues/523
+.. _haystack-java : https://github.com/skyfoundry/haystack-java/
+.. _webapp-runner : https://github.com/heroku/webapp-runner

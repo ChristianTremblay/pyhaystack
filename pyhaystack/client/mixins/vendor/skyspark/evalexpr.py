@@ -7,6 +7,8 @@ This is a BETA function that will need to be tested by users
 
 """
 
+import hszinc
+
 
 class EvalOpsMixin(object):
     """
@@ -25,10 +27,10 @@ class EvalOpsMixin(object):
         Response: result of the expression converted to a grid using Etc.toGrid
         If an error occurs an error grid is returned.
         Examples:
-        
+
         // GET request
         /api/demo/eval?expr=readAll(site)
-        
+
         // POST request
         ver:"2.0"
         expr
@@ -37,6 +39,20 @@ class EvalOpsMixin(object):
 
         url = "eval?expr=%s" % arg_expr
         return self._get_grid(url, callback=lambda *a, **k: None)
+
+    def post_eval(self, arg_expr):
+        """
+        Eval
+        ====
+        Eval in Skyspark from version 3.0.20 is considered to have "side effects"
+        and hence requesting it using GET is deprecated. To easy on the transition
+        this function is the POST version of get_eval. Please STOP using get_eval
+        and use this one instead."""
+
+        grid = hszinc.Grid()
+        grid.column["expr"] = {}
+        grid.append({"expr": arg_expr})
+        return self._post_grid("eval", grid, callback=lambda *a, **k: None)
 
 
 #    ===========================

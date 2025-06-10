@@ -6,18 +6,20 @@ High-level history functions.  These wrap the basic his_read function to allow
 some alternate representations of the historical data.
 """
 
-import hszinc
-import fysom
-import pytz
 from copy import deepcopy
-
 from datetime import tzinfo
+
+import fysom
+import hszinc
+import pytz
 from six import string_types
+
 from ...util import state
 from ...util.asyncexc import AsynchronousException
 
 try:
-    from pandas import Series, DataFrame
+    import numpy as np
+    from pandas import DataFrame, Series
 
     HAVE_PANDAS = True
 except ImportError:  # pragma: no cover
@@ -144,6 +146,8 @@ class HisReadSeriesOperation(state.HaystackOperation):
                             except AttributeError:
                                 if isinstance(each, float):
                                     values.append(each)
+                                else:
+                                    values.append(np.nan)
                                 continue
                     else:
                         values = data
@@ -302,7 +306,7 @@ class HisReadFrameOperation(state.HaystackOperation):
             for row in grid:
                 ts = conv_ts(row["ts"])
                 rec = self._get_ts_rec(ts)
-                for (col_idx, (col, _)) in enumerate(self._columns):
+                for col_idx, (col, _) in enumerate(self._columns):
                     val = row.get("v%d" % col_idx)
                     if (val is not None) or (self._frame_format != self.FORMAT_FRAME):
                         rec[col] = val
@@ -599,14 +603,14 @@ class HisWriteSeriesOperation(state.HaystackOperation):
 
             # Time-shift the records.
             if hasattr(self._tz, "localize"):
-                localise = (
-                    lambda ts: self._tz.localize(ts)
+                localise = lambda ts: (
+                    self._tz.localize(ts)
                     if ts.tzinfo is None
                     else ts.astimezone(self._tz)
                 )
             else:
-                localise = (
-                    lambda ts: ts.replace(tzinfo=self._tz)
+                localise = lambda ts: (
+                    ts.replace(tzinfo=self._tz)
                     if ts.tzinfo is None
                     else ts.astimezone(self._tz)
                 )
@@ -664,14 +668,12 @@ class HisWriteFrameOperation(state.HaystackOperation):
             tz = pytz.utc
 
         if hasattr(tz, "localize"):
-            localise = (
-                lambda ts: tz.localize(ts) if ts.tzinfo is None else ts.astimezone(tz)
+            localise = lambda ts: (
+                tz.localize(ts) if ts.tzinfo is None else ts.astimezone(tz)
             )
         else:
-            localise = (
-                lambda ts: ts.replace(tzinfo=tz)
-                if ts.tzinfo is None
-                else ts.astimezone(tz)
+            localise = lambda ts: (
+                ts.replace(tzinfo=tz) if ts.tzinfo is None else ts.astimezone(tz)
             )
 
         # Convert frame to list of records.

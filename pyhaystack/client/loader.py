@@ -19,6 +19,7 @@ IMPLEMENTATION_ALIAS = {
     "skyspark2": "skyspark.SkysparkHaystackSession",
     "skyspark": "skyspark.SkysparkScramHaystackSession",
     "widesky": "widesky.WideskyHaystackSession",
+    "authless": "authless.AuthlessHaystackSession",
 }
 
 # KNOWN IMPLEMENTATIONS: This is populated at run time with instances of session
